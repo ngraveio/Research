@@ -1,11 +1,10 @@
-# NBCR-2023-002 - Sync protocol
+# Sync protocol
+
+## NBCR-2023-002
 
 © 2023 NGRAVE
 
-Authors: @Mathieu Da Silva @Irfan Bilaloglu 
-
-Reviewers: @Tarik Krioua @Xavier Hendrickx @Jimmy Tieu @Freek Bultynck @Pieter Uyttersprot
-
+Authors: Mathieu Da Silva, Irfan Bilaloglu <br/>
 Date: April 19, 2023
 
 ---
@@ -102,7 +101,7 @@ Finally we propose in this document a third layer based on the `crypto-portfolio
 | `crypto-output` | 308 | BlockchainCommons (BC) | Output descriptor associating a script type to a  HD key | [[BCR-2020-010]](https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-010-output-desc.md) |
 | `crypto-account` | 311 | BlockchainCommons (BC) | Import an account based on several output descriptors | [[BCR-2020-015]](https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-015-account.md)  |
 | `crypto-multi-account` | 1103 | Keystone | Import multiple accounts in one animated QR | [[solana-qr-data-protocol]](https://github.com/KeystoneHQ/Keystone-developer-hub/blob/main/research/solana-qr-data-protocol.md#setup-watch-only-wallet-by-offline-signer) |
-| `crypto-coin-identity` | 1401 | Ngrave | Add additional information to a specific hdkey | This document |
+| `crypto-coin-identity` | 1401 | Ngrave | Add additional information to a specific hdkey | [[NBCR-2023-001]](https://github.com/ngraveio/Research/blob/main/papers/nbcr-2023-001-coin-identitty.md) |
 | `crypto-detailed-account` | 1402 | Ngrave | Import multiple accounts with and without output descriptors and specify optionally tokens to synchronize | This document |
 | `crypto-coin` | 1403 | Ngrave | Associate several accounts to its coin identity  | This document |
 | `crypto-sync-metadata` | 1404 | Ngrave | Specify wallet metadata | This document |
@@ -493,68 +492,6 @@ flowchart TB
 ```
 Figure 5. Breakdown of crypto-portfolio forming the layer 3 of the sync protocol
 
-- **CDDL for coin identity**  `crypto-coin-identity`
-
-In this document, we are defining the new UR type `crypto-coin-identity` based on new types and IANA-defined constants.
-
-By uniquely identifying a coin, the watch-only wallet is able to request the coin price and its logo, as well as to identify the protocol to derive addresses and to prepare transactions. Currently, many QR-based offline signers are based the coin identification on their homemade enumeration. 
-
-We propose to define a UR type standardizing the coin identification by aggregating the following information:
-
-1. Curve of the coin (e.g. `["secp256k1", "ed25519", "secp256r1”, “sr25519”]` ). This information is mandatory in the case of some blockchain (e.g. Tezos) supporting multiple elliptic curves.
-2. BIP44 coin type as defined in [[SLIP44]](https://github.com/satoshilabs/slips/blob/master/slip-0044.md).
-3. Subtype to define additional information to identify the coin (e.g. the chain ID for an EVM chain).
-
-The following specification of `crypto-coin-identity` is written in CDDL. When used embedded in another CBOR structure, this structure should be tagged #6.1401.
-
-```
-; Table should always be updated according to IANA registry 
-; https://www.iana.org/assignments/cose/cose.xhtml#elliptic-curves
-; https://www.rfc-editor.org/rfc/rfc9053.html#name-elliptic-curve-keys
-
-P256=1	            ; NIST P-256 also known as secp256r1
-P384=2	            ; NIST P-384 also known as secp384r1	
-P521=3	            ; EC2	NIST P-521 also known as secp521r1		
-X25519=4            ; X25519 for use w/ ECDH only		
-X448=5              ; X448 for use w/ ECDH only		
-Ed25519=6           ; Ed25519 for use w/ EdDSA only		
-Ed448=7             ; Ed448 for use w/ EdDSA only		
-secp256k1=8         ; SECG secp256k1 curve	IESG	
-
-elliptic_curve = P256 / P384 / P521 / X25519 / X448 / Ed25519 / Ed448 / secp256k1
-
-; Subtypes specific to some coins (e.g. ChainId for EVM chains)
-sub_type_exp = uint32 / str
-
-coin-identity = {
-	  curve: elliptic_curve,
-    type: uint31, ; values from [SLIP44] with high bit turned off,
-		? subtype: [ sub_type_exp + ]  ; Compatible with the definition of several subtypes if necessary
-}
-
-curve = 1
-type = 2
-subtype = 3
-tokenID = 4
-```
-
-The UR type is designed to be easily convertible to a URI format when human readability or deep linking are required.
-
-The URI format is as follows: `bc-coin://{subtype2.subtype1.subtype0}.{curve}/type`.
-
-We are providing several examples in the following table:
-
-| Coin | URI coin identity |
-| --- | --- |
-| Bitcoin (BTC) | bc-coin://secp256k1/0 |
-| Ethereum (ETH) | bc-coin://secp256k1/60 |
-| Polygon (MATIC) | bc-coin://137.secp256k1/60 |
-| Solana (SOL) | bc-coin://ed25519/508 |
-| Tezos (XTZ) based on ed25519 | bc-coin://ed25519/1729 |
-| Tezos (XTZ) based on secp256k1 | bc-coin://secp256k1/1729 |
-| Stellar (XLM) | bc-coin://ed25519/148 |
-| MultiversX (EGLD) | bc-coin://ed25519/508 |
-
 - **CDDL for synchronizing several accounts with detailed information** `crypto-detailed-account`
 
 In this document, we are defining the new `crypto-detailed-account` UR type, extending the scope of the previously defined `crypto-account` and `crypto-multi-account` UR types in [UR registry constituting the layer 2](nbcr-2023-002-multi-layer-sync.md#ur-registry-constituting-the-layer-2). 
@@ -612,7 +549,7 @@ token-ids = 2
 
 - **CDDL for synchronizing accounts with their coin identity** `crypto-coin`
 
-In this document, we are defining the new `crypto-coin` UR type associating the `crypto-coin-identity` with their accounts. The accounts are preferrably defined using a list of `crypto-detailed-account`. 
+In this document, we are defining the new `crypto-coin` UR type associating the `crypto-coin-identity` defined in [[NBCR-2023-001]](https://github.com/ngraveio/Research/blob/main/papers/nbcr-2023-001-coin-identitty.md with their accounts). The accounts are preferrably defined using a list of `crypto-detailed-account`. 
 
 To keep full compatibility with the layer 2, the accounts can also be specified using `crypto-account` and `crypto-multi-account` UR types. Using these UR types will however limit the information which can be synchronized.
 
@@ -701,8 +638,8 @@ The online watch-only wallet has different needs regarding the information neede
 
 2) Sync the accounts of a single coin when additional information are required:
 
-1. The accounts are defined with different output descriptors using `crypto-account` UR type (e.g. Bitcoin accounts with different type script with Sparrow wallet as watch-only wallet).
-2. The accounts of the same coin are defined by several public keys and different derivation paths using `crypto-multi-accounts` UR type (e.g. Solana accounts with fully hardened derivation paths with Solflare wallet as watch-only wallet). 
+   a. The accounts are defined with different output descriptors using `crypto-account` UR type (e.g. Bitcoin accounts with different type script with Sparrow wallet as watch-only wallet).     
+   b. The accounts of the same coin are defined by several public keys and different derivation paths using `crypto-multi-accounts` UR type (e.g. Solana accounts with fully hardened derivation paths with Solflare wallet as watch-only wallet). 
 
 3) Sync the accounts of multiple coins identified with their coin identity, along with optional tokens information and device-related metadata, using `crypto-portfolio` UR type (e.g. synchronization with NGRAVE Liquid application or Trust Wallet as watch-only wallets)
 
@@ -817,6 +754,7 @@ The watch-only wallet reconstructs the xpub for each derivation path and script 
 <details>
 
 <summary>Layer 2.a example from [BCR-2020-015] for syncing BTC accounts</summary>
+
 - BTC accounts
 
 ```
@@ -1228,6 +1166,7 @@ A3                                      # map(3)
 <details>
 
 <summary>Layer 2.b example for syncing ELGD account `m/44’/508’/0’/0’/0’` and `m/44’/508’/0’/0’/1’`</summary>
+
 - Public addresses following SLIP-044:
 
 ```
@@ -1832,5 +1771,6 @@ The information shared with the watch-only wallet can be altered on the device r
 | [BCR-2020-010] | https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-010-output-desc.md |
 | [BCR-2020-008] | https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-008-eckey.md |
 | [BCR-2020-015] | https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-015-account.md |
+| [NBCR-2023-001] | https://github.com/ngraveio/Research/blob/main/papers/nbcr-2023-001-coin-identitty.md |
 | [BIP32] | https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki |
 | [SLIP44]  | https://github.com/satoshilabs/slips/blob/master/slip-0044.md |
