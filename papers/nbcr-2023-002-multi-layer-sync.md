@@ -101,7 +101,7 @@ Finally we propose in this document a third layer based on the `crypto-portfolio
 | `crypto-output` | 308 | BlockchainCommons (BC) | Output descriptor associating a script type to a  HD key | [[BCR-2020-010]](https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-010-output-desc.md) |
 | `crypto-account` | 311 | BlockchainCommons (BC) | Import an account based on several output descriptors | [[BCR-2020-015]](https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-015-account.md)  |
 | `crypto-multi-account` | 1103 | Keystone | Import multiple accounts in one animated QR | [[solana-qr-data-protocol]](https://github.com/KeystoneHQ/Keystone-developer-hub/blob/main/research/solana-qr-data-protocol.md#setup-watch-only-wallet-by-offline-signer) |
-| `crypto-coin-identity` | 1401 | Ngrave | Add additional information to a specific hdkey | [[NBCR-2023-001]](https://github.com/ngraveio/Research/blob/main/papers/nbcr-2023-001-coin-identitty.md) |
+| `crypto-coin-identity` | 1401 | Ngrave | Add additional information to a specific hdkey | [[NBCR-2023-001]](https://github.com/ngraveio/Research/blob/main/papers/nbcr-2023-001-coin-identity.md) |
 | `crypto-detailed-account` | 1402 | Ngrave | Import multiple accounts with and without output descriptors and specify optionally tokens to synchronize | This document |
 | `crypto-coin` | 1403 | Ngrave | Associate several accounts to its coin identity  | This document |
 | `crypto-sync-metadata` | 1404 | Ngrave | Specify wallet metadata | This document |
@@ -549,7 +549,7 @@ token-ids = 2
 
 - **CDDL for synchronizing accounts with their coin identity** `crypto-coin`
 
-In this document, we are defining the new `crypto-coin` UR type associating the `crypto-coin-identity` defined in [[NBCR-2023-001]](https://github.com/ngraveio/Research/blob/main/papers/nbcr-2023-001-coin-identitty.md with their accounts). The accounts are preferrably defined using a list of `crypto-detailed-account`. 
+In this document, we are defining the new `crypto-coin` UR type associating the `crypto-coin-identity` defined in [[NBCR-2023-001]](https://github.com/ngraveio/Research/blob/main/papers/nbcr-2023-001-coin-identity.md with their accounts). The accounts are preferrably defined using a list of `crypto-detailed-account`. 
 
 To keep full compatibility with the layer 2, the accounts can also be specified using `crypto-account` and `crypto-multi-account` UR types. Using these UR types will however limit the information which can be synchronized.
 
@@ -1763,6 +1763,6 @@ The information shared with the watch-only wallet can be altered on the device r
 | [BCR-2020-010] | https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-010-output-desc.md |
 | [BCR-2020-008] | https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-008-eckey.md |
 | [BCR-2020-015] | https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-015-account.md |
-| [NBCR-2023-001] | https://github.com/ngraveio/Research/blob/main/papers/nbcr-2023-001-coin-identitty.md |
+| [NBCR-2023-001] | https://github.com/ngraveio/Research/blob/main/papers/nbcr-2023-001-coin-identity.md |
 | [BIP32] | https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki |
 | [SLIP44]  | https://github.com/satoshilabs/slips/blob/master/slip-0044.md |

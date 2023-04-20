@@ -1,4 +1,4 @@
-# UR Type Definition for Coin Identitiy
+# UR Type Definition for Coin Identity
 ## NBCR-2023-001
 
 **© 2023 Ngrave**
