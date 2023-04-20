@@ -19,7 +19,7 @@ We propose to define a UR type standardizing the coin identification by aggregat
 1. Curve of the coin (e.g. *`["secp256k1", "ed25519", "p256 (secp256r1)”, “X25519 (sr25519)”]` ).* This information is mandatory in the case of some blockchain (e.g. Tezos) supporting multiple elliptic curves.
 2. BIP44 coin type as defined in [[SLIP44]](https://github.com/satoshilabs/slips/blob/master/slip-0044.md).
 3. Subtype to define additional information to identify the coin (e.g. the chain ID for an EVM chain).
-4. Contract identifier as subtypes (e.g. ERC20 token address).
+4. Contract identifier as subtypes (e.g. ERC20 token address, ERC721 NFTs).
 
 
 
@@ -71,7 +71,8 @@ secp256k1=8         ; SECG secp256k1 curve	IESG
 elliptic_curve = P256 / P384 / P521 / X25519 / X448 / Ed25519 / Ed448 / secp256k1
 
 ; Subtypes specific to some coins (e.g. ChainId for EVM chains)
-sub_type_exp = uint32 / str
+hex_string = #6.263(bstr) ; byte string is a hexadecimal string no need for decoding
+sub_type_exp = uint32 / str / hex_string
 
 coin-identity = {
     curve: elliptic_curve,
@@ -125,56 +126,36 @@ For ERC721 tokens, the contract identifier is contract address and the token ID.
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 ### Example/Test Vector 1
 
-* An EC private key:
-
-```
-$ seedtool --count 32
-8c05c4b4f3e88840a4f4b5f155cfd69473ea169f3d0431b7a6787a23777f08aa
-```
+* Solana coin 
+* URI: `bc-coin://ed25519/501`
 
 * In the CBOR diagnostic notation:
 
 ```
 {
-	; `curve` is implied to be 0 (secp256k1)
-	2: true, ; is-private
-	3: h'8c05c4b4f3e88840a4f4b5f155cfd69473ea169f3d0431b7a6787a23777f08aa' ; data
+   1: 6, ; curve-ed25519
+   2: 501, ; type Solana BIP44
 }
 ```
+
 
 * Encoded as binary using [CBOR-PLAYGROUND]:
 
 ```
-A2                                      # map(2)
-   02                                   # unsigned(2) is-private
-   F5                                   # primitive(21) true
-   03                                   # unsigned(3) data
-   58 20                                # bytes(32)
-      8C05C4B4F3E88840A4F4B5F155CFD69473EA169F3D0431B7A6787A23777F08AA
+A2         # map(2)
+   01      # unsigned(1) curve
+   06      # unsigned(6) ed25519
+   02      # unsigned(2) type
+   19 01F5 # unsigned(501) Solana
 ```
 
 * As a hex string:
 
 ```
-A202F50358208C05C4B4F3E88840A4F4B5F155CFD69473EA169F3D0431B7A6787A23777F08AA
+A20106021901F5 
+
 ```
 
 * As a UR:
@@ -189,51 +170,120 @@ ur:crypto-eckey/oeaoykaxhdcxlkahssqzwfvslofzoxwkrewngotktbmwjkwdcmnefsaaehrlolks
 
 ### Example/Test Vector 2
 
-* Convert the private key above into a public key:
-
-```
-$ bx ec-to-public
-8c05c4b4f3e88840a4f4b5f155cfd69473ea169f3d0431b7a6787a23777f08aa
-^D
-03bec5163df25d8703150c3a1804eac7d615bb212b7cc9d7ff937aa8bd1c494b7f
-```
+- Polygon coin, ETH with a different chain ID.
+- URI: `bc-coin://137.secp256k1/60`
 
 * In the CBOR diagnostic notation:
 
 ```
 {
-	3: h'03bec5163df25d8703150c3a1804eac7d615bb212b7cc9d7ff937aa8bd1c494b7f' ; data
+   1: 8, ; curve-secp256k1
+   2: 60, ; type ETH BIP44
+   3: [137], ; sub type Polygon
 }
 ```
 
 * Encoded as binary using [CBOR-PLAYGROUND]:
 
 ```
-A1                                      # map(1)
-   03                                   # unsigned(3) data
-   58 21                                # bytes(33)
-      03BEC5163DF25D8703150C3A1804EAC7D615BB212B7CC9D7FF937AA8BD1C494B7F
+A3          # map(3)
+   01       # unsigned(1) curve
+   08       # unsigned(1) secp256k1
+   02       # unsigned(2) type
+   18 3C    # unsigned(60) ETH
+   03       # unsigned(3) sub type
+   81       # array(1) 
+      18 89 # unsigned(137) Polygon Chain Id
 ```
 
 * As a hex string:
 
 ```
-A103582103BEC5163DF25D8703150C3A1804EAC7D615BB212B7CC9D7FF937AA8BD1C494B7F
-```
-
-* As a UR:
+A3010802183C03811889
 
 ```
-ur:crypto-eckey/oyaxhdclaxrnskcmfswzhlltaxbzbnftcsaawdsttbbzrkcldnkesotszmmuknpdrycegagrlbemdevtlp
+
+# Example/Test Vector 3
+* USDT Token on Polygon (MATIC)
+* URI: `bc-coin://0xc2132D05D31c914a87C6611C10748AEb04B58e8F@137.secp256k1/60`
+
+
+* In the CBOR diagnostic notation:
+
+```
+{
+   1: 8, ; curve-secp256k1
+   2: 60, ; type ETH BIP44
+   3: [137, "@", 263(h'c2132D05D31c914a87C6611C10748AEb04B58e8F')], ; subtype Polygon + contract address
+}
 ```
 
-* UR as QR Code:
+* Encoded as binary using [CBOR-PLAYGROUND]:
 
-![](bcr-2020-008/2.png)
+```
+A3              # map(3)
+   01           # unsigned(1) curve
+   08           # unsigned(1) secp256k1
+   02           # unsigned(2) type
+   18 3C        # unsigned(60) ETH
+   03           # unsigned(3) sub type
+   83           # array(3) 
+      18 89     # unsigned(137) Polygon Chain Id
+      61        # text(1)
+         40     # "@"
+      D9 0107   # tag(263)
+         54     # bytes(20)
+            C2132D05D31C914A87C6611C10748AEB04B58E8F # contract address
+```
 
+* As a hex string:
 
+```
+A3010802183C038318896140D9010754C2132D05D31C914A87C6611C10748AEB04B58E8F
+```
 
+### Example/Test Vector 4
 
+* NFT on ETH
+* URI: `bc-coin://30215980622330187411918288900688501299580125367569939549692495859506871271425.0x495f947276749Ce646f68AC8c248420045cb7b5e@secp256k1/60`
+
+* In the CBOR diagnostic notation:
+
+```
+{
+   1: 8, ; curve-secp256k1
+   2: 60, ; type ETH BIP44
+   3: ["@", 263(h'495f947276749Ce646f68AC8c248420045cb7b5e)', 30215980622330187411918288900688501299580125367569939549692495859506871271425], ; subtype contract address + token id
+}
+```
+
+* Encoded as binary using [CBOR-PLAYGROUND]:
+
+```
+A3                                      # map(3)
+   01                                   # unsigned(1)
+   08                                   # unsigned(8)
+   02                                   # unsigned(2)
+   18 3C                                # unsigned(60)
+   03                                   # unsigned(3)
+   83                                   # array(3)
+      61                                # text(1)
+         40                             # "@"
+      D9 0107                           # tag(263)
+         54                             # bytes(20)
+            495F947276749CE646F68AC8C248420045CB7B5E # contract address
+      C2                                # tag(2)
+         58 20                          # bytes(32)
+            42CDA393BBE6D079501B98CC9CCF1906901B10BF000000000000020000000001 # token id
+```
+
+* As a hex string:
+
+```
+A3010802183C03836140D9010754495F947276749CE646F68AC8C248420045CB7B5EC2582042CDA393BBE6D079501B98CC9CCF1906901B10BF000000000000020000000001
+```
+
+* As a UR **TODO**:
 
 
 ### References
@@ -244,3 +294,5 @@ ur:crypto-eckey/oyaxhdclaxrnskcmfswzhlltaxbzbnftcsaawdsttbbzrkcldnkesotszmmuknpd
 | [SLIP44]  | https://github.com/satoshilabs/slips/blob/master/slip-0044.md |
 | COSE| https://www.rfc-editor.org/rfc/rfc9053.html |
 | IANA COSE Elliptic Curves | https://www.iana.org/assignments/cose/cose.xhtml#elliptic-curves |
+| IANA CBOR Tags | https://www.iana.org/assignments/cbor-tags/cbor-tags.xhtml |
+| Hex String Tag for CBOR | https://github.com/toravir/CBOR-Tag-Specs/blob/master/hexString.md |
