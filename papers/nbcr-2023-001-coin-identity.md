@@ -16,9 +16,10 @@ By uniquely identifying a coin, the watch-only wallet is able to request the coi
 
 We propose to define a UR type standardizing the coin identification by aggregating the following information:
 
-1. Curve of the coin (e.g. *`["secp256k1", "ed25519", "secp256r1”, “sr25519”]` ).* This information is mandatory in the case of some blockchain (e.g. Tezos) supporting multiple elliptic curves.
+1. Curve of the coin (e.g. *`["secp256k1", "ed25519", "p256 (secp256r1)”, “X25519 (sr25519)”]` ).* This information is mandatory in the case of some blockchain (e.g. Tezos) supporting multiple elliptic curves.
 2. BIP44 coin type as defined in [[SLIP44]](https://github.com/satoshilabs/slips/blob/master/slip-0044.md).
 3. Subtype to define additional information to identify the coin (e.g. the chain ID for an EVM chain).
+4. Contract identifier as subtypes (e.g. ERC20 token address).
 
 
 
@@ -81,14 +82,14 @@ coin-identity = {
 curve = 1
 type = 2
 subtype = 3
-tokenID = 4
 ```
 
 ### URI Format
 
 The UR type is designed to be easily convertible to a URI format when human readability or deep linking are required.
 
-The URI format is as follows: **`bc-coin://{subtype2.subtype1.subtype0}.{curve}/type`**.
+The URI format is as follows: **`bc-coin://{tokenId@subtype1.subtype0}.{curve}/type?optional=parameters`**.
+
 
 We are providing several examples in the following table:
 
@@ -100,12 +101,26 @@ We are providing several examples in the following table:
 | Solana (SOL) | bc-coin://ed25519/508 |
 | Tezos (XTZ) based on ed25519 | bc-coin://ed25519/1729 |
 | Tezos (XTZ) based on secp256k1 | bc-coin://secp256k1/1729 |
-| Stellar (XLM) | bc-coin://ed25519/148 |
-| MultiversX (EGLD) | bc-coin://ed25519/508 |
+| Neo | bc-coin://p256/888 |
+| Polkadot | bc-coin://x25519/354 |
 
 
 
+#### Tokens
 
+Tokens under the respective coin can be distinguished by the `@` seperator. Anything under the left of `@` is considered the contract identifier. 
+For EVM based coin and ERC20 tokens, the contract identifier is the token address. For Elrond its tokenID.
+For ERC721 tokens, the contract identifier is contract address and the token ID. Token ID will be the sub type of contract in this case.
+
+**Examples:**
+
+| Token | Coin | URI coin identity |
+| --- | --- | --- |
+| USDT |ETH | bc-coin://0xdAC17F958D2ee523a2206206994597C13D831ec7@secp256k1/60|
+| USDT |Polygon (MATIC) | bc-coin://0xc2132D05D31c914a87C6611C10748AEb04B58e8F@137.secp256k1/60 |
+| [NFT](https://etherscan.io/nft/0x495f947276749ce646f68ac8c248420045cb7b5e/30215980622330187411918288900688501299580125367569939549692495859506871271425) | ETH | bc-coin://30215980622330187411918288900688501299580125367569939549692495859506871271425.0x495f947276749Ce646f68AC8c248420045cb7b5e@secp256k1/60 |
+| USDC | MultiversX (EGLD) | bc-coin://USDC-c76f1f@ed25519/508|
+| USDC | SOL | bc-coin://EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v@ed25519/501|
 
 
 
