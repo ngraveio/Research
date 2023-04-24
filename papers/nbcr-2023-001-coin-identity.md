@@ -19,9 +19,6 @@ We propose to define a UR type standardizing the coin identification by aggregat
 1. Curve of the coin (e.g. *`["secp256k1", "ed25519", "p256 (secp256r1)”, “X25519 (sr25519)”]` ).* This information is mandatory in the case of some blockchain (e.g. Tezos) supporting multiple elliptic curves.
 2. BIP44 coin type as defined in [[SLIP44]](https://github.com/satoshilabs/slips/blob/master/slip-0044.md).
 3. Subtype to define additional information to identify the coin (e.g. the chain ID for an EVM chain).
-4. Contract identifier as subtypes (e.g. ERC20 token address, ERC721 NFTs).
-
-
 
 ### EC Curve Definitions
 
@@ -89,7 +86,7 @@ subtype = 3
 
 The UR type is designed to be easily convertible to a URI format when human readability or deep linking are required.
 
-The URI format is as follows: **`bc-coin://{tokenId@subtype1.subtype0}.{curve}/type?optional=parameters`**.
+The URI format is as follows: **`bc-coin://{subtype1.subtype0}.{curve}/type?optional=parameters`**.
 
 
 We are providing several examples in the following table:
@@ -104,26 +101,6 @@ We are providing several examples in the following table:
 | Tezos (XTZ) based on secp256k1 | bc-coin://secp256k1/1729 |
 | Neo | bc-coin://p256/888 |
 | Polkadot | bc-coin://x25519/354 |
-
-
-
-#### Tokens
-
-Tokens under the respective coin can be distinguished by the `@` seperator. Anything under the left of `@` is considered the contract identifier. 
-For EVM based coin and ERC20 tokens, the contract identifier is the token address. For Elrond its tokenID.
-For ERC721 tokens, the contract identifier is contract address and the token ID. Token ID will be the sub type of contract in this case.
-
-**Examples:**
-
-| Token | Coin | URI coin identity |
-| --- | --- | --- |
-| USDT |ETH | bc-coin://0xdAC17F958D2ee523a2206206994597C13D831ec7@secp256k1/60|
-| USDT |Polygon (MATIC) | bc-coin://0xc2132D05D31c914a87C6611C10748AEb04B58e8F@137.secp256k1/60 |
-| [NFT](https://etherscan.io/nft/0x495f947276749ce646f68ac8c248420045cb7b5e/30215980622330187411918288900688501299580125367569939549692495859506871271425) | ETH | bc-coin://30215980622330187411918288900688501299580125367569939549692495859506871271425.0x495f947276749Ce646f68AC8c248420045cb7b5e@secp256k1/60 |
-| USDC | MultiversX (EGLD) | bc-coin://USDC-c76f1f@ed25519/508|
-| USDC | SOL | bc-coin://EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v@ed25519/501|
-
-
 
 
 ### Example/Test Vector 1
@@ -202,88 +179,6 @@ A3          # map(3)
 A3010802183C03811889
 
 ```
-
-# Example/Test Vector 3
-* USDT Token on Polygon (MATIC)
-* URI: `bc-coin://0xc2132D05D31c914a87C6611C10748AEb04B58e8F@137.secp256k1/60`
-
-
-* In the CBOR diagnostic notation:
-
-```
-{
-   1: 8, ; curve-secp256k1
-   2: 60, ; type ETH BIP44
-   3: [137, "@", 263(h'c2132D05D31c914a87C6611C10748AEb04B58e8F')], ; subtype Polygon + contract address
-}
-```
-
-* Encoded as binary using [CBOR-PLAYGROUND]:
-
-```
-A3              # map(3)
-   01           # unsigned(1) curve
-   08           # unsigned(1) secp256k1
-   02           # unsigned(2) type
-   18 3C        # unsigned(60) ETH
-   03           # unsigned(3) sub type
-   83           # array(3) 
-      18 89     # unsigned(137) Polygon Chain Id
-      61        # text(1)
-         40     # "@"
-      D9 0107   # tag(263)
-         54     # bytes(20)
-            C2132D05D31C914A87C6611C10748AEB04B58E8F # contract address
-```
-
-* As a hex string:
-
-```
-A3010802183C038318896140D9010754C2132D05D31C914A87C6611C10748AEB04B58E8F
-```
-
-### Example/Test Vector 4
-
-* NFT on ETH
-* URI: `bc-coin://30215980622330187411918288900688501299580125367569939549692495859506871271425.0x495f947276749Ce646f68AC8c248420045cb7b5e@secp256k1/60`
-
-* In the CBOR diagnostic notation:
-
-```
-{
-   1: 8, ; curve-secp256k1
-   2: 60, ; type ETH BIP44
-   3: ["@", 263(h'495f947276749Ce646f68AC8c248420045cb7b5e)', 30215980622330187411918288900688501299580125367569939549692495859506871271425], ; subtype contract address + token id
-}
-```
-
-* Encoded as binary using [CBOR-PLAYGROUND]:
-
-```
-A3                                      # map(3)
-   01                                   # unsigned(1)
-   08                                   # unsigned(8)
-   02                                   # unsigned(2)
-   18 3C                                # unsigned(60)
-   03                                   # unsigned(3)
-   83                                   # array(3)
-      61                                # text(1)
-         40                             # "@"
-      D9 0107                           # tag(263)
-         54                             # bytes(20)
-            495F947276749CE646F68AC8C248420045CB7B5E # contract address
-      C2                                # tag(2)
-         58 20                          # bytes(32)
-            42CDA393BBE6D079501B98CC9CCF1906901B10BF000000000000020000000001 # token id
-```
-
-* As a hex string:
-
-```
-A3010802183C03836140D9010754495F947276749CE646F68AC8C248420045CB7B5EC2582042CDA393BBE6D079501B98CC9CCF1906901B10BF000000000000020000000001
-```
-
-* As a UR **TODO**:
 
 
 ### References
