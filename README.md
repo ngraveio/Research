@@ -12,7 +12,7 @@ Here we provide multiple new UR types that are designed to be used in conjunctio
 
 | Number                    | Title         | Version | Owner                                                  |
 |---------------------------|---------------|---------|----------------------------------------------|
-| [NBCR-2023-001](papers/nbcr-2023-001-coin-identitty.md) | UR Type Definition for Coin Identitiy | 1.0.0 | İrfan Bilaloğlu |
+| [NBCR-2023-001](papers/nbcr-2023-001-coin-identity.md) | UR Type Definition for Coin Identitiy | 1.0.0 | İrfan Bilaloğlu |
 | [NBCR-2023-002](papers/nbcr-2023-002-multi-layer-sync.md) | Multi Coin Sync Protocol | 1.0.0 | Mathieu Dasilva |
 
 
