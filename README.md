@@ -1,6 +1,6 @@
 # Research
 This repository contains a collection of research papers and blockchain proposals related to common blockchain problems.
-Together, these documents reflect the ongoing research and development efforts of the Ngrave team and their contributions to the advancement of the crypto blockchain space.
+Together, these documents reflect the ongoing research and development efforts of the NGRAVE team and their contributions to the advancement of the crypto blockchain space.
 
 ## Blockchain Commons
 
@@ -19,7 +19,7 @@ Here we provide multiple new UR types that are designed to be used in conjunctio
 
 ### BCR Number
 
-Please number all Ngrave Blockchain Research BCRs with a four-digit number representing the current year (`YYYY`) followed by a three-digit sequence number for that year (`SSS`). For example: `nbcr-2020-001` is the first BCR for 2020, `nbcr-2020-017` is the 17th, and `nbcr-2021-001` is the first BCR for 2021.
+Please number all NGRAVE Blockchain Research BCRs with a four-digit number representing the current year (`YYYY`) followed by a three-digit sequence number for that year (`SSS`). For example: `nbcr-2020-001` is the first BCR for 2020, `nbcr-2020-017` is the 17th, and `nbcr-2021-001` is the first BCR for 2021.
 
 _Note that the sequence number reverts to 001 at the start of each year._
 
@@ -30,4 +30,4 @@ Please be sure that your title is concise, yet informative.
 
 ## Origin, Authors, Copyright & Licenses
 
-Unless otherwise noted (either in this [/README.md](./README.md) or in the file's header comments) the contents of this repository are Copyright © 2023 by Ngrave and are [licensed](./LICENSE) under the [spdx:MIT](https://spdx.org/licenses/MIT.html).
+Unless otherwise noted (either in this [/README.md](./README.md) or in the file's header comments) the contents of this repository are Copyright © 2023 by NGRAVE and are [licensed](./LICENSE) under the [spdx:MIT](https://spdx.org/licenses/MIT.html).
