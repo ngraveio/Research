@@ -514,7 +514,8 @@ account_exp = #6.303(crypto-hdkey) / #6.308(crypto-output)
 ; '#6.308(crypto-output)' should be used to share an output descriptor, 
 ; e.g. for multisig.
 
-token-id = uint / bytes
+hex_string = #6.263(bstr) ; byte string is a hexadecimal string no need for decoding
+token-id = string / hex_string
 
 ; Optional 'token-ids' to indicate the synchronization of a list of tokens with
 ; the associated accounts
@@ -532,7 +533,6 @@ token-id = uint / bytes
 detailed-account = { 
   account: account_exp,
   ? token-ids: [+ token-id],  ; Specify multiple tokens associated to one account
-  * tstr => any               ; Extendable optional parameters
 }
 
 ; The extendable new type should be assumed to be generally ignored by the 
@@ -1766,3 +1766,4 @@ The information shared with the watch-only wallet can be altered on the device r
 | [NBCR-2023-001] | https://github.com/ngraveio/Research/blob/main/papers/nbcr-2023-001-coin-identity.md |
 | [BIP32] | https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki |
 | [SLIP44]  | https://github.com/satoshilabs/slips/blob/master/slip-0044.md |
+| Hex String Tag for CBOR | https://github.com/toravir/CBOR-Tag-Specs/blob/master/hexString.md |
