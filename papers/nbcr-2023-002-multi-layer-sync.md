@@ -7,6 +7,8 @@
 Authors: Mathieu Da Silva, Irfan Bilaloglu <br/>
 Date: April 19, 2023
 
+Revised: May 15, 2023
+
 ---
 
 # I - Introduction
@@ -61,7 +63,7 @@ Despite the generic purpose of this document to standardize a syncing protocol v
 
 The integration of a new blockchain should reuse as much as possible the generic communication protocol introduced in this document.
 
-This document is limited to the detailed description of the synchronization process between the offline signer and the watch-only wallet. The signing communication protocol via QR codes is discussed in [[Signing Protocol]] specification.
+This document is limited to the detailed description of the synchronization process between the offline signer and the watch-only wallet. The signing protocol via QR codes is discussed in [[NBCR-2023-003]](https://github.com/ngraveio/Research/blob/main/papers/nbcr-2023-003-crypto-sign.md) specification.
 
 ---
 
@@ -549,7 +551,7 @@ token-ids = 2
 
 - **CDDL for synchronizing accounts with their coin identity** `crypto-coin`
 
-In this document, we are defining the new `crypto-coin` UR type associating the `crypto-coin-identity` defined in [[NBCR-2023-001]](https://github.com/ngraveio/Research/blob/main/papers/nbcr-2023-001-coin-identity.md with their accounts). The accounts are preferrably defined using a list of `crypto-detailed-account`. 
+In this document, we are defining the new `crypto-coin` UR type associating the `crypto-coin-identity` defined in [[NBCR-2023-001]](https://github.com/ngraveio/Research/blob/main/papers/nbcr-2023-001-coin-identity.md) with their accounts. The accounts are preferrably defined using a list of `crypto-detailed-account`. 
 
 To keep full compatibility with the layer 2, the accounts can also be specified using `crypto-account` and `crypto-multi-account` UR types. Using these UR types will however limit the information which can be synchronized.
 
@@ -1100,151 +1102,161 @@ The watch-only wallet reconstructs:
 
 Several examples illustrate how the sync payload is formed using the second layer of communication:
 
-- **************Layer 2 .b example for syncing SOL account `m/44’/501’/0’/0’`**
-    - Public key derived following SLIP-044:
+<details>
+
+<summary>Layer 2.b example for syncing SOL accounts</summary>
+
+- Public key derived following SLIP-044:
     
-    ```jsx
-    GovgcGs4SvM7SdkDHdh5Y7WTLfYa3NBt4dhSKfgkF3R4
-    ```
+```
+GovgcGs4SvM7SdkDHdh5Y7WTLfYa3NBt4dhSKfgkF3R4
+```
     
-    - Decoded from Base58 and compressed public key:
+- Decoded from Base58 and compressed public key:
+
+```
+02EAE4B876A8696134B868F88CC2F51F715F2DBEDB7446B8E6EDF3D4541C4EB67B
+```
+
+- CBOR diagnosis format:
+
+```
+{1: h'1E0281', ; master-fingerprint
+2: [303(  ; #6.303(crypto-hdkey)
+  {3: h'02EAE4B876A8696134B868F88CC2F51F715F2DBEDB7446B8E6EDF3D4541C4EB67B', ; key-data
+   6: 304({1: [44, true, 501, true, 0, true, 0, true]}) ; origin m/44’/501’/0’/0’
+ })],
+3: "NGRAVE"
+}
+```
+
+- CBOR encoding (see playground [here](https://cbor.me/)
+
+```
+A3                                      # map(3)
+01                                   # unsigned(1)
+43                                   # bytes(3)
+  1E0281                            # "\u001E\u0002\x81"
+02                                   # unsigned(2)
+81                                   # array(1)
+  D9 012F                           # tag(303)
+     A2                             # map(2)
+	03                          # unsigned(3)
+	58 21                       # bytes(33)
+	   02EAE4B876A8696134B868F88CC2F51F715F2DBEDB7446B8E6EDF3D4541C4EB67B # "\u0002\xEA\xE4\xB8v\xA8ia4\xB8h\xF8\x8C\xC2\xF5\u001Fq_-\xBE\xDBtF\xB8\xE6\xED\xF3\xD4T\u001CN\xB6{"
+	06                          # unsigned(6)
+	D9 0130                     # tag(304)
+	   A1                       # map(1)
+	      01                    # unsigned(1)
+	      88                    # array(8)
+		 18 2C              # unsigned(44)
+		 F5                 # primitive(21)
+		 19 01F5            # unsigned(501)
+		 F5                 # primitive(21)
+		 00                 # unsigned(0)
+		 F5                 # primitive(21)
+		 00                 # unsigned(0)
+		 F5                 # primitive(21)
+03                                   # unsigned(3)
+66                                   # text(6)
+  4E4752415645                      # "NGRAVE"
+```
+
+- UR encoding in `ur:crypto-multi-accounts/<message>` format
+
+</details>
+
+<details>
+
+<summary>Layer 2.b example for syncing EGLD accounts</summary>
     
-    ```jsx
-    02EAE4B876A8696134B868F88CC2F51F715F2DBEDB7446B8E6EDF3D4541C4EB67B
-    ```
-    
-    - CBOR diagnosis format:
-    
-    ```
-    {1: h'1E0281', ; master-fingerprint
-     2: [303(  ; #6.303(crypto-hdkey)
-          {3: h'02EAE4B876A8696134B868F88CC2F51F715F2DBEDB7446B8E6EDF3D4541C4EB67B', ; key-data
-           6: 304({1: [44, true, 501, true, 0, true, 0, true]}) ; origin m/44’/501’/0’/0’
-         })],
-     3: "NGRAVE"
-    }
-    ```
-    
-    - CBOR encoding (see playground [here](https://cbor.me/?bytes=A5(01-50(123456781234567802D9044FA3011A71)-02-D9.044F(A2(01-43(1E0281)-02-D9.012F(A4(03-58.21(032503D7DCA4FF0594F0404D56188542A18D8E0784443134C716178BC1819C3DD4)-04-58.20(719EA8CADCA1BBC71BF8511AC3A487286B4D34A860007B8FD498F2732EB89906)-06-D9.0130(A1(01-86(18.2C-F5-18.3C-F5-00-F5)))-07-D9.0130(A1(01-84(00-F4-82(00-01)-F4)))))))-03-D9.0579(A3(01-D9.012F(A3(03-58.21(0337A5619FBC2E951B426D23E9736C7576840AE3139AAE5D0B9D0D81736D5706D9)-06-D9.0130(A1(01-86(18.2C-F5-18.3C-F5-00-F5)))-07-D9.0130(A1(01-84(00-F4-00-F4)))))-02-01-03-64(55534443)))-04-00-05-6A(312E322E312D312E7263))))
-    
-    ```
-    A3                                      # map(3)
-       01                                   # unsigned(1)
-       43                                   # bytes(3)
-          1E0281                            # "\u001E\u0002\x81"
-       02                                   # unsigned(2)
-       81                                   # array(1)
-          D9 012F                           # tag(303)
-             A2                             # map(2)
-                03                          # unsigned(3)
-                58 21                       # bytes(33)
-                   02EAE4B876A8696134B868F88CC2F51F715F2DBEDB7446B8E6EDF3D4541C4EB67B # "\u0002\xEA\xE4\xB8v\xA8ia4\xB8h\xF8\x8C\xC2\xF5\u001Fq_-\xBE\xDBtF\xB8\xE6\xED\xF3\xD4T\u001CN\xB6{"
-                06                          # unsigned(6)
-                D9 0130                     # tag(304)
-                   A1                       # map(1)
-                      01                    # unsigned(1)
-                      88                    # array(8)
-                         18 2C              # unsigned(44)
-                         F5                 # primitive(21)
-                         19 01F5            # unsigned(501)
-                         F5                 # primitive(21)
-                         00                 # unsigned(0)
-                         F5                 # primitive(21)
-                         00                 # unsigned(0)
-                         F5                 # primitive(21)
-       03                                   # unsigned(3)
-       66                                   # text(6)
-          4E4752415645                      # "NGRAVE"
-    ```
-    
-    - UR encoding in `ur:crypto-multi-accounts/<message>` format
-    
-- **Layer 2.b example for syncing ELGD account `m/44’/508’/0’/0’/0’` and `m/44’/508’/0’/0’/1’`**
-    - Public addresses following SLIP-044:
-    
-    ```
-    erd1j4rksg3mh9qp2dgyv2ad5gx6amt7yhz8wlue0dtvqfm5de8c43ns5n8c6y ; **************m/44’/508’/0’/0’/0’**************
-    erd1gymuz6ukd2avrh6vhzf67ss75zlxrffzv648kw4fjwgq7ufevs8s463da3 ; **************m/44’/508’/0’/0’/1’**************
-    ```
-    
-    - Decoded from Bech32 and compressed public key:
-    
-    ```
-    02954768223BB94015350462BADA20DAEED7E25C4777F997B56C027746E4F8AC67 ; **************m/44’/508’/0’/0’/0’**************
-    024137C16B966ABAC1DF4CB893AF421EA0BE61A52266AA7B3AA993900F7139640F ; **************m/44’/508’/0’/0’/1’**************
-    ```
-    
-    - CBOR diagnosis format:
-    
-    ```
-    {1: h'1E0281', ; master-fingerprint
-     2: [303(  ; #6.303(crypto-hdkey)
-          {3: h'02954768223BB94015350462BADA20DAEED7E25C4777F997B56C027746E4F8AC67', ; key-data
-           6: 304({1: [44, true, 508, true, 0, true, 0, true, 0, true]}) ; origin m/44’/501’/0’/0’/0'
-         }),
-         303(  ; #6.303(crypto-hdkey)
-          {3: h'024137C16B966ABAC1DF4CB893AF421EA0BE61A52266AA7B3AA993900F7139640F', ; key-data
-           6: 304({1: [44, true, 508, true, 0, true, 0, true, 1, true]}) ; origin m/44’/501’/0’/0’/1'
-         })],
-     3: "NGRAVE"
-    }
-    ```
-    
-    - CBOR encoding (see playground [here](https://cbor.me/?bytes=A5(01-50(123456781234567802D9044FA3011A71)-02-D9.044F(A2(01-43(1E0281)-02-D9.012F(A4(03-58.21(032503D7DCA4FF0594F0404D56188542A18D8E0784443134C716178BC1819C3DD4)-04-58.20(719EA8CADCA1BBC71BF8511AC3A487286B4D34A860007B8FD498F2732EB89906)-06-D9.0130(A1(01-86(18.2C-F5-18.3C-F5-00-F5)))-07-D9.0130(A1(01-84(00-F4-82(00-01)-F4)))))))-03-D9.0579(A3(01-D9.012F(A3(03-58.21(0337A5619FBC2E951B426D23E9736C7576840AE3139AAE5D0B9D0D81736D5706D9)-06-D9.0130(A1(01-86(18.2C-F5-18.3C-F5-00-F5)))-07-D9.0130(A1(01-84(00-F4-00-F4)))))-02-01-03-64(55534443)))-04-00-05-6A(312E322E312D312E7263))))
-    
-    ```
-    A3                                      # map(3)
-       01                                   # unsigned(1)
-       43                                   # bytes(3)
-          1E0281                            # "\u001E\u0002\x81"
-       02                                   # unsigned(2)
-       82                                   # array(2)
-          D9 012F                           # tag(303)
-             A2                             # map(2)
-                03                          # unsigned(3)
-                58 21                       # bytes(33)
-                   02954768223BB94015350462BADA20DAEED7E25C4777F997B56C027746E4F8AC67 # "\u0002\x95Gh\";\xB9@\u00155\u0004b\xBA\xDA \xDA\xEE\xD7\xE2\\Gw\xF9\x97\xB5l\u0002wF\xE4\xF8\xACg"
-                06                          # unsigned(6)
-                D9 0130                     # tag(304)
-                   A1                       # map(1)
-                      01                    # unsigned(1)
-                      8A                    # array(10)
-                         18 2C              # unsigned(44)
-                         F5                 # primitive(21)
-                         19 01FC            # unsigned(508)
-                         F5                 # primitive(21)
-                         00                 # unsigned(0)
-                         F5                 # primitive(21)
-                         00                 # unsigned(0)
-                         F5                 # primitive(21)
-                         00                 # unsigned(0)
-                         F5                 # primitive(21)
-          D9 012F                           # tag(303)
-             A2                             # map(2)
-                03                          # unsigned(3)
-                58 21                       # bytes(33)
-                   024137C16B966ABAC1DF4CB893AF421EA0BE61A52266AA7B3AA993900F7139640F # "\u0002A7\xC1k\x96j\xBA\xC1\xDFL\xB8\x93\xAFB\u001E\xA0\xBEa\xA5\"f\xAA{:\xA9\x93\x90\u000Fq9d\u000F"
-                06                          # unsigned(6)
-                D9 0130                     # tag(304)
-                   A1                       # map(1)
-                      01                    # unsigned(1)
-                      8A                    # array(10)
-                         18 2C              # unsigned(44)
-                         F5                 # primitive(21)
-                         19 01FC            # unsigned(508)
-                         F5                 # primitive(21)
-                         00                 # unsigned(0)
-                         F5                 # primitive(21)
-                         00                 # unsigned(0)
-                         F5                 # primitive(21)
-                         01                 # unsigned(1)
-                         F5                 # primitive(21)
-       03                                   # unsigned(3)
-       66                                   # text(6)
-          4E4752415645                      # "NGRAVE"
-    ```
-    
-    - UR encoding in `ur:crypto-multi-accounts/<message>` format
+- Public addresses following SLIP-044:
+
+```
+erd1j4rksg3mh9qp2dgyv2ad5gx6amt7yhz8wlue0dtvqfm5de8c43ns5n8c6y ; m/44’/508’/0’/0’/0’
+erd1gymuz6ukd2avrh6vhzf67ss75zlxrffzv648kw4fjwgq7ufevs8s463da3 ; m/44’/508’/0’/0’/1’
+```
+
+- Decoded from Bech32 and compressed public key:
+
+```
+02954768223BB94015350462BADA20DAEED7E25C4777F997B56C027746E4F8AC67 ; m/44’/508’/0’/0’/0’
+024137C16B966ABAC1DF4CB893AF421EA0BE61A52266AA7B3AA993900F7139640F ; m/44’/508’/0’/0’/1’
+```
+
+- CBOR diagnosis format:
+
+```
+{1: h'1E0281', ; master-fingerprint
+2: [303(  ; #6.303(crypto-hdkey)
+  {3: h'02954768223BB94015350462BADA20DAEED7E25C4777F997B56C027746E4F8AC67', ; key-data
+   6: 304({1: [44, true, 508, true, 0, true, 0, true, 0, true]}) ; origin m/44’/501’/0’/0’/0'
+ }),
+ 303(  ; #6.303(crypto-hdkey)
+  {3: h'024137C16B966ABAC1DF4CB893AF421EA0BE61A52266AA7B3AA993900F7139640F', ; key-data
+   6: 304({1: [44, true, 508, true, 0, true, 0, true, 1, true]}) ; origin m/44’/501’/0’/0’/1'
+ })],
+3: "NGRAVE"
+}
+```
+
+- CBOR encoding (see playground [here](https://cbor.me/)
+
+```
+A3                                  # map(3)
+01                                  # unsigned(1)
+43                                  # bytes(3)
+  1E0281                            # "\u001E\u0002\x81"
+02                                  # unsigned(2)
+82                                  # array(2)
+  D9 012F                           # tag(303)
+     A2                             # map(2)
+	03                          # unsigned(3)
+	58 21                       # bytes(33)
+	   02954768223BB94015350462BADA20DAEED7E25C4777F997B56C027746E4F8AC67 
+	06                          # unsigned(6)
+	D9 0130                     # tag(304)
+	   A1                       # map(1)
+	      01                    # unsigned(1)
+	      8A                    # array(10)
+		 18 2C              # unsigned(44)
+		 F5                 # primitive(21)
+		 19 01FC            # unsigned(508)
+		 F5                 # primitive(21)
+		 00                 # unsigned(0)
+		 F5                 # primitive(21)
+		 00                 # unsigned(0)
+		 F5                 # primitive(21)
+		 00                 # unsigned(0)
+		 F5                 # primitive(21)
+  D9 012F                           # tag(303)
+     A2                             # map(2)
+	03                          # unsigned(3)
+	58 21                       # bytes(33)
+	   024137C16B966ABAC1DF4CB893AF421EA0BE61A52266AA7B3AA993900F7139640F 
+	06                          # unsigned(6)
+	D9 0130                     # tag(304)
+	   A1                       # map(1)
+	      01                    # unsigned(1)
+	      8A                    # array(10)
+		 18 2C              # unsigned(44)
+		 F5                 # primitive(21)
+		 19 01FC            # unsigned(508)
+		 F5                 # primitive(21)
+		 00                 # unsigned(0)
+		 F5                 # primitive(21)
+		 00                 # unsigned(0)
+		 F5                 # primitive(21)
+		 01                 # unsigned(1)
+		 F5                 # primitive(21)
+03                                   # unsigned(3)
+66                                   # text(6)
+  4E4752415645                      # "NGRAVE"
+```
+
+- UR encoding in `ur:crypto-multi-accounts/<message>` format
+
+</details>
 
 ### 3) Sync multiple coins with their coin identifier (NGRAVE Liquid and Trust Wallet cases)
 
@@ -1728,8 +1740,7 @@ We have listed below the watch-only wallets allowing the synchronization through
 | Coins supported | Sync UR type | Watch-only wallet |
 | --- | --- | --- |
 | Bitcoin (BTC) | `crypto-account` | [BlueWallet](https://support.keyst.one/3rd-party-wallets/bitcoin-wallets/bluewallet) <br> [Sparrow wallet](https://support.keyst.one/3rd-party-wallets/bitcoin-wallets/sparrow) <br> [Specter](https://support.keyst.one/3rd-party-wallets/bitcoin-wallets/specter) <br> [Nunchuk](https://support.keyst.one/3rd-party-wallets/bitcoin-wallets/nunchuk) <br> [Simple Bitcoin wallet](https://support.keyst.one/3rd-party-wallets/bitcoin-wallets/simple-bitcoin-wallet) |
-| Ethereum (ETH)
-EVM chains | `crypto-hdkey` | [Metamask](https://support.keyst.one/3rd-party-wallets/eth-and-web3-wallets-keystone/bind-metamask-with-keystone) <br> [Rabby](https://support.keyst.one/3rd-party-wallets/eth-and-web3-wallets-keystone/rabby-wallet) |
+| Ethereum (ETH) <br> EVM chains | `crypto-hdkey` | [Metamask](https://support.keyst.one/3rd-party-wallets/eth-and-web3-wallets-keystone/bind-metamask-with-keystone) <br> [Rabby](https://support.keyst.one/3rd-party-wallets/eth-and-web3-wallets-keystone/rabby-wallet) |
 | Solana (SOL) | `crypto-multi-accounts` | [Solflare](https://support.keyst.one/3rd-party-wallets/solana-wallets/solflare-mobile) |
 | Aptos (APT) | `crypto-multi-accounts` | [Fewcha wallet](https://support.keyst.one/3rd-party-wallets/aptos-wallets/fewcha-wallet-extension) <br> [Petra Aptos wallet](https://support.keyst.one/3rd-party-wallets/aptos-wallets/petra-aptos-wallet-extension) |
 | Cosmos (ATOM) | `crypto-multi-accounts` | [Keplr](http://support.keyst.one/3rd-party-wallets/cosmos-wallets/keplr-extension) |
