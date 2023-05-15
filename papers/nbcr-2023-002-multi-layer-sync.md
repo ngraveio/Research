@@ -33,7 +33,7 @@ This protocol extends already existing sync protocol:
 
 ## Motivation to use BC-UR types
 
-The BlockchainCommons, referred to as BC, have published a series of data transmission protocol called Uniform Resources (UR). It provides a basic method to encode data into animated QR Codes. The UR have been extended in the [[EIP-4527]](https://eips.ethereum.org/EIPS/eip-4527). The UR types form the basis of the data transmission protocol for the following reasons:
+The BlockchainCommons, referred to as BC, have published a series of data transmission protocol called Uniform Resources (UR). It provides a basic method to encode data into animated QR Codes. The UR have been extended in the [[EIP-4527]](https://eips.ethereum.org/EIPS/eip-4527). The UR types form the basis of the data transmission protocol for the following reasons:
 
 - **Standardization**: a standard already commonly used by other hardware wallets (Keystone, AirGap, CoolWallet, D’Cent).
 - **Data compression**: Byte savings using CBOR compared to text encoding.
@@ -302,7 +302,7 @@ chain-code-bytes = bytes .size 32
 
 ### UR registry constituting the layer 2
 
-The second layer of the proposed sync protocol is based on `crypto-multi-account` and `crypto-account` UR types, wrapping as lists `crypto-hdkey` and `crypto-outputs` respectively. 
+The second layer of the proposed sync protocol is based on `crypto-multi-account` and `crypto-account` UR types, wrapping as lists `crypto-hdkey` and `crypto-output` respectively. 
 
 When using `crypto-multi-account`, this layer aims to synchronize several public keys for the same coin. While when using `crypto-account`, this layer aims to add script types for each synchronized public key.
 
@@ -469,9 +469,7 @@ flowchart TB
 	Coins --> ID[(crypto-coin-identity)]
   Coins -.-> MF2[master-fingerprint]
   Coins --> accs{Accounts}
-	accs --> |preferred| DetAcc[[crypto-detailed-account]]
-  accs -.-> |compatible| Acc[(crypto-account)]
-  accs -.-> |compatible| multi[(crypto-multi-account)]
+	accs --> DetAcc[[crypto-detailed-account]]
   end
 
   %% crypto-detailed-account breakdown
@@ -496,7 +494,7 @@ Figure 5. Breakdown of crypto-portfolio forming the layer 3 of the sync protocol
 
 - **CDDL for synchronizing several accounts with detailed information** `crypto-detailed-account`
 
-In this document, we are defining the new `crypto-detailed-account` UR type, extending the scope of the previously defined `crypto-account` and `crypto-multi-account` UR types in [UR registry constituting the layer 2](nbcr-2023-002-multi-layer-sync.md#ur-registry-constituting-the-layer-2). 
+In this document, we are defining the new `crypto-detailed-account` UR type, extending the scope of the previously defined `crypto-account` and `crypto-multi-account` UR types in [UR registry constituting the layer 2](nbcr-2023-002-multi-layer-sync.md#ur-registry-constituting-the-layer-2). The information contained in `crypto-account` and `crypto-multi-account` can be easily converted to `crypto-detailed-account` type.
 
 This new type aims to incorporate in the same structure:
 
@@ -562,18 +560,10 @@ The following specification of `crypto-portfolio-coin` is written in CDDL. When 
 
 detailed_accounts = [+ #6.1402(crypto-detailed-account)]
 
-; The accounts are preferrably listed using #6.1402(crypto-detailed-account)
-: to share the maximum of information related to the accounts
-
-accounts_exp = detailed_accounts / #6.311(crypto-account) / #6.1103(crypto-multi-account)
-
-; The accounts can also be listed using #6.311(crypto-account) 
-; or #6.1103(crypto-multi-account), keeping fully compatibility with these types.
-; The information contained in #6.311(crypto-account) and #6.1103(crypto-multi-account)
-; are however limited compared to #6.1402(crypto-detailed-account).
+; The accounts are listed using #6.1402(crypto-detailed-account) to share the maximum of information related to the accounts
 
 coin = {
-	coin-id: #6.1401(crypto-coin-identity),
+  coin-id: #6.1401(crypto-coin-identity),
   accounts: accounts_exp,
   ? master-fingerprint: uint32, ; Master fingerprint (fingerprint for the master public key as per BIP32)
 }
