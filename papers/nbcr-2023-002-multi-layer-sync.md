@@ -105,9 +105,9 @@ Finally we propose in this document a third layer based on the `crypto-portfolio
 | `crypto-multi-account` | 1103 | Keystone | Import multiple accounts in one animated QR | [[solana-qr-data-protocol]](https://github.com/KeystoneHQ/Keystone-developer-hub/blob/main/research/solana-qr-data-protocol.md#setup-watch-only-wallet-by-offline-signer) |
 | `crypto-coin-identity` | 1401 | Ngrave | Add additional information to a specific hdkey | [[NBCR-2023-001]](https://github.com/ngraveio/Research/blob/main/papers/nbcr-2023-001-coin-identity.md) |
 | `crypto-detailed-account` | 1402 | Ngrave | Import multiple accounts with and without output descriptors and specify optionally tokens to synchronize | This document |
-| `crypto-coin` | 1403 | Ngrave | Associate several accounts to its coin identity  | This document |
-| `crypto-sync-metadata` | 1404 | Ngrave | Specify wallet metadata | This document |
-| `crypto-portfolio | 1405 | Ngrave | Aggregate the portfolio information | This document |
+| `crypto-portfolio-coin` | 1403 | Ngrave | Associate several accounts to its coin identity  | This document |
+| `crypto-portfolio-metadata` | 1404 | Ngrave | Specify wallet metadata | This document |
+| `crypto-portfolio` | 1405 | Ngrave | Aggregate the portfolio information | This document |
 
 The specification for each UR type contains CBOR structure, expressed in Concise Data Definition Language [[CDDL]](https://datatracker.ietf.org/doc/html/rfc8610). We specify the breakdown of each UR type in this document regarding the legend described in Figure 2.
 
@@ -131,7 +131,7 @@ Figure 2. Legend for UR type breakdown
 
 The first layer of the proposed sync protocol is based on `crypto-hdkey` UR type. This layer aims to synchronize a single public key for a single coin. The synchronized public key can be an extended public key, referred as xpub, from which the watch-only wallet can derive several addresses. 
 
- We break down its structure in Figure 3 based on two other UR types: `crypto-keypath` and `crypto-coin-info`. The CDDL for each UR type is given hereafter.
+ We break down its structure in Figure 3 based on two other UR types: `crypto-keypath` and `crypto-coininfo`. The CDDL for each UR type is given hereafter.
 
 ```mermaid
 flowchart TB  
@@ -150,8 +150,8 @@ flowchart TB
   HD -.-> note
 	end
 
-  %% crypto-coin-info breakdown
-  subgraph crypto-coin-info
+  %% crypto-coininfo breakdown
+  subgraph crypto-coininfo
   direction TB
 	Info -.-> type
   Info -.-> network
@@ -388,7 +388,7 @@ In the proposed sync protocol, the recommendation for using the output descripto
 
 This UR type belongs to the initial registry proposed by BC in [[BCR-2020-015]](https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-015-account.md) and is used to share a number of standardized script types along with their common derivations to the account level.
 
-The following standardized script types may be present in a `crypto-account` encoding, shown here with default derivations for Bitcoin mainnet and account #0:
+The following standardized script types may be present in a `crypto-account` encoding, shown here with default derivations for Bitcoin mainnet and account #0:
 
 | Script type | Default Derivation |
 | --- | --- |
@@ -440,7 +440,7 @@ device = 3
 
 The third layer of the proposed sync protocol is based on `crypto-portfolio` UR type, aiming to synchronize the accounts related to multiple coins.
 
-We break down its structure in Figure 5 based on newly defined UR types: `crypto-coin`, `crypto-coin-identity`, `crypto-detailed-account` and `crypto-sync-metadata`. The CDDL for the new UR types are given hereafter.
+We break down its structure in Figure 5 based on newly defined UR types: `crypto-portfolio-coin`, `crypto-coin-identity`, `crypto-detailed-account` and `crypto-portfolio-metadata`. The CDDL for the new UR types are given hereafter.
 
 ```mermaid
 flowchart TB
@@ -449,12 +449,12 @@ flowchart TB
 	subgraph crypto-portfolio
   direction TB
 	Sync -.-> MF1[master-fingerprint]
-	Sync --> Coins[[crypto-coin]]
-	Sync -.-> Meta[(crypto-sync-metadata)]
+	Sync --> Coins[[crypto-portfolio-coin]]
+	Sync -.-> Meta[(crypto-portfolio-metadata)]
 	end
 
-	%% crypto-sync-metadata breakdown
-	subgraph crypto-sync-metadata
+	%% crypto-portfolio-metadata breakdown
+	subgraph crypto-portfolio-metadata
   direction TB
 	Meta -...-> sync_id
 	Meta -...-> langage
@@ -463,8 +463,8 @@ flowchart TB
   Meta -...-> metadata[[metadata]]
 	end
 
-	%% crypto-coins breakdown
-	subgraph crypto-coin
+	%% crypto-portfolio-coin breakdown
+	subgraph crypto-portfolio-coin
   direction TB
 	Coins --> ID[(crypto-coin-identity)]
   Coins -.-> MF2[master-fingerprint]
@@ -549,13 +549,13 @@ account = 1
 token-ids = 2
 ```
 
-- **CDDL for synchronizing accounts with their coin identity** `crypto-coin`
+- **CDDL for synchronizing accounts with their coin identity** `crypto-portfolio-coin`
 
-In this document, we are defining the new `crypto-coin` UR type associating the `crypto-coin-identity` defined in [[NBCR-2023-001]](https://github.com/ngraveio/Research/blob/main/papers/nbcr-2023-001-coin-identity.md) with their accounts. The accounts are preferrably defined using a list of `crypto-detailed-account`. 
+In this document, we are defining the new `crypto-portfolio-coin` UR type associating the `crypto-coin-identity` defined in [[NBCR-2023-001]](https://github.com/ngraveio/Research/blob/main/papers/nbcr-2023-001-coin-identity.md) with their accounts. The accounts are preferrably defined using a list of `crypto-detailed-account`. 
 
 To keep full compatibility with the layer 2, the accounts can also be specified using `crypto-account` and `crypto-multi-account` UR types. Using these UR types will however limit the information which can be synchronized.
 
-The following specification of `crypto-coin` is written in CDDL. When used embedded in another CBOR structure, this structure should be tagged #6.1403.
+The following specification of `crypto-portfolio-coin` is written in CDDL. When used embedded in another CBOR structure, this structure should be tagged #6.1403.
 
 ```
 ; Associate a coin identity to its accounts
@@ -582,9 +582,9 @@ coin-id = 1
 accounts = 2
 ```
 
-- **CDDL for syncing metadata** `crypto-sync-metadata`
+- **CDDL for syncing metadata** `crypto-portfolio-metadata`
 
-In this document, we are defining the new `crypto-sync-metadata` UR type to include device metadata related to the offline signer.
+In this document, we are defining the new `crypto-portfolio-metadata` UR type to include device metadata related to the offline signer.
 
 In many QR-based offline signer, the synchronization payload includes metadata information related to the device. We have created a modular and general purpose UR type to include such information.
 
@@ -622,9 +622,9 @@ When used embedded in another CBOR structure, this structure should be tagged #6
 ; Top level multi coin sync payload
 ; All master-fingerprint fields must match within the included UR types
 sync = {
-		coins: [+ #6.1402(crypto-coin)]           ; Multiple coins with their respective accounts and coin identities
+		coins: [+ #6.1402(crypto-portfolio-coin)]           ; Multiple coins with their respective accounts and coin identities
 		? master-fingerprint: uint32,             ; Master fingerprint (fingerprint for the master public key as per BIP32 derived on secp256k1 curve)
-		? metadata: #6.1403(crypto-sync-metadata) ; Optional wallet metadata
+		? metadata: #6.1403(crypto-portfolio-metadata) ; Optional wallet metadata
 }
 
 coins = 1
@@ -1266,7 +1266,7 @@ The accounts of each coin are described using a list of `crypto-detailed-account
 
 The accounts are always grouped under a coin identity with the `crypto-coin-identity` UR type.
 
-Additionally, the offline signer can send metadata in `crypto-sync-metadata` along with the coins and the accounts.
+Additionally, the offline signer can send metadata in `crypto-portfolio-metadata` along with the coins and the accounts.
 
 **Use case**
 
@@ -1418,7 +1418,7 @@ device: "NGRAVE ZERO", // Indicates the device name
 
 ```
 {
-1: [ 1403( ; #6.1403(crypto-coin)
+1: [ 1403( ; #6.1403(crypto-portfolio-coin)
    {1: 1401( ; #6.1401(crypto-coin-identity)
 		  {1: 8, ; secp256k1 curve
 	     2: 60 ; Ethereum BIP44
@@ -1433,7 +1433,7 @@ device: "NGRAVE ZERO", // Indicates the device name
 	     2: [ h'A0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48' ]  ; USDC ERC20 token on Ethereum 
 	  })]
 		 }),
-		 1403( ; #6.1403(crypto-coin) 
+		 1403( ; #6.1403(crypto-portfolio-coin) 
    {1: 1401( ; #6.1401(crypto-coin-identity)
 						{1: 6, ; ed25519 curve
 	     2: 501 ; Solana BIP44
@@ -1452,7 +1452,7 @@ device: "NGRAVE ZERO", // Indicates the device name
 							     })]
 	  })]
 		 }),
-   1403( ; #6.1403(crypto-coin)
+   1403( ; #6.1403(crypto-portfolio-coin)
    {1: 1401( ; #6.1401(crypto-coin-identity)
 						{1: 8, ; secp256k1 curve
 	     2: 60, ; Ethereum BIP44
@@ -1468,7 +1468,7 @@ device: "NGRAVE ZERO", // Indicates the device name
 						 2: [ h'2791Bca1f2de4661ED88A30C99A7a9449Aa84174' ] ; USDC ERC20 token on Polygon 
 	  })]
 		 }),
-   1403( ; #6.1403(crypto-coin)
+   1403( ; #6.1403(crypto-portfolio-coin)
    {1: 1401( ; #6.1401(crypto-coin-identity)
 						{1: 8, ; secp256k1 curve
 	     2: 0 ; Bitcoin BIP44
