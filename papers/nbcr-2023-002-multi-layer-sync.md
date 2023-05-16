@@ -475,7 +475,7 @@ flowchart TB
     DetAcc --> key{Account}
 	key --> HD[(crypto-hdkey)]
 	key --> |If script type| Out[(crypto-output)]
-	DetAcc -.-> token-ids
+	DetAcc -.-> token-id
 	end
 
 	%% crypto-coin-identity breakdown
@@ -495,7 +495,7 @@ In this document, we are defining the new `crypto-detailed-account` UR type, ext
 This new type aims to incorporate in the same structure:
 
 - The accounts with and without scripts by selecting either `crypto-hdkey` or `crypto-output.`
-- An optional list of tokens to synchronize them at the same time of the associated account.
+- An optional list of tokens to synchronize them at the same time of the associated account. A token identifier is defined as a string or tagged with #6.263 to specify a [[hexString]](https://github.com/toravir/CBOR-Tag-Specs/blob/master/hexString.md).
 
 The following specification of `crypto-detailed-account` is written in CDDL. When used embedded in another CBOR structure, this structure should be tagged #6.1402.
 
@@ -1751,4 +1751,4 @@ The information shared with the watch-only wallet can be altered on the device r
 | [NBCR-2023-001] | https://github.com/ngraveio/Research/blob/main/papers/nbcr-2023-001-coin-identity.md |
 | [BIP32] | https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki |
 | [SLIP44]  | https://github.com/satoshilabs/slips/blob/master/slip-0044.md |
-| Hex String Tag for CBOR | https://github.com/toravir/CBOR-Tag-Specs/blob/master/hexString.md |
+| [hexString] | https://github.com/toravir/CBOR-Tag-Specs/blob/master/hexString.md |
