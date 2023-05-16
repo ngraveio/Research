@@ -137,34 +137,34 @@ The first layer of the proposed sync protocol is based on `crypto-hdkey` UR type
 flowchart TB  
 	%% crypto-hdkey breakdown
 	subgraph crypto-hdkey
-  direction TB
+    direction TB
 	HD[(crypto-hdkey)] -.-> is-master
 	HD -.-> is-private
-  HD --> key-data
-  HD --> |only for xpub| chain-code
-  HD -.-> Info[(crypto-coininfo)]
-  HD --> origin[(origin)]
-  HD -.-> children[(children)]
-  HD --> parent-fingerprint
-  HD -.-> name
-  HD -.-> note
+    HD --> key-data
+    HD --> |only for xpub| chain-code
+    HD -.-> Info[(crypto-coininfo)]
+    HD --> origin[(origin)]
+    HD -.-> children[(children)]
+    HD --> parent-fingerprint
+    HD -.-> name
+    HD -.-> note
 	end
 
-  %% crypto-coininfo breakdown
-  subgraph crypto-coininfo
-  direction TB
+    %% crypto-coininfo breakdown
+    subgraph crypto-coininfo
+    direction TB
 	Info -.-> type
-  Info -.-> network
+    Info -.-> network
 	end
 
-  %% crypto-keypath breakdown
-  children --> Keypath[(crypto-keypath)]
-  origin --> Keypath[(crypto-keypath)]
-  subgraph crypto-keypath
-  direction TB
+    %% crypto-keypath breakdown
+    children --> Keypath[(crypto-keypath)]
+    origin --> Keypath[(crypto-keypath)]
+    subgraph crypto-keypath
+    direction TB
 	Keypath --> components
-  Keypath -.-> source-fingerprint
-  Keypath -.-> depth
+    Keypath -.-> source-fingerprint
+    Keypath -.-> depth
 	end
 ```
 Figure 3. Breakdown of crypto-hdkey composing the layer 1 of the Sync protocol. 
@@ -312,23 +312,23 @@ We break down their structures in Figure 4. The CDDL for `crypto-hdkey` has been
 flowchart TB  
 	%% crypto-account breakdown
 	subgraph crypto-account
-  direction TB
+    direction TB
 	Acc[(crypto-account)] --> MF2[master-fingerprint]
 	Acc --> out[[crypto-output]]
 	end
 
 	%% crypto-output breakdown
 	subgraph crypto-output
-  direction TB
+    direction TB
 	out --> script[(script)]
-  out --> key{Public key}
-  key --> HD2[(crypto-hdkey)]
-  key -.-> |not preferred| ec[(crypto-eckey)]
+    out --> key{Public key}
+    key --> HD2[(crypto-hdkey)]
+    key -.-> |not preferred| ec[(crypto-eckey)]
 	end
 
 	%% crypto-multi-account breakdown
 	subgraph crypto-multi-account
-  direction TB
+    direction TB
 	Mult[(crypto-multi-account)] --> MF3[master-fingerprint]
 	Mult --> HD3[[crypto-hdkey]]
 	end
@@ -459,7 +459,6 @@ flowchart TB
 	Meta -...-> langage
 	Meta -...-> fw_version
 	Meta -...-> device
-    Meta -...-> metadata[[metadata]]
 	end
 
 	%% crypto-portfolio-coin breakdown
@@ -477,7 +476,6 @@ flowchart TB
 	key --> HD[(crypto-hdkey)]
 	key --> |If script type| Out[(crypto-output)]
 	DetAcc -.-> token-ids
-    DetAcc -.-> extendable
 	end
 
 	%% crypto-coin-identity breakdown
@@ -498,7 +496,6 @@ This new type aims to incorporate in the same structure:
 
 - The accounts with and without scripts by selecting either `crypto-hdkey` or `crypto-output.`
 - An optional list of tokens to synchronize them at the same time of the associated account.
-- Extendable optional parameters to allow specific indication on the account (e.g. to hide the account to the user).
 
 The following specification of `crypto-detailed-account` is written in CDDL. When used embedded in another CBOR structure, this structure should be tagged #6.1402.
 
@@ -533,14 +530,6 @@ detailed-account = {
   ? token-ids: [+ token-id],  ; Specify multiple tokens associated to one account
 }
 
-; The extendable new type should be assumed to be generally ignored by the 
-; watch-only wallets. 
-; In the case where a specific offline signer and a specific watch-only wallet
-; agree to implement an extendable new type, this one could be used in order
-; to synchronize an additional information regarding the shared accounts
-; (e.g. the information "Hidden: true" added to a coin could indicate to the 
-; watch-only wallet not to display to the user the associated accounts).
-
 account = 1
 token-ids = 2
 ```
@@ -574,7 +563,7 @@ accounts = 2
 
 In this document, we are defining the new `crypto-portfolio-metadata` UR type to include device metadata related to the offline signer.
 
-In many QR-based offline signer, the synchronization payload includes metadata information related to the device. We have created a modular and general purpose UR type to include such information.
+In many QR-based offline signer, the synchronization payload includes metadata information related to the device. We have created a general purpose UR type to include such information.
 
 When used embedded in another CBOR structure, this structure should be tagged #6.1404.
 
@@ -586,7 +575,6 @@ the device
 on the hardware wallet
 		? fw_version: string,         ; Firmware version of the hardware wallet
 		? device: string              ; Indicates the device name
-		* tstr => any                 ; Extendable new metadata
 }
 
 sync_id = 1
