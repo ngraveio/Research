@@ -7,7 +7,7 @@
 Authors: Mathieu Da Silva, Irfan Bilaloglu <br/>
 Date: April 19, 2023
 
-Revised: May 15, 2023
+Revised: May 16, 2023
 
 ---
 
@@ -447,44 +447,42 @@ flowchart TB
 	%% crypto-sync breakdown
 	Sync[(crypto-portfolio)]
 	subgraph crypto-portfolio
-  direction TB
-	Sync -.-> MF1[master-fingerprint]
+    direction TB
 	Sync --> Coins[[crypto-portfolio-coin]]
 	Sync -.-> Meta[(crypto-portfolio-metadata)]
-	end
+    end
 
 	%% crypto-portfolio-metadata breakdown
 	subgraph crypto-portfolio-metadata
-  direction TB
+    direction TB
 	Meta -...-> sync_id
 	Meta -...-> langage
 	Meta -...-> fw_version
 	Meta -...-> device
-  Meta -...-> metadata[[metadata]]
+    Meta -...-> metadata[[metadata]]
 	end
 
 	%% crypto-portfolio-coin breakdown
 	subgraph crypto-portfolio-coin
-  direction TB
+    direction TB
 	Coins --> ID[(crypto-coin-identity)]
-  Coins -.-> MF2[master-fingerprint]
-  Coins --> accs{Accounts}
-	accs --> DetAcc[[crypto-detailed-account]]
-  end
+    Coins -.-> MF2[master-fingerprint]
+	Coins --> DetAcc[[crypto-detailed-account]]
+    end
 
-  %% crypto-detailed-account breakdown
-  subgraph crypto-detailed-account
-  direction TB
-  DetAcc --> key{Account}
+    %% crypto-detailed-account breakdown
+    subgraph crypto-detailed-account
+    direction TB
+    DetAcc --> key{Account}
 	key --> HD[(crypto-hdkey)]
 	key --> |If script type| Out[(crypto-output)]
 	DetAcc -.-> token-ids
-  DetAcc -.-> extendable
+    DetAcc -.-> extendable
 	end
 
 	%% crypto-coin-identity breakdown
 	subgraph crypto-coin-identity
-  direction TB
+    direction TB
 	ID ---> elliptic_curve
 	ID ---> coin_type
 	ID -..-> subtype
@@ -613,13 +611,11 @@ When used embedded in another CBOR structure, this structure should be tagged #6
 ; All master-fingerprint fields must match within the included UR types
 sync = {
 		coins: [+ #6.1402(crypto-portfolio-coin)]           ; Multiple coins with their respective accounts and coin identities
-		? master-fingerprint: uint32,             ; Master fingerprint (fingerprint for the master public key as per BIP32 derived on secp256k1 curve)
 		? metadata: #6.1403(crypto-portfolio-metadata) ; Optional wallet metadata
 }
 
 coins = 1
-master-fingerprint = 2
-metadata = 3
+metadata = 2
 ```
 
 ## Sync communication layers
