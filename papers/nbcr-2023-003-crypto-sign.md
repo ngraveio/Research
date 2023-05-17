@@ -6,6 +6,8 @@
 Authors: Mathieu Da Silva, Irfan Bilaloglu <br/>
 Date: April 26, 2023
 
+Revised: May 17, 2023
+
 ---
 
 # I - Introduction
@@ -20,13 +22,13 @@ This document defines a generic QR protocol to sign on any blockchain and extend
 
 ## Specification
 
-**Offline signer**: An offline signer is a device or application which holds the user’s private keys and does not have network access.
+**Offline signer**: An offline signer is a device or application which holds the user private keys and does not have network access.
 
 **Watch-only wallet**: A watch-only wallet is a wallet that has network access and can interact with the blockchain.
 
 ## Motivation to use Uniform Ressources (UR) types
 
-The BlockchainCommons (BC) have published a series of data transmission protocol called Uniform Resources (UR). It provides a basic method to encode data into animated QR Codes. The UR have been used for different proposals of QR-code based data transmission (e.g. [[EIP-4527]](https://eips.ethereum.org/EIPS/eip-4527),  [[TZIP-25]](https://gitlab.com/tezos/tzip/-/blob/master/proposals/tzip-25/tzip-25.md) etc…). The UR types form the basis of the data transmission protocol for the following reasons:
+The BlockchainCommons (BC) have published a series of data transmission protocol called Uniform Resources (UR). It provides a basic method to encode data into animated QR Codes. The UR have been used for different proposals of QR-code based data transmission (e.g. [[EIP-4527]](https://eips.ethereum.org/EIPS/eip-4527),  [[TZIP-25]](https://gitlab.com/tezos/tzip/-/blob/master/proposals/tzip-25/tzip-25.md) etc…). The UR types form the basis of the data transmission protocol for the following reasons:
 
 - **Standardization**: a standard already commonly used by other hardware wallets (Keystone, AirGap, CoolWallet, D’Cent).
 - **Data compression**: Byte savings using CBOR compared to text encoding.
@@ -39,7 +41,7 @@ The BlockchainCommons (BC) have published a series of data transmission protoco
 
 This document specifies the following limits on the QR code format in order to be able to scan with any devices without requiring the best quality camera.
 
-- The fragment size is fixed at **90 characters** per QR code**.**
+- The fragment size is fixed at **90 characters** per QR code.
 - The time-sequence of QR code is displayed at a fps of **8**.
 - The QR code correction level is set to **Medium**.
 
@@ -71,7 +73,7 @@ The user can initiate the signing protocol on a watch-only wallet synchronized w
 3. After user confirmation, the offline signer signs the transaction and provides the signature to the watch-only wallet via a QR code.
 4. The watch-only wallet receiving the signature is able to broadcast the transaction to the blockchain.
 
-The existing communication protocol for signing are based on UR types specific to each blockchain. Except for Bitcoin with `crypto-psbt` UR type, the signing request prepared by the watch-only wallet is embedded in a UR type with the extension `sign-request`. Once the transaction is signed, the offline signer sends the signature back to the watch-only wallet by encoding the data in a UR type with the extension `signature`.
+The existing communication protocol for signing are based on UR types specific to each blockchain. Except for Bitcoin with `crypto-psbt` UR type, the signing request prepared by the watch-only wallet is embedded in a UR type with the extension `sign-request`. Once the transaction is signed, the offline signer sends the signature back to the watch-only wallet by encoding the data in a UR type with the extension `signature`.
 
 This document proposes to standardize into one UR type `crypto-sign-request` for the signing request and another UR type `crypto-signature` for the signed message.
 
@@ -82,8 +84,8 @@ The following table listed the existing UR types depending on the blockchain and
 | Bitcoin | crypto-psbt <br> Tag: 310 | crypto-psbt <br> Tag: 310 | Blockchain Commons (BC) | [[BCR-2021-001]](https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2021-001-request.md) | [[keytool-cli]](https://github.com/BlockchainCommons/keytool-cli/tree/master) |
 | Ethereum/EVM | eth-sign-request <br> Tag: 401 | eth-signature <br> Tag: 402 | Keystone | [[EIP-4527]](https://eips.ethereum.org/EIPS/eip-4527) | [[ur-registry-eth]](https://github.com/KeystoneHQ/keystone-airgaped-base/tree/master/packages/ur-registry-eth) |
 | Solana| sol-sign-request <br> Tag: 1101 | sol-signature <br> Tag: 1102 | Keystone | [[solana-qr-data-protocol]](https://github.com/KeystoneHQ/Keystone-developer-hub/blob/main/research/solana-qr-data-protocol.md#sending-the-unsigned-data-from-wallet-only-wallet-to-offline-signer)  | [[ur-registry-sol]](https://github.com/KeystoneHQ/keystone-airgaped-base/tree/master/packages/ur-registry-sol) |
-| Tezos | xtz-sign-request <br> Tag: 501 | xtz-signature <br> Tag: 502 | Airgap  | [[tzip-25]](https://gitlab.com/tezos/tzip/-/blob/master/proposals/tzip-25/tzip-25.md) | https://socket.dev/npm/package/@airgap/ur-registry-xtz/overview/0.0.1-beta.0 |
-| Generic | crypto-sign-request <br> Tag: 1411 | crypto-signature <br> Tag: 1412 | Ngrave | This document | Not available |
+| Tezos | xtz-sign-request <br> Tag: 501 | xtz-signature <br> Tag: 502 | Airgap  | [[tzip-25]](https://gitlab.com/tezos/tzip/-/blob/master/proposals/tzip-25/tzip-25.md) | [[ur-registry-xtz]](https://socket.dev/npm/package/@airgap/ur-registry-xtz/overview/0.0.1-beta.0) |
+| Generic | crypto-sign-request <br> Tag: 1411 | crypto-signature <br> Tag: 1412 | Ngrave | This document | [[ur-registry]](https://github.com/ngraveio/ur-registry/tree/main) |
 
 The specification for each UR type contains CBOR structure, expressed thereafter in Concise Data Definition Language [[CDDL]](https://datatracker.ietf.org/doc/html/rfc8610).
 
@@ -257,10 +259,10 @@ The CDDL expression described in this document follows the TZIP proposal by requ
 xtz-sign-request = (
     ?request-id: uuid,
     sign-data: bytes,
-		data-type: int .default data-type-operation,
+	data-type: int .default data-type-operation,
     derivation-path: #6.304(crypto-keypath), ;the key path for signing this request
-		key-type: int .default public-key-type-ed25519, 
-		?master-fingerprint: uint32, ; Master fingerprint (fingerprint for the master public key as per BIP32)
+	key-type: int .default public-key-type-ed25519, 
+	?master-fingerprint: uint32, ; Master fingerprint (fingerprint for the master public key as per BIP32)
 )
 
 request-id = 1
@@ -286,7 +288,7 @@ This UR type belongs to the [[TZIP-25]](https://gitlab.com/tezos/tzip/-/blob/mas
 xtz-signature  = (
     ?request-id: uuid, ; Optional only if payload is specified
     signature: bytes,
-		?payload: bytes, ; The payload is optional. If the payload is not set, 
+	?payload: bytes, ; The payload is optional. If the payload is not set, 
 the watch-only wallet needs to match the signature with the original payload 
 using the ID.
 )
@@ -313,13 +315,13 @@ This UR type is tagged with #6.1411 and embeds:
 coin-meta = #6.1420(eth-meta) / #6.1421(sol-meta) / #6.1422(xtz-meta) 
 
 crypto-sign-request = {
-  ?request-id: uuid,                        ; Identifier of the signing request
-	coin-id: #6.1401(crypto-coin-identity),   ; Provides information on the elliptic curve and the blockchain/coin
-  ?derivation-path: #6.304(crypto-keypath), ; Key path for signing this request
-  sign-data: bytes,                         ; Transaction to be decoded by the offline signer 
-  ?master-fingerprint: uint32,              ; Fingerprint for the master public key
-  ?origin: text,                            ; Origin of this sign request, e.g. wallet name
-	?metadata: coin-meta                      ; Specify metadata for some coins
+    ?request-id: uuid,                        ; Identifier of the signing request
+    coin-id: #6.1401(crypto-coin-identity),   ; Provides information on the elliptic curve and the blockchain/coin
+    ?derivation-path: #6.304(crypto-keypath), ; Key path for signing this request
+    sign-data: bytes,                         ; Transaction to be decoded by the offline signer 
+    ?master-fingerprint: uint32,              ; Fingerprint for the master public key
+    ?origin: text,                            ; Origin of this sign request, e.g. wallet name
+    ?metadata: coin-meta                      ; Specify metadata for some coins
 }
 
 request-id = 1
@@ -337,9 +339,7 @@ We are listing thereafter the metadata UR types for the blockchains listed in th
 | --- | --- | --- |
 | Ethereum/EVM chains | Yes | - CDDL description: <br> `eth-meta = { data-type: sign-data-type, ?address: eth-address-bytes}` <br> `sign-data-type` and `eth-address-bytes` definition are inherited from eth-sign-request. <br> - Tag: 1420 |
 | Solana | No | - CDDL description: <br> `sol-meta = { ?type: int .default sign-type-transaction, ?address: bytes}`  <br> `type` definition is inherited from sol-sign-request. The default value `sign-type-transaction` should be used in case of missing metadata in crypto-sign-request for a Solana transaction. <br> - Tag: 1421 |
-| Tezos | No | - CDDL description: <br> `xtz-meta = { ?data-type: int .default data-type-operation}` <br> `data-type definition` is inherited from xtz-sign-request.
-The default value of data-type should be used in case of missing metadata in crypto-sign-request for Tezos transaction.
-- Tag: 1422 |
+| Tezos | No | - CDDL description: <br> `xtz-meta = { ?data-type: int .default data-type-operation}` <br> `data-type definition` is inherited from xtz-sign-request. <br> The default value of data-type should be used in case of missing metadata in crypto-sign-request for Tezos transaction. <br> - Tag: 1422 |
 | Bitcoin <br> MultiversX <br> Stellar | No | No metadata needed |
 
 - **CDDL for generic signature response** `crypto-signature`
@@ -381,9 +381,7 @@ The only other required field for requesting the signature of a Bitcoin transact
 
 The following table indicates the corresponding fields between ****the UR types `crypto-psbt` and `crypto-sign-request`.
 
-| crypto-sign-request fields
-Associated number corresponds to the order in UR type | Corresponding crypto-psbt fields
-Associated number corresponds to the order in UR type |
+| crypto-sign-request fields <br> Associated number corresponds to the order in UR type | Corresponding crypto-psbt fields <br> Associated number corresponds to the order in UR type |
 | --- | --- |
 | 1. request-id (optional) | No corresponding field, adds potential verification step  |
 | 2. coin-id | No corresponding field, serves as identifier for BTC transactions |
@@ -402,9 +400,7 @@ The only required field for a Bitcoin signature is the bytes composing the signe
 
 The following table indicates the corresponding fields between the UR types `crypto-psbt` and `crypto-signature`.
 
-| crypto-signature fields
-Associated number corresponds to the order in UR type | Corresponding crypto-psbt fields
-Associated number corresponds to the order in UR type |
+| crypto-signature fields <br> Associated number corresponds to the order in UR type | Corresponding crypto-psbt fields <br> Associated number corresponds to the order in UR type |
 | --- | --- |
 | 1. request-id | No corresponding field, adds potential verification step  |
 | 2. signature | 1. bytes |
@@ -422,12 +418,12 @@ A typical use case follows the following process between a watch-only wallet and
 - The watch-only adds then information to the PSBT that it has access to, following the Updater role in [[BIP174]](https://github.com/bitcoin/bips/blob/master/bip-0174.mediawiki):
     1. If the Updater has the UTXO for an input, it should add it to the PSBT. 
     2. The Updater should also add redeemScripts, witnessScripts, and BIP 32 derivation paths to the input and output data if it knows them.
-- The watch-only wallet generates a QR code containing the `crypto-sign-request` UR type with the unsigned transaction and BTC as coin identity. Additionally, some recommended information is provided to the offline signer for verification purposes: request identifier, derivation path of the signer account, master fingerprint of the master public key and the watch-only wallet name.
+- The watch-only wallet generates a QR code containing the `crypto-sign-request` UR type with the unsigned transaction and BTC as coin identity. Additionally, some recommended information is provided to the offline signer for verification purposes: request identifier, derivation path of the signer account, master fingerprint of the master public key and the watch-only wallet name.
 - The offline signer accepts the transmitted PSBT in `crypto-sign-request` UR type and provides the signature, following the Signer role in [[BIP174]](https://github.com/bitcoin/bips/blob/master/bip-0174.mediawiki):
     1. The Signer must only use the UTXOs provided in the PSBT to produce signatures for inputs.
     2. Before signing a non-witness input, the Signer must verify that the TXID of the non-witness UTXO matches the TXID specified in the unsigned transaction. 
     3. Before signing a witness input, the Signer must verify that the witnessScript (if provided) matches the hash specified in the UTXO or the redeemScript, and the redeemScript (if provided) matches the hash in the UTXO. 
-    4. The Signer may choose to fail to sign a segwit input if a non-witness UTXO is not provided. 
+    4. The Signer may choose to fail to sign a segwit input if a non-witness UTXO is not provided. 
     5. The Signer should not need any additional data sources, as all necessary information is provided in the PSBT format. 
     6. The Signer must only add data to a PSBT. Any signatures created by the Signer must be added as a "Partial Signature" key-value pair for the respective input it relates to. 
     7. The Signer can additionally compute the addresses and values being sent, and the transaction fee, showing this data to the user as a confirmation of intent and the consequences of signing the PSBT.
@@ -550,9 +546,7 @@ Additionally, the following fields are recommended to be supplied by the watch-o
 
 The following table indicates the corresponding fields between the UR types `eth-sign-request` and `crypto-sign-request`.
 
-| crypto-sign-request fields
-Associated number corresponds to the order in UR type | Corresponding eth-sign-request fields
-Associated number corresponds to the order in UR type |
+| crypto-sign-request fields <br> Associated number corresponds to the order in UR type | Corresponding eth-sign-request fields <br> Associated number corresponds to the order in UR type |
 | --- | --- |
 | 1. request-id (optional) | 1. request-id (optional) |
 | 2. coin-id specifying the chain ID for EVM blockchains | 4. chain-id  |
@@ -573,9 +567,7 @@ The required fields for an Ethereum signature are the signature itself and poten
 
 The following table indicates the corresponding fields between the UR types `eth-signature` and `crypto-signature`.
 
-| crypto-signature fields
-Associated number corresponds to the order in UR type | Corresponding eth-signature fields
-Associated number corresponds to the order in UR type |
+| crypto-signature fields <br> Associated number corresponds to the order in UR type | Corresponding eth-signature fields <br> Associated number corresponds to the order in UR type |
 | --- | --- |
 | 1. request-id (optional) | 1. request-id (optional) |
 | 2. signature | 2. signature |
@@ -585,7 +577,7 @@ Associated number corresponds to the order in UR type |
 
 ### Use case
 
-The watch-only wallet generates a QR code containing the `crypto-sign-request` UR type with the following information:
+The watch-only wallet generates a QR code containing the `crypto-sign-request` UR type with the following information:
 
 1. (Recommended) Request ID, an universally unique identifier (UUID) of the transaction
 2. Ethereum coin identity and additionally the chain ID to specify an EVM blockchain
@@ -727,7 +719,7 @@ The transaction needs to be decoded by the offline signer depending on the data 
 
 The EVM blockchain is identified using the chain ID and should be clearly notified to the user, as well as the specific coin used on the blockchain and associated to the amount and the max fee.
 
-In case of more complex transactions, the offline signer should be able to recognise the transaction and displays additional required information:
+In case of more complex transactions, the offline signer should be able to recognize the transaction and displays additional required information:
 
 1. Specific message: the message associated to the transaction should be decoded from the data to sign and displayed to the user.
 2. ERC20 token or ERC721 NFT transfers: specific information are included in the data, such as contract address, receiver address, amount of token or NFT (see [[goethereumbook/transfer-tokens]](https://goethereumbook.org/en/transfer-tokens/)).
@@ -756,9 +748,7 @@ Additionally, the following fields are recommended to be supplied by the watch-o
 
 The following table indicates the corresponding fields between the UR types `sol-sign-request` and `crypto-sign-request`.
 
-| crypto-sign-request fields
-Associated number corresponds to the order in UR type | Corresponding sol-sign-request fields
-Associated number corresponds to the order in UR type |
+| crypto-sign-request fields <br> Associated number corresponds to the order in UR type | Corresponding sol-sign-request fields <br> Associated number corresponds to the order in UR type |
 | --- | --- |
 | 1. request-id (optional) | 1. request-id (optional) |
 | 2. coin-id | No corresponding field, serves as identifier for SOL transactions |
@@ -791,7 +781,7 @@ Associated number corresponds to the order in UR type |
 
 ### Use case
 
-The watch-only wallet generates a QR code containing the `crypto-sign-request` UR type with the following information:
+The watch-only wallet generates a QR code containing the `crypto-sign-request` UR type with the following information:
 
 1. (Recommended) Request ID, an universally unique identifier (UUID) of the transaction
 2. Solana coin identity
@@ -944,9 +934,7 @@ Additionally, the following fields are recommended to be supplied by the watch-o
 
 The following table indicates the corresponding fields between the UR types `xtz-sign-request` and `crypto-sign-request`.
 
-| crypto-sign-request fields
-Associated number corresponds to the order in UR type | Corresponding xtz-sign-request fields
-Associated number corresponds to the order in UR type |
+| crypto-sign-request fields <br> Associated number corresponds to the order in UR type | Corresponding xtz-sign-request fields <br> Associated number corresponds to the order in UR type |
 | --- | --- |
 | 1. request-id (optional) | 1. request-id (optional) |
 | 2. coin-id specifying the elliptic curve for XTZ | 5. key-type   |
@@ -966,9 +954,7 @@ The required fields for a Tezos signature are the signature itself and potential
 
 The following table indicates the corresponding fields between the UR types `eth-signature` and `crypto-signature`.
 
-| crypto-signature fields
-Associated number corresponds to the order in UR type | Corresponding eth-signature fields
-Associated number corresponds to the order in UR type |
+| crypto-signature fields <br> Associated number corresponds to the order in UR type | Corresponding eth-signature fields <br> Associated number corresponds to the order in UR type |
 | --- | --- |
 | 1. request-id (optional) | 1. request-id (optional) |
 | 2. signature | 2. signature |
@@ -980,7 +966,7 @@ Additionally, `crypto-signature` has the advantage to provide an additional opti
 
 ### Use case
 
-The watch-only wallet generates a QR code containing the `crypto-sign-request` UR type with the following information:
+The watch-only wallet generates a QR code containing the `crypto-sign-request` UR type with the following information:
 
 1. (Recommended) Request ID, an universally unique identifier (UUID) of the transaction
 2. Tezos coin identity with the specific elliptic curve
@@ -1272,11 +1258,8 @@ The MultiversX transactions contain all the essential information for user verif
 - Amount
 - Fee
 
-More complex transactions include an additional data field that needs to be decoded in order to display the following information to the user:
+More complex transactions include additional data fields that shall be decoded as well. For example, ESDT token transfer requires to decode in addition the token identifier and the value to transfer (see [[docs.multiversx/esdt-transfers]](https://docs.multiversx.com/tokens/esdt-tokens#transfers)). For ESDT NFT transfer, the collection identifier, the NFT nonce, the quantity and the destination address shall be decoded (see [[docs.multiversx/nft-transfers]](https://docs.multiversx.com/tokens/nft-tokens#transfers)). For smart contracts, the data field of the transaction contains diverse information that shall be decoded accordingly.
 
-- ESDT token transfer: the additional information contains the token identifier and the value to transfer (see [[docs.multiversx/esdt-transfers]](https://docs.multiversx.com/tokens/esdt-tokens#transfers)).
-- ESDT NFT transfer: the additional information contains the collection identifier, the NFT nonce, the quantity and the destination address (see [[docs.multiversx/nft-transfers]](https://docs.multiversx.com/tokens/nft-tokens#transfers)).
-- Smart contracts: the data field contains several information that needs to be decoded according to the recognized smart contract.
 - **Stellar transaction decoding**
 
 The Stellar transactions contain all the essential information for user verification:
@@ -1315,7 +1298,7 @@ The existing QR protocol between the NGRAVE watch-only wallet, LIQUID, and the N
 
 The protocol should ensure the “What You See Is What You Sign” property, i.e. the message content can not be changed during the signature process. The user needs to confirm the transaction details he is about to sign on the offline signer based on the transaction verification guidance presented for each blockchain. Any inconsistency with the transaction initiated on the watch-only wallet will alert the user on the potential malicious transaction. 
 
-The decoded transaction on the offline signer should be presented in a human-readable format, but in case of undecodable transaction (e.g. with smart contracts unknown to the device), the offline signer should warn the user and display the raw data.
+The decoded transaction on the offline signer should be presented in a human-readable format, but in case of transaction impossible to decode (e.g. with smart contracts unknown to the device), the offline signer should warn the user and display the raw data.
 
 ---
 
@@ -1334,6 +1317,7 @@ The decoded transaction on the offline signer should be presented in a human-rea
 | [ur-registry-eth] | https://github.com/KeystoneHQ/keystone-airgaped-base/tree/master/packages/ur-registry-eth |
 | [ur-registry-sol] | https://github.com/KeystoneHQ/keystone-airgaped-base/tree/master/packages/ur-registry-sol |
 | [ur-registry-xtz] | https://socket.dev/npm/package/@airgap/ur-registry-xtz/overview/0.0.1-beta.0 |
+| [ur-registry] | https://github.com/ngraveio/ur-registry/tree/main |
 | [BCR-2020-007] | https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-007-hdkey.md |
 | [NBCR-2023-002] | https://github.com/ngraveio/Research/blob/main/papers/nbcr-2023-002-multi-layer-sync.md |
 | [NBCR-2023-001] | https://github.com/ngraveio/Research/blob/main/papers/nbcr-2023-001-coin-identity.md |
