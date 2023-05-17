@@ -823,65 +823,87 @@ The offline signer decodes the transaction depending on the data type and respon
 
 An example illustrates how the signing protocol works on Solana blockchain:
 
-ToDo update example
-
 <details>
 
 <summary>Example Solana signature request</summary>
 
 - CBOR diagnosis format:
     
-    ```jsx
-    {
-    1: 37(h'9b1deb4d3b7d4bad9bdd2b0d7b3dcb6d'), ; request-id
-    2: h'01000103c8d842a2f17fd7aab608ce2ea535a6e958dffa20caf669b347b911c4171965530f957620b228bae2b94c82ddd4c093983a67365555b737ec7ddc1117e61c72e0000000000000000000000000000000000000000000000000000000000000000010295cc2f1f39f3604718496ea00676d6a72ec66ad09d926e3ece34f565f18d201020200010c0200000000e1f50500000000', ; sign-data
-    3: 303( ; #6.303(crypto-hdkey)
-         {3: h'02EAE4B876A8696134B868F88CC2F51F715F2DBEDB7446B8E6EDF3D4541C4EB67B', ; key-data
-    		  6: 304({1: [44, true, 501, true, 0, true, 0, true]}) ; origin m/44’/501’/0’/0’
-         }),
-    5: "Trust Wallet", ; wallet name
-    6: 1 ; type = transaction
-    }
-    ```
-    
+```
+{
+1: 37(h'9b1deb4d3b7d4bad9bdd2b0d7b3dcb6d'), ; request-id
+2: 1401( ; #6.1401(crypto-coin-identity)
+    {1: 6, ; ed25519 curve
+     2: 501 ; Solana BIP44
+    }),
+3: 303( ; #6.303(crypto-hdkey)
+    {3: h'02EAE4B876A8696134B868F88CC2F51F715F2DBEDB7446B8E6EDF3D4541C4EB67B', ; key-data
+     6: 304({1: [44, true, 501, true, 0, true, 0, true]}) ; origin m/44’/501’/0’/0’
+    }),
+4: h'01000103c8d842a2f17fd7aab608ce2ea535a6e958dffa20caf669b347b911c4171965530f957620b228bae2b94c82ddd4c093983a67365555b737ec7ddc1117e61c72e0000000000000000000000000000000000000000000000000000000000000000010295cc2f1f39f3604718496ea00676d6a72ec66ad09d926e3ece34f565f18d201020200010c0200000000e1f50500000000', ; sign-data
+5: h'1E0281', ; master-fingerprint
+6: "Trust Wallet", ; wallet name
+7: 1421( ; #6.1421(sol-meta)
+    {1: 1, ; data-type = sign-type-transaction
+     2: "9FPebKDGZAdcpT7SpfB1UowuqobV8Zww9TwPDSyzXJMr" ; address
+    })
+}
+```
+
 - CBOR encoding (see playground [here](https://cbor.me/))
     
-    ```jsx
-    A5                                      # map(5)
-       01                                   # unsigned(1)
-       D8 25                                # tag(37)
-          50                                # bytes(16)
-             9B1DEB4D3B7D4BAD9BDD2B0D7B3DCB6D 
-       02                                   # unsigned(2)
-       58 96                                # bytes(150)
-          01000103C8D842A2F17FD7AAB608CE2EA535A6E958DFFA20CAF669B347B911C4171965530F957620B228BAE2B94C82DDD4C093983A67365555B737EC7DDC1117E61C72E0000000000000000000000000000000000000000000000000000000000000000010295CC2F1F39F3604718496EA00676D6A72EC66AD09D926E3ECE34F565F18D201020200010C0200000000E1F50500000000 
-       03                                   # unsigned(3)
-       D9 012F                              # tag(303)
-          A2                                # map(2)
-             03                             # unsigned(3)
-             58 21                          # bytes(33)
-                02EAE4B876A8696134B868F88CC2F51F715F2DBEDB7446B8E6EDF3D4541C4EB67B 
-             06                             # unsigned(6)
-             D9 0130                        # tag(304)
-                A1                          # map(1)
-                   01                       # unsigned(1)
-                   88                       # array(8)
-                      18 2C                 # unsigned(44)
-                      F5                    # primitive(21)
-                      19 01F5               # unsigned(501)
-                      F5                    # primitive(21)
-                      00                    # unsigned(0)
-                      F5                    # primitive(21)
-                      00                    # unsigned(0)
-                      F5                    # primitive(21)
-       05                                   # unsigned(5)
-       6C                                   # text(12)
-          54727573742057616C6C6574          # "Trust Wallet"
-       06                                   # unsigned(6)
-       01                                   # unsigned(1)
-    ```
-    
-- UR encoding in `ur:sol-sign-request/<message>` format
+```
+A7                                      # map(7)
+   01                                   # unsigned(1)
+   D8 25                                # tag(37)
+      50                                # bytes(16)
+         9B1DEB4D3B7D4BAD9BDD2B0D7B3DCB6D 
+   02                                   # unsigned(2)
+   D9 0579                              # tag(1401)
+      A2                                # map(2)
+         01                             # unsigned(1)
+         06                             # unsigned(6)
+         02                             # unsigned(2)
+         19 01F5                        # unsigned(501)
+   03                                   # unsigned(3)
+   D9 012F                              # tag(303)
+      A2                                # map(2)
+         03                             # unsigned(3)
+         58 21                          # bytes(33)
+            02EAE4B876A8696134B868F88CC2F51F715F2DBEDB7446B8E6EDF3D4541C4EB67B 
+         06                             # unsigned(6)
+         D9 0130                        # tag(304)
+            A1                          # map(1)
+               01                       # unsigned(1)
+               88                       # array(8)
+                  18 2C                 # unsigned(44)
+                  F5                    # primitive(21)
+                  19 01F5               # unsigned(501)
+                  F5                    # primitive(21)
+                  00                    # unsigned(0)
+                  F5                    # primitive(21)
+                  00                    # unsigned(0)
+                  F5                    # primitive(21)
+   04                                   # unsigned(4)
+   58 96                                # bytes(150)
+      01000103C8D842A2F17FD7AAB608CE2EA535A6E958DFFA20CAF669B347B911C4171965530F957620B228BAE2B94C82DDD4C093983A67365555B737EC7DDC1117E61C72E0000000000000000000000000000000000000000000000000000000000000000010295CC2F1F39F3604718496EA00676D6A72EC66AD09D926E3ECE34F565F18D201020200010C0200000000E1F50500000000 
+   05                                   # unsigned(5)
+   43                                   # bytes(3)
+      1E0281                            
+   06                                   # unsigned(6)
+   6C                                   # text(12)
+      54727573742057616C6C6574          # "Trust Wallet"
+   07                                   # unsigned(7)
+   D9 058D                              # tag(1421)
+      A2                                # map(2)
+         01                             # unsigned(1)
+         01                             # unsigned(1)
+         02                             # unsigned(2)
+         78 2C                          # text(44)
+            39465065624B44475A4164637054375370664231556F7775716F6256385A7777395477504453797A584A4D72 # "9FPebKDGZAdcpT7SpfB1UowuqobV8Zww9TwPDSyzXJMr"
+```
+
+- UR encoding in `ur:crypto-sign-request/<message>` format
 
 </details>
 
@@ -891,27 +913,28 @@ ToDo update example
 
 - CBOR diagnosis format:
     
-    ```jsx
-    {
-    1: 37(h'9b1deb4d3b7d4bad9bdd2b0d7b3dcb6d'), ; request-id
-    2: h'd4f0a7bcd95bba1fbb1051885054730e3f47064288575aacc102fbbf6a9a14daa066991e360d3e3406c20c00a40973eff37c7d641e5b351ec4a99bfe86f335f7' ; signature
-    }
-    ```
+```
+{
+1: 37(h'9b1deb4d3b7d4bad9bdd2b0d7b3dcb6d'), ; request-id
+2: h'd4f0a7bcd95bba1fbb1051885054730e3f47064288575aacc102fbbf6a9a14daa066991e360d3e3406c20c00a40973eff37c7d641e5b351ec4a99bfe86f335f713', ; signature
+3: "NGRAVE Zero" ; device name
+}
+```
     
 - CBOR encoding (see playground [here](https://cbor.me/))
     
-    ```jsx
-    A2                                      # map(2)
-       01                                   # unsigned(1)
-       D8 25                                # tag(37)
-          50                                # bytes(16)
-             9B1DEB4D3B7D4BAD9BDD2B0D7B3DCB6D 
-       02                                   # unsigned(2)
-       58 40                                # bytes(64)
-          D4F0A7BCD95BBA1FBB1051885054730E3F47064288575AACC102FBBF6A9A14DAA066991E360D3E3406C20C00A40973EFF37C7D641E5B351EC4A99BFE86F335F7 
-    ```
-    
-- UR encoding in `ur:sol-signature/<message>` format
+```
+A2                                      # map(2)
+   01                                   # unsigned(1)
+   D8 25                                # tag(37)
+      50                                # bytes(16)
+         9B1DEB4D3B7D4BAD9BDD2B0D7B3DCB6D 
+   02                                   # unsigned(2)
+   58 40                                # bytes(64)
+      D4F0A7BCD95BBA1FBB1051885054730E3F47064288575AACC102FBBF6A9A14DAA066991E360D3E3406C20C00A40973EFF37C7D641E5B351EC4A99BFE86F335F7 
+```
+
+- UR encoding in `ur:crypto-signature/<message>` format
 
 </details>
 
@@ -927,7 +950,7 @@ Solana transactions are based on instruction. The basic instruction to send SOL 
 
 For Solana, the transaction fees can only be estimated by the online watch-only wallet, making them unverifiable to the user.
 
-In case of more complex transactions, the offline signer should be able to recognise the transaction and displays additional required information:
+In case of more complex transactions, the offline signer should be able to recognize the transaction and displays additional required information:
 
 1. SPL token transfers (including NFT transfer): specific information are included in the data, such as contract address, receiver address, amount of token or NFT.
 2. Smart contracts: as indicated, Solana transactions are based on instructions. Complex operations on the blockchain can contain multiple instructions that need to be decoded for user verification, as presented by Keystone in [[blinding-signing-on-solana]](https://github.com/KeystoneHQ/Keystone-developer-hub/blob/main/research/blinding-signing-on-solana.md).
