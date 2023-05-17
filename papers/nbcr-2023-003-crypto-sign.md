@@ -916,11 +916,11 @@ A7                                      # map(7)
 ```
 {
 1: 37(h'9b1deb4d3b7d4bad9bdd2b0d7b3dcb6d'), ; request-id
-2: h'd4f0a7bcd95bba1fbb1051885054730e3f47064288575aacc102fbbf6a9a14daa066991e360d3e3406c20c00a40973eff37c7d641e5b351ec4a99bfe86f335f713', ; signature
+2: h'd4f0a7bcd95bba1fbb1051885054730e3f47064288575aacc102fbbf6a9a14daa066991e360d3e3406c20c00a40973eff37c7d641e5b351ec4a99bfe86f335f7', ; signature
 3: "NGRAVE Zero" ; device name
 }
 ```
-    
+
 - CBOR encoding (see playground [here](https://cbor.me/))
     
 ```
@@ -1030,66 +1030,89 @@ The offline signer responds to the request with the signature containing the fol
 
 An example illustrates how the signing protocol works on Tezos blockchain:
 
-ToDo update example
-
 <details>
 
 <summary>Example Tezos signature request</summary>
 
 - CBOR diagnosis format:
     
-    ```jsx
-    {
-    1: 37(h'9b1deb4d3b7d4bad9bdd2b0d7b3dcb6d'), ; request-id
-    2: h'a4025820190e4b0ed26eec520135c6deb5fd59434989ea811f1ccfc30205bea7816fa4ea030104446f01ffc8056f416972476170202d20426f756e6365', ; sign-data
-    3: 1, ; operation data-type
-    4: 303( ; #6.303(crypto-hdkey)
-         {3: h'02320EC3FDC5604F151A90F36C88EC9588FC320981E3C26D73F290C016FD11CD9D', ; key-data
-    		  6: 304({1: [44, true, 1729, true, 0, true, 0, true, 0, true]}) ; origin m/44’/1729’/0’/0’/0'
-         }),
-    5: 1 ; ed25519 key-type 
-    }
-    ```
-    
+```
+{
+1: 37(h'9b1deb4d3b7d4bad9bdd2b0d7b3dcb6d'), ; request-id
+2: 1401( ; #6.1401(crypto-coin-identity)
+    {1: 6, ; ed25519 curve
+     2: 1729 ; Tezos BIP44
+    }),
+3: 303( ; #6.303(crypto-hdkey)
+    {3: h'02320EC3FDC5604F151A90F36C88EC9588FC320981E3C26D73F290C016FD11CD9D', ; key-data
+     6: 304({1: [44, true, 1729, true, 0, true, 0, true, 0, true]}) ; origin m/44’/1729’/0’/0’/0'
+    }),
+4: h'f849808609184e72a00082271094000000000000000000000000000000000000000080a47f7465737432000000000000000000000000000000000000000000000000000000600057808080', ; sign-data
+5: h'1E0281', ; master-fingerprint
+6: "Trust Wallet", ; wallet name
+7: 1422( ; #6.1422(xtz-meta)
+    {1: 1, ; operation data-type
+     2: "tz3gLTu4Yxj8tPAcriQVUdxv6BY9QyvzU1az" ; address
+    })
+}
+```
+
 - CBOR encoding (see playground [here](https://cbor.me/))
     
-    ```jsx
-    A5                                      # map(5)
-       01                                   # unsigned(1)
-       D8 25                                # tag(37)
-          50                                # bytes(16)
-             9B1DEB4D3B7D4BAD9BDD2B0D7B3DCB6D 
-       02                                   # unsigned(2)
-       58 3D                                # bytes(61)
-          A4025820190E4B0ED26EEC520135C6DEB5FD59434989EA811F1CCFC30205BEA7816FA4EA030104446F01FFC8056F416972476170202D20426F756E6365 
-       03                                   # unsigned(3)
-       01                                   # unsigned(1)
-       04                                   # unsigned(4)
-       D9 012F                              # tag(303)
-          A2                                # map(2)
-             03                             # unsigned(3)
-             58 21                          # bytes(33)
-                02320EC3FDC5604F151A90F36C88EC9588FC320981E3C26D73F290C016FD11CD9D 
-             06                             # unsigned(6)
-             D9 0130                        # tag(304)
-                A1                          # map(1)
-                   01                       # unsigned(1)
-                   8A                       # array(10)
-                      18 2C                 # unsigned(44)
-                      F5                    # primitive(21)
-                      19 06C1               # unsigned(1729)
-                      F5                    # primitive(21)
-                      00                    # unsigned(0)
-                      F5                    # primitive(21)
-                      00                    # unsigned(0)
-                      F5                    # primitive(21)
-                      00                    # unsigned(0)
-                      F5                    # primitive(21)
-       05                                   # unsigned(5)
-       01                                   # unsigned(1)
-    ```
-    
-- UR encoding in `ur:xtz-sign-request/<message>` format
+```
+A7                                      # map(7)
+   01                                   # unsigned(1)
+   D8 25                                # tag(37)
+      50                                # bytes(16)
+         9B1DEB4D3B7D4BAD9BDD2B0D7B3DCB6D 
+   02                                   # unsigned(2)
+   D9 0579                              # tag(1401)
+      A2                                # map(2)
+         01                             # unsigned(1)
+         06                             # unsigned(6)
+         02                             # unsigned(2)
+         19 06C1                        # unsigned(1729)
+   03                                   # unsigned(3)
+   D9 012F                              # tag(303)
+      A2                                # map(2)
+         03                             # unsigned(3)
+         58 21                          # bytes(33)
+            02320EC3FDC5604F151A90F36C88EC9588FC320981E3C26D73F290C016FD11CD9D 
+         06                             # unsigned(6)
+         D9 0130                        # tag(304)
+            A1                          # map(1)
+               01                       # unsigned(1)
+               8A                       # array(10)
+                  18 2C                 # unsigned(44)
+                  F5                    # primitive(21)
+                  19 06C1               # unsigned(1729)
+                  F5                    # primitive(21)
+                  00                    # unsigned(0)
+                  F5                    # primitive(21)
+                  00                    # unsigned(0)
+                  F5                    # primitive(21)
+                  00                    # unsigned(0)
+                  F5                    # primitive(21)
+   04                                   # unsigned(4)
+   58 4B                                # bytes(75)
+      F849808609184E72A00082271094000000000000000000000000000000000000000080A47F7465737432000000000000000000000000000000000000000000000000000000600057808080 
+   05                                   # unsigned(5)
+   43                                   # bytes(3)
+      1E0281                            
+   06                                   # unsigned(6)
+   6C                                   # text(12)
+      54727573742057616C6C6574          # "Trust Wallet"
+   07                                   # unsigned(7)
+   D9 058E                              # tag(1422)
+      A2                                # map(2)
+         01                             # unsigned(1)
+         01                             # unsigned(1)
+         02                             # unsigned(2)
+         78 24                          # text(36)
+            747A33674C54753459786A38745041637269515655647876364259395179767A5531617A # "tz3gLTu4Yxj8tPAcriQVUdxv6BY9QyvzU1az"
+```
+
+- UR encoding in `ur:crypto-sign-request/<message>` format
 
 </details>
 
@@ -1099,27 +1122,31 @@ ToDo update example
 
 - CBOR diagnosis format:
     
-    ```jsx
-    {
-    1: 37(h'9b1deb4d3b7d4bad9bdd2b0d7b3dcb6d'), ; request-id
-    2: h'9fb423ee0b1ad3d3ad359c22d1e79048789c232813663fd5d8a1223458082ea844f5e87bf77db3b997aa4c847e23047c042003e3b204cea9ae0e1bf6fdcaaf09' ; signature
-    }
-    ```
-    
+```
+{
+1: 37(h'9b1deb4d3b7d4bad9bdd2b0d7b3dcb6d'), ; request-id
+2: h'9FB423EE0B1AD3D3AD359C22D1E79048789C232813663FD5D8A1223458082EA844F5E87BF77DB3B997AA4C847E23047C042003E3B204CEA9AE0E1BF6FDCAAF09', ; signature
+3: "NGRAVE Zero" ; device name
+}
+```
+
 - CBOR encoding (see playground [here](https://cbor.me/))
     
-    ```jsx
-    A2                                      # map(2)
-       01                                   # unsigned(1)
-       D8 25                                # tag(37)
-          50                                # bytes(16)
-             9B1DEB4D3B7D4BAD9BDD2B0D7B3DCB6D 
-       02                                   # unsigned(2)
-       58 40                                # bytes(64)
-          9FB423EE0B1AD3D3AD359C22D1E79048789C232813663FD5D8A1223458082EA844F5E87BF77DB3B997AA4C847E23047C042003E3B204CEA9AE0E1BF6FDCAAF09 
-    ```
-    
-- UR encoding in `ur:xtz-signature/<message>` format
+```
+A3                                      # map(3)
+   01                                   # unsigned(1)
+   D8 25                                # tag(37)
+      50                                # bytes(16)
+         9B1DEB4D3B7D4BAD9BDD2B0D7B3DCB6D 
+   02                                   # unsigned(2)
+   58 41                                # bytes(65)
+      9FB423EE0B1AD3D3AD359C22D1E79048789C232813663FD5D8A1223458082EA844F5E87BF77DB3B997AA4C847E23047C042003E3B204CEA9AE0E1BF6FDCAAF09 
+   03                                   # unsigned(3)
+   6B                                   # text(11)
+      4E4752415645205A65726F            # "NGRAVE Zero" 
+```
+
+- UR encoding in `ur:crypto-signature/<message>` format
 
 </details>
 
