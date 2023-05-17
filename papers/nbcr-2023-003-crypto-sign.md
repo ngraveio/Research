@@ -1213,11 +1213,9 @@ The offline signer responds to the request with the signature containing the fol
 2. Signature 
 3. (Recommended) Origin to indicate the name of the offline signer
 
-### Example
+### Examples
 
 An example illustrates how the signing protocol works on MultiversX blockchain:
-
-ToDo update example
 
 <details>
 
@@ -1225,56 +1223,71 @@ ToDo update example
 
 - CBOR diagnosis format:
     
-    ```jsx
-    {
-    1: 37(h'9b1deb4d3b7d4bad9bdd2b0d7b3dcb6d'), ; request-id
-    2: h'f849808609184e72a00082271094000000000000000000000000000000000000000080a47f7465737432000000000000000000000000000000000000000000000000000000600057808080', ; sign-data
-    3: 303( ; #6.303(crypto-hdkey)
-          {3: h'024137C16B966ABAC1DF4CB893AF421EA0BE61A52266AA7B3AA993900F7139640F', ; key-data
-           6: 304({1: [44, true, 508, true, 0, true, 0, true, 1, true]}) ; origin m/44’/501’/0’/0’/1'
-         }),
-    4: "Trust Wallet" ; wallet name
-    }
-    ```
-    
+```
+{
+1: 37(h'9b1deb4d3b7d4bad9bdd2b0d7b3dcb6d'), ; request-id
+2: 1401( ; #6.1401(crypto-coin-identity)
+    {1: 6, ; ed25519 curve
+     2: 501 ; MultiversX BIP44
+    }),
+3: 303( ; #6.303(crypto-hdkey)
+    {3: h'024137C16B966ABAC1DF4CB893AF421EA0BE61A52266AA7B3AA993900F7139640F', ; key-data
+     6: 304({1: [44, true, 508, true, 0, true, 0, true, 1, true]}) ; origin m/44’/501’/0’/0’/1'
+    }),
+4: h'f849808609184e72a00082271094000000000000000000000000000000000000000080a47f7465737432000000000000000000000000000000000000000000000000000000600057808080', ; sign-data
+5: h'1E0281', ; master-fingerprint
+6: "Trust Wallet" ; wallet name
+}
+```
+
 - CBOR encoding (see playground [here](https://cbor.me/))
     
-    ```jsx
-    A4                                      # map(4)
-       01                                   # unsigned(1)
-       D8 25                                # tag(37)
-          50                                # bytes(16)
-             9B1DEB4D3B7D4BAD9BDD2B0D7B3DCB6D 
-       02                                   # unsigned(2)
-       58 4B                                # bytes(75)
-          F849808609184E72A00082271094000000000000000000000000000000000000000080A47F7465737432000000000000000000000000000000000000000000000000000000600057808080 
-       03                                   # unsigned(3)
-       D9 012F                              # tag(303)
-          A2                                # map(2)
-             03                             # unsigned(3)
-             58 21                          # bytes(33)
-                024137C16B966ABAC1DF4CB893AF421EA0BE61A52266AA7B3AA993900F7139640F 
-             06                             # unsigned(6)
-             D9 0130                        # tag(304)
-                A1                          # map(1)
-                   01                       # unsigned(1)
-                   8A                       # array(10)
-                      18 2C                 # unsigned(44)
-                      F5                    # primitive(21)
-                      19 01FC               # unsigned(508)
-                      F5                    # primitive(21)
-                      00                    # unsigned(0)
-                      F5                    # primitive(21)
-                      00                    # unsigned(0)
-                      F5                    # primitive(21)
-                      01                    # unsigned(1)
-                      F5                    # primitive(21)
-       04                                   # unsigned(4)
-       6C                                   # text(12)
-          54727573742057616C6C6574          # "Trust Wallet"
-    ```
-    
-- UR encoding in `ur:egld-sign-request/<message>` format
+```
+A6                                      # map(6)
+   01                                   # unsigned(1)
+   D8 25                                # tag(37)
+      50                                # bytes(16)
+         9B1DEB4D3B7D4BAD9BDD2B0D7B3DCB6D 
+   02                                   # unsigned(2)
+   D9 0579                              # tag(1401)
+      A2                                # map(2)
+         01                             # unsigned(1)
+         06                             # unsigned(6)
+         02                             # unsigned(2)
+         19 01F5                        # unsigned(501)
+   03                                   # unsigned(3)
+   D9 012F                              # tag(303)
+      A2                                # map(2)
+         03                             # unsigned(3)
+         58 21                          # bytes(33)
+            024137C16B966ABAC1DF4CB893AF421EA0BE61A52266AA7B3AA993900F7139640F 
+         06                             # unsigned(6)
+         D9 0130                        # tag(304)
+            A1                          # map(1)
+               01                       # unsigned(1)
+               8A                       # array(10)
+                  18 2C                 # unsigned(44)
+                  F5                    # primitive(21)
+                  19 01FC               # unsigned(508)
+                  F5                    # primitive(21)
+                  00                    # unsigned(0)
+                  F5                    # primitive(21)
+                  00                    # unsigned(0)
+                  F5                    # primitive(21)
+                  01                    # unsigned(1)
+                  F5                    # primitive(21)
+   04                                   # unsigned(4)
+   58 4B                                # bytes(75)
+      F849808609184E72A00082271094000000000000000000000000000000000000000080A47F7465737432000000000000000000000000000000000000000000000000000000600057808080 
+   05                                   # unsigned(5)
+   43                                   # bytes(3)
+      1E0281                            
+   06                                   # unsigned(6)
+   6C                                   # text(12)
+      54727573742057616C6C6574          # "Trust Wallet"
+```
+
+- UR encoding in `ur:crypto-sign-request/<message>` format
 
 </details>
 
@@ -1284,37 +1297,144 @@ ToDo update example
 
 - CBOR diagnosis format:
     
-    ```jsx
-    {
-    1: 37(h'9b1deb4d3b7d4bad9bdd2b0d7b3dcb6d'), ; request-id
-    2: h'd4f0a7bcd95bba1fbb1051885054730e3f47064288575aacc102fbbf6a9a14daa066991e360d3e3406c20c00a40973eff37c7d641e5b351ec4a99bfe86f335f713', ; signature
-    3: "NGRAVE Zero" ; device name
-    }
-    ```
-    
+```
+{
+1: 37(h'9b1deb4d3b7d4bad9bdd2b0d7b3dcb6d'), ; request-id
+2: h'9FB423EE0B1AD3D3AD359C22D1E79048789C232813663FD5D8A1223458082EA844F5E87BF77DB3B997AA4C847E23047C042003E3B204CEA9AE0E1BF6FDCAAF09', ; signature
+3: "NGRAVE Zero" ; device name
+}
+```
+
 - CBOR encoding (see playground [here](https://cbor.me/))
     
-    ```jsx
-    A3                                      # map(3)
-       01                                   # unsigned(1)
-       D8 25                                # tag(37)
-          50                                # bytes(16)
-             9B1DEB4D3B7D4BAD9BDD2B0D7B3DCB6D 
-       02                                   # unsigned(2)
-       58 41                                # bytes(65)
-          D4F0A7BCD95BBA1FBB1051885054730E3F47064288575AACC102FBBF6A9A14DAA066991E360D3E3406C20C00A40973EFF37C7D641E5B351EC4A99BFE86F335F713 
-       03                                   # unsigned(3)
-       6B                                   # text(11)
-          4E4752415645205A65726F            # "NGRAVE Zero"
-    ```
-    
-- UR encoding in `ur:egld-signature/<message>` format
+```
+A3                                      # map(3)
+   01                                   # unsigned(1)
+   D8 25                                # tag(37)
+      50                                # bytes(16)
+         9B1DEB4D3B7D4BAD9BDD2B0D7B3DCB6D 
+   02                                   # unsigned(2)
+   58 41                                # bytes(65)
+      9FB423EE0B1AD3D3AD359C22D1E79048789C232813663FD5D8A1223458082EA844F5E87BF77DB3B997AA4C847E23047C042003E3B204CEA9AE0E1BF6FDCAAF09 
+   03                                   # unsigned(3)
+   6B                                   # text(11)
+      4E4752415645205A65726F            # "NGRAVE Zero" 
+```
+
+- UR encoding in `ur:crypto-signature/<message>` format
 
 </details>
 
 Another example illustrates how the signing protocol works on Stellar blockchain:
 
-ToDo update example
+<details>
+
+<summary>Example Stellar signature request</summary>
+
+- CBOR diagnosis format:
+    
+```
+{
+1: 37(h'9b1deb4d3b7d4bad9bdd2b0d7b3dcb6d'), ; request-id
+2: 1401( ; #6.1401(crypto-coin-identity)
+    {1: 6, ; ed25519 curve
+     2: 148 ; Stellar BIP44
+    }),
+3: 303( ; #6.303(crypto-hdkey)
+    {3: h'024137C16B966ABAC1DF4CB893AF421EA0BE61A52266AA7B3AA993900F7139640F', ; key-data
+     6: 304({1: [44, true, 148, true, 0, true, 0, true, 2, true]}) ; origin m/44’/148/0’/0’/2'
+    }),
+4: h'f849808609184e72a00082271094000000000000000000000000000000000000000080a47f7465737432000000000000000000000000000000000000000000000000000000600057808080', ; sign-data
+5: h'1E0281', ; master-fingerprint
+6: "Trust Wallet" ; wallet name
+}
+```
+
+- CBOR encoding (see playground [here](https://cbor.me/))
+    
+```
+A6                                      # map(6)
+   01                                   # unsigned(1)
+   D8 25                                # tag(37)
+      50                                # bytes(16)
+         9B1DEB4D3B7D4BAD9BDD2B0D7B3DCB6D 
+   02                                   # unsigned(2)
+   D9 0579                              # tag(1401)
+      A2                                # map(2)
+         01                             # unsigned(1)
+         06                             # unsigned(6)
+         02                             # unsigned(2)
+         18 94                          # unsigned(148)
+   03                                   # unsigned(3)
+   D9 012F                              # tag(303)
+      A2                                # map(2)
+         03                             # unsigned(3)
+         58 21                          # bytes(33)
+            024137C16B966ABAC1DF4CB893AF421EA0BE61A52266AA7B3AA993900F7139640F 
+         06                             # unsigned(6)
+         D9 0130                        # tag(304)
+            A1                          # map(1)
+               01                       # unsigned(1)
+               8A                       # array(10)
+                  18 2C                 # unsigned(44)
+                  F5                    # primitive(21)
+                  18 94                 # unsigned(148)
+                  F5                    # primitive(21)
+                  00                    # unsigned(0)
+                  F5                    # primitive(21)
+                  00                    # unsigned(0)
+                  F5                    # primitive(21)
+                  02                    # unsigned(2)
+                  F5                    # primitive(21)
+   04                                   # unsigned(4)
+   58 4B                                # bytes(75)
+      F849808609184E72A00082271094000000000000000000000000000000000000000080A47F7465737432000000000000000000000000000000000000000000000000000000600057808080
+   05                                   # unsigned(5)
+   43                                   # bytes(3)
+      1E0281                            
+   06                                   # unsigned(6)
+   6C                                   # text(12)
+      54727573742057616C6C6574          # "Trust Wallet"
+
+```
+
+- UR encoding in `ur:crypto-sign-request/<message>` format
+
+</details>
+
+<details>
+
+<summary>Example Stellar signature response</summary>
+
+- CBOR diagnosis format:
+    
+```
+{
+1: 37(h'9b1deb4d3b7d4bad9bdd2b0d7b3dcb6d'), ; request-id
+2: h'9FB423EE0B1AD3D3AD359C22D1E79048789C232813663FD5D8A1223458082EA844F5E87BF77DB3B997AA4C847E23047C042003E3B204CEA9AE0E1BF6FDCAAF09', ; signature
+3: "NGRAVE Zero" ; device name
+}
+```
+
+- CBOR encoding (see playground [here](https://cbor.me/))
+    
+```
+A3                                      # map(3)
+   01                                   # unsigned(1)
+   D8 25                                # tag(37)
+      50                                # bytes(16)
+         9B1DEB4D3B7D4BAD9BDD2B0D7B3DCB6D 
+   02                                   # unsigned(2)
+   58 41                                # bytes(65)
+      9FB423EE0B1AD3D3AD359C22D1E79048789C232813663FD5D8A1223458082EA844F5E87BF77DB3B997AA4C847E23047C042003E3B204CEA9AE0E1BF6FDCAAF09 
+   03                                   # unsigned(3)
+   6B                                   # text(11)
+      4E4752415645205A65726F            # "NGRAVE Zero" 
+```
+
+- UR encoding in `ur:crypto-signature/<message>` format
+
+</details>
 
 ### Transaction verification guidance
 
