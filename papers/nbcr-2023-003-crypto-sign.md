@@ -6,7 +6,7 @@
 Authors: Mathieu Da Silva, Irfan Bilaloglu <br/>
 Date: April 26, 2023
 
-Revised: May 17, 2023
+Revised: May 19, 2023
 
 ---
 
@@ -448,31 +448,78 @@ An example illustrates how the signature request and response for Bitcoin PSBT a
     
 ```
 {
-	1: 37(h'3B5414375E3A450B8FE1251CBC2B3FB5'), ; transaction-id: 3B541437-5E3A-450B-8FE1-251CBC2B3FB5
-	2: 502({ ; body: request-psbt-signature
-		1: 310(h'70736274ff01009a020000000258e87a21b56daf0c23be8e7070456c336f7cbaa5c8757924f545887bb2abdd750000000000ffffffff838d0427d0ec650a68aa46bb0b098aea4422c071b2ca78352a077959d07cea1d0100000000ffffffff0270aaf00800000000160014d85c2b71d0060b09c9886aeb815e50991dda124d00e1f5050000000016001400aea9a2e5f0f876a588df5546e8742d1d87008f000000000000000000')
-	})
+1: 37(h'3B5414375E3A450B8FE1251CBC2B3FB5'), ; request-id
+2: 1401( ; #6.1401(crypto-coin-identity)
+    {1: 8, ; secp256k1 curve
+     2: 0 ; Bitcoin BIP44
+    }),
+3: 303( ; #6.303(crypto-hdkey)
+    {3: h'03EB3E2863911826374DE86C231A4B76F0B89DFA174AFB78D7F478199884D9DD32', ; key-data
+     4: h'6456A5DF2DB0F6D9AF72B2A1AF4B25F45200ED6FCC29C3440B311D4796B70B5B', ; chain-code
+     6: 304({1: [44, true, 0, true, 0, true]}), ; components 44'/0'/0'
+     7: 304({1: [0, false, 0, false]}) ; children m/44'/0'/0'/0/0
+    }),
+4: h'70736274ff01009a020000000258e87a21b56daf0c23be8e7070456c336f7cbaa5c8757924f545887bb2abdd750000000000ffffffff838d0427d0ec650a68aa46bb0b098aea4422c071b2ca78352a077959d07cea1d0100000000ffffffff0270aaf00800000000160014d85c2b71d0060b09c9886aeb815e50991dda124d00e1f5050000000016001400aea9a2e5f0f876a588df5546e8742d1d87008f000000000000000000', ; sign-data
+5: 934670036, ; master-fingerprint
+6: "Trust Wallet" ; wallet name
 }
 ```
-    
+
 - CBOR encoding (see playground [here](https://cbor.me/))
     
-    ```
-    A2                                      # map(2)
-       01                                   # unsigned(1)
-       D8 25                                # tag(37)
-          50                                # bytes(16)
-             3B5414375E3A450B8FE1251CBC2B3FB5 
-       02                                   # unsigned(2)
-       D9 01F6                              # tag(502)
-          A1                                # map(1)
-             01                             # unsigned(1)
-             D9 0136                        # tag(310)
-                58 A7                       # bytes(167)
-                   70736274FF01009A020000000258E87A21B56DAF0C23BE8E7070456C336F7CBAA5C8757924F545887BB2ABDD750000000000FFFFFFFF838D0427D0EC650A68AA46BB0B098AEA4422C071B2CA78352A077959D07CEA1D0100000000FFFFFFFF0270AAF00800000000160014D85C2B71D0060B09C9886AEB815E50991DDA124D00E1F5050000000016001400AEA9A2E5F0F876A588DF5546E8742D1D87008F000000000000000000
-    ```
-    
-    - UR encoding in `ur:crypto-request/<message>` format
+```
+A6                                      # map(6)
+   01                                   # unsigned(1)
+   D8 25                                # tag(37)
+      50                                # bytes(16)
+         3B5414375E3A450B8FE1251CBC2B3FB5 
+   02                                   # unsigned(2)
+   D9 0579                              # tag(1401)
+      A2                                # map(2)
+         01                             # unsigned(1)
+         08                             # unsigned(8)
+         02                             # unsigned(2)
+         00                             # unsigned(0)
+   03                                   # unsigned(3)
+   D9 012F                              # tag(303)
+      A4                                # map(4)
+         03                             # unsigned(3)
+         58 21                          # bytes(33)
+            03EB3E2863911826374DE86C231A4B76F0B89DFA174AFB78D7F478199884D9DD32 
+         04                             # unsigned(4)
+         58 20                          # bytes(32)
+            6456A5DF2DB0F6D9AF72B2A1AF4B25F45200ED6FCC29C3440B311D4796B70B5B 
+         06                             # unsigned(6)
+         D9 0130                        # tag(304)
+            A1                          # map(1)
+               01                       # unsigned(1)
+               86                       # array(6)
+                  18 2C                 # unsigned(44)
+                  F5                    # primitive(21)
+                  00                    # unsigned(0)
+                  F5                    # primitive(21)
+                  00                    # unsigned(0)
+                  F5                    # primitive(21)
+         07                             # unsigned(7)
+         D9 0130                        # tag(304)
+            A1                          # map(1)
+               01                       # unsigned(1)
+               84                       # array(4)
+                  00                    # unsigned(0)
+                  F4                    # primitive(20)
+                  00                    # unsigned(0)
+                  F4                    # primitive(20)
+   04                                   # unsigned(4)
+   58 A7                                # bytes(167)
+      70736274FF01009A020000000258E87A21B56DAF0C23BE8E7070456C336F7CBAA5C8757924F545887BB2ABDD750000000000FFFFFFFF838D0427D0EC650A68AA46BB0B098AEA4422C071B2CA78352A077959D07CEA1D0100000000FFFFFFFF0270AAF00800000000160014D85C2B71D0060B09C9886AEB815E50991DDA124D00E1F5050000000016001400AEA9A2E5F0F876A588DF5546E8742D1D87008F000000000000000000 
+   05                                   # unsigned(5)
+   1A 37B5EED4                          # unsigned(934670036)
+   06                                   # unsigned(6)
+   6C                                   # text(12)
+      54727573742057616C6C6574          # "Trust Wallet"
+```
+
+- UR encoding in `ur:crypto-sign-request/<message>` format
 
 </details>
 
@@ -482,28 +529,31 @@ An example illustrates how the signature request and response for Bitcoin PSBT a
 
 - CBOR diagnosis format:
     
-    ```
-    {
-    	1: 37(h'3B5414375E3A450B8FE1251CBC2B3FB5'), ; transaction-id: 3B541437-5E3A-450B-8FE1-251CBC2B3FB5
-    	2: 310( h'70736274ff01009a020000000258e87a21b56daf0c23be8e7070456c336f7cbaa5c8757924f545887bb2abdd750000000000ffffffff838d0427d0ec650a68aa46bb0b098aea4422c071b2ca78352a077959d07cea1d0100000000ffffffff0270aaf00800000000160014d85c2b71d0060b09c9886aeb815e50991dda124d00e1f5050000000016001400aea9a2e5f0f876a588df5546e8742d1d87008f000000000000000000') ; payload
-    }
-    ```
-    
+```
+{
+1: 37(h'3B5414375E3A450B8FE1251CBC2B3FB5'), ; request-id
+2: h'70736274ff01009a020000000258e87a21b56daf0c23be8e7070456c336f7cbaa5c8757924f545887bb2abdd750000000000ffffffff838d0427d0ec650a68aa46bb0b098aea4422c071b2ca78352a077959d07cea1d0100000000ffffffff0270aaf00800000000160014d85c2b71d0060b09c9886aeb815e50991dda124d00e1f5050000000016001400aea9a2e5f0f876a588df5546e8742d1d87008f000000000000000000', ; signature
+3: "NGRAVE Zero" ; device name
+}
+```
+
 - CBOR encoding (see playground [here](https://cbor.me/))
     
-    ```jsx
-    A2                                      # map(2)
-       01                                   # unsigned(1)
-       D8 25                                # tag(37)
-          50                                # bytes(16)
-             3B5414375E3A450B8FE1251CBC2B3FB5 
-       02                                   # unsigned(2)
-       D9 0136                              # tag(310)
-          58 A7                             # bytes(167)
-             70736274FF01009A020000000258E87A21B56DAF0C23BE8E7070456C336F7CBAA5C8757924F545887BB2ABDD750000000000FFFFFFFF838D0427D0EC650A68AA46BB0B098AEA4422C071B2CA78352A077959D07CEA1D0100000000FFFFFFFF0270AAF00800000000160014D85C2B71D0060B09C9886AEB815E50991DDA124D00E1F5050000000016001400AEA9A2E5F0F876A588DF5546E8742D1D87008F000000000000000000
-    ```
-    
-- UR encoding in `ur:crypto-response/<message>` format
+```
+A3                                      # map(3)
+   01                                   # unsigned(1)
+   D8 25                                # tag(37)
+      50                                # bytes(16)
+         3B5414375E3A450B8FE1251CBC2B3FB5 
+   02                                   # unsigned(2)
+   58 A7                                # bytes(167)
+      70736274FF01009A020000000258E87A21B56DAF0C23BE8E7070456C336F7CBAA5C8757924F545887BB2ABDD750000000000FFFFFFFF838D0427D0EC650A68AA46BB0B098AEA4422C071B2CA78352A077959D07CEA1D0100000000FFFFFFFF0270AAF00800000000160014D85C2B71D0060B09C9886AEB815E50991DDA124D00E1F5050000000016001400AEA9A2E5F0F876A588DF5546E8742D1D87008F000000000000000000 
+   03                                   # unsigned(3)
+   6B                                   # text(11)
+      4E4752415645205A65726F            # "NGRAVE Zero"
+```
+
+- UR encoding in `ur:crypto-signature/<message>` format
 
 </details>
 
