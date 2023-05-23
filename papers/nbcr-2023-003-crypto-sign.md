@@ -6,7 +6,7 @@
 Authors: Mathieu Da Silva, Irfan Bilaloglu <br/>
 Date: April 26, 2023
 
-Revised: May 19, 2023
+Revised: May 23, 2023
 
 ---
 
@@ -840,9 +840,7 @@ The required fields for a Solana signature are the signature itself and potentia
 
 The following table indicates the corresponding fields between the UR types `sol-signature` and `crypto-signature`.
 
-| crypto-signature fields
-Associated number corresponds to the order in UR type | Corresponding sol-signature fields
-Associated number corresponds to the order in UR type |
+| crypto-signature fields <br> Associated number corresponds to the order in UR type | Corresponding sol-signature fields <br> Associated number corresponds to the order in UR type |
 | --- | --- |
 | 1. request-id (optional) | 1. request-id (optional) |
 | 2. signature | 2. signature |
