@@ -6,7 +6,7 @@
 Authors: Mathieu Da Silva, Irfan Bilaloglu <br/>
 Date: April 26, 2023
 
-Revised: May 23, 2023
+Revised: June 6, 2023
 
 ---
 
@@ -453,12 +453,7 @@ An example illustrates how the signature request and response for Bitcoin PSBT a
     {1: 8, ; secp256k1 curve
      2: 0 ; Bitcoin BIP44
     }),
-3: 303( ; #6.303(crypto-hdkey)
-    {3: h'03EB3E2863911826374DE86C231A4B76F0B89DFA174AFB78D7F478199884D9DD32', ; key-data
-     4: h'6456A5DF2DB0F6D9AF72B2A1AF4B25F45200ED6FCC29C3440B311D4796B70B5B', ; chain-code
-     6: 304({1: [44, true, 0, true, 0, true]}), ; components 44'/0'/0'
-     7: 304({1: [0, false, 0, false]}) ; children m/44'/0'/0'/0/0
-    }),
+3: 304({1: [44, true, 0, true, 0, true, 0, false, 0, false]}), ; #6.304(crypto-keypath) m/44'/0'/0'/0/0
 4: h'70736274ff01009a020000000258e87a21b56daf0c23be8e7070456c336f7cbaa5c8757924f545887bb2abdd750000000000ffffffff838d0427d0ec650a68aa46bb0b098aea4422c071b2ca78352a077959d07cea1d0100000000ffffffff0270aaf00800000000160014d85c2b71d0060b09c9886aeb815e50991dda124d00e1f5050000000016001400aea9a2e5f0f876a588df5546e8742d1d87008f000000000000000000', ; sign-data
 5: 934670036, ; master-fingerprint
 6: "Trust Wallet" ; wallet name
@@ -481,34 +476,20 @@ A6                                      # map(6)
          02                             # unsigned(2)
          00                             # unsigned(0)
    03                                   # unsigned(3)
-   D9 012F                              # tag(303)
-      A4                                # map(4)
-         03                             # unsigned(3)
-         58 21                          # bytes(33)
-            03EB3E2863911826374DE86C231A4B76F0B89DFA174AFB78D7F478199884D9DD32 
-         04                             # unsigned(4)
-         58 20                          # bytes(32)
-            6456A5DF2DB0F6D9AF72B2A1AF4B25F45200ED6FCC29C3440B311D4796B70B5B 
-         06                             # unsigned(6)
-         D9 0130                        # tag(304)
-            A1                          # map(1)
-               01                       # unsigned(1)
-               86                       # array(6)
-                  18 2C                 # unsigned(44)
-                  F5                    # primitive(21)
-                  00                    # unsigned(0)
-                  F5                    # primitive(21)
-                  00                    # unsigned(0)
-                  F5                    # primitive(21)
-         07                             # unsigned(7)
-         D9 0130                        # tag(304)
-            A1                          # map(1)
-               01                       # unsigned(1)
-               84                       # array(4)
-                  00                    # unsigned(0)
-                  F4                    # primitive(20)
-                  00                    # unsigned(0)
-                  F4                    # primitive(20)
+   D9 0130                              # tag(304)
+      A1                                # map(1)
+         01                             # unsigned(1)
+         8A                             # array(10)
+            18 2C                       # unsigned(44)
+            F5                          # primitive(21)
+            00                          # unsigned(0)
+            F5                          # primitive(21)
+            00                          # unsigned(0)
+            F5                          # primitive(21)
+            00                          # unsigned(0)
+            F4                          # primitive(20)
+            00                          # unsigned(0)
+            F4                          # primitive(20)
    04                                   # unsigned(4)
    58 A7                                # bytes(167)
       70736274FF01009A020000000258E87A21B56DAF0C23BE8E7070456C336F7CBAA5C8757924F545887BB2ABDD750000000000FFFFFFFF838D0427D0EC650A68AA46BB0B098AEA4422C071B2CA78352A077959D07CEA1D0100000000FFFFFFFF0270AAF00800000000160014D85C2B71D0060B09C9886AEB815E50991DDA124D00E1F5050000000016001400AEA9A2E5F0F876A588DF5546E8742D1D87008F000000000000000000 
@@ -517,6 +498,7 @@ A6                                      # map(6)
    06                                   # unsigned(6)
    6C                                   # text(12)
       54727573742057616C6C6574          # "Trust Wallet"
+
 ```
 
 - UR encoding in `ur:crypto-sign-request/<message>` format
@@ -660,13 +642,9 @@ An example illustrates how the signing protocol works on EVM blockchains:
      2: 60, ; Ethereum BIP44
      3: 137 ; chain-id = Polygon
     }),
-3: 303( ; #6.303(crypto-hdkey)
-    {3: h'0337A5619FBC2E951B426D23E9736C7576840AE3139AAE5D0B9D0D81736D5706D9', ; key-data
-     6: 304({1: [44, true, 60, true, 0, true]}), ; origin m/44'/60'/0'
-     7: 304({1: [0, false, 0, false]}) ; children m/44'/60'/0'/0/0
-    }),
+3: 304({1: [44, true, 60, true, 0, true, 0, false, 0, false]}), ; #6.304(crypto-keypath) m/44'/60'/0'/0/0
 4: h'f849808609184e72a00082271094000000000000000000000000000000000000000080a47f7465737432000000000000000000000000000000000000000000000000000000600057808080', ; sign-data
-5: h'1E0281', ; master-fingerprint
+5: 934670036, ; master-fingerprint
 6: "Trust Wallet", ; wallet name
 7: 1420( ; #6.1420(eth-meta)
     {1: 1, ; data-type = RLP transaction
@@ -693,37 +671,25 @@ A7                                      # map(7)
          03                             # unsigned(3)
          18 89                          # unsigned(137)
    03                                   # unsigned(3)
-   D9 012F                              # tag(303)
-      A3                                # map(3)
-         03                             # unsigned(3)
-         58 21                          # bytes(33)
-            0337A5619FBC2E951B426D23E9736C7576840AE3139AAE5D0B9D0D81736D5706D9 
-         06                             # unsigned(6)
-         D9 0130                        # tag(304)
-            A1                          # map(1)
-               01                       # unsigned(1)
-               86                       # array(6)
-                  18 2C                 # unsigned(44)
-                  F5                    # primitive(21)
-                  18 3C                 # unsigned(60)
-                  F5                    # primitive(21)
-                  00                    # unsigned(0)
-                  F5                    # primitive(21)
-         07                             # unsigned(7)
-         D9 0130                        # tag(304)
-            A1                          # map(1)
-               01                       # unsigned(1)
-               84                       # array(4)
-                  00                    # unsigned(0)
-                  F4                    # primitive(20)
-                  00                    # unsigned(0)
-                  F4                    # primitive(20)
+   D9 0130                              # tag(304)
+      A1                                # map(1)
+         01                             # unsigned(1)
+         8A                             # array(10)
+            18 2C                       # unsigned(44)
+            F5                          # primitive(21)
+            18 3C                       # unsigned(60)
+            F5                          # primitive(21)
+            00                          # unsigned(0)
+            F5                          # primitive(21)
+            00                          # unsigned(0)
+            F4                          # primitive(20)
+            00                          # unsigned(0)
+            F4                          # primitive(20)
    04                                   # unsigned(4)
    58 4B                                # bytes(75)
       F849808609184E72A00082271094000000000000000000000000000000000000000080A47F7465737432000000000000000000000000000000000000000000000000000000600057808080 
    05                                   # unsigned(5)
-   43                                   # bytes(3)
-      1E0281                            
+   1A 37B5EED4                          # unsigned(934670036)
    06                                   # unsigned(6)
    6C                                   # text(12)
       54727573742057616C6C6574          # "Trust Wallet"
@@ -735,7 +701,6 @@ A7                                      # map(7)
          02                             # unsigned(2)
          54                             # bytes(20)
             1EFECB61A2F80AA34D3B9218B564A64D05946290 
-
 ```
 
 - UR encoding in `ur:crypto-sign-request/<message>` format
@@ -804,7 +769,7 @@ Keystone has proposed and implemented the specific UR types `sol-sign-request` a
 
 - **Solana sign request**
 
-A Solana transaction is uniquely identified through the URI format `bc-coin://ed25519/508`, information shared in `crypto-coin-identity` UR type.
+A Solana transaction is uniquely identified through the URI format `bc-coin://ed25519/501`, information shared in `crypto-coin-identity` UR type.
 
 Several fields are required for requesting the signature of a Solana transaction:
 
@@ -884,12 +849,9 @@ An example illustrates how the signing protocol works on Solana blockchain:
     {1: 6, ; ed25519 curve
      2: 501 ; Solana BIP44
     }),
-3: 303( ; #6.303(crypto-hdkey)
-    {3: h'02EAE4B876A8696134B868F88CC2F51F715F2DBEDB7446B8E6EDF3D4541C4EB67B', ; key-data
-     6: 304({1: [44, true, 501, true, 0, true, 0, true]}) ; origin m/44’/501’/0’/0’
-    }),
+3: 304({1: [44, true, 501, true, 0, true, 0, true]}), ; #6.304(crypto)keypath) m/44’/501’/0’/0’
 4: h'01000103c8d842a2f17fd7aab608ce2ea535a6e958dffa20caf669b347b911c4171965530f957620b228bae2b94c82ddd4c093983a67365555b737ec7ddc1117e61c72e0000000000000000000000000000000000000000000000000000000000000000010295cc2f1f39f3604718496ea00676d6a72ec66ad09d926e3ece34f565f18d201020200010c0200000000e1f50500000000', ; sign-data
-5: h'1E0281', ; master-fingerprint
+5: 934670036, ; master-fingerprint
 6: "Trust Wallet", ; wallet name
 7: 1421( ; #6.1421(sol-meta)
     {1: 1, ; data-type = sign-type-transaction
@@ -914,30 +876,23 @@ A7                                      # map(7)
          02                             # unsigned(2)
          19 01F5                        # unsigned(501)
    03                                   # unsigned(3)
-   D9 012F                              # tag(303)
-      A2                                # map(2)
-         03                             # unsigned(3)
-         58 21                          # bytes(33)
-            02EAE4B876A8696134B868F88CC2F51F715F2DBEDB7446B8E6EDF3D4541C4EB67B 
-         06                             # unsigned(6)
-         D9 0130                        # tag(304)
-            A1                          # map(1)
-               01                       # unsigned(1)
-               88                       # array(8)
-                  18 2C                 # unsigned(44)
-                  F5                    # primitive(21)
-                  19 01F5               # unsigned(501)
-                  F5                    # primitive(21)
-                  00                    # unsigned(0)
-                  F5                    # primitive(21)
-                  00                    # unsigned(0)
-                  F5                    # primitive(21)
+   D9 0130                              # tag(304)
+      A1                                # map(1)
+         01                             # unsigned(1)
+         88                             # array(8)
+            18 2C                       # unsigned(44)
+            F5                          # primitive(21)
+            19 01F5                     # unsigned(501)
+            F5                          # primitive(21)
+            00                          # unsigned(0)
+            F5                          # primitive(21)
+            00                          # unsigned(0)
+            F5                          # primitive(21)
    04                                   # unsigned(4)
    58 96                                # bytes(150)
       01000103C8D842A2F17FD7AAB608CE2EA535A6E958DFFA20CAF669B347B911C4171965530F957620B228BAE2B94C82DDD4C093983A67365555B737EC7DDC1117E61C72E0000000000000000000000000000000000000000000000000000000000000000010295CC2F1F39F3604718496EA00676D6A72EC66AD09D926E3ECE34F565F18D201020200010C0200000000E1F50500000000 
    05                                   # unsigned(5)
-   43                                   # bytes(3)
-      1E0281                            
+   1A 37B5EED4                          # unsigned(934670036)
    06                                   # unsigned(6)
    6C                                   # text(12)
       54727573742057616C6C6574          # "Trust Wallet"
@@ -1091,16 +1046,13 @@ An example illustrates how the signing protocol works on Tezos blockchain:
     {1: 6, ; ed25519 curve
      2: 1729 ; Tezos BIP44
     }),
-3: 303( ; #6.303(crypto-hdkey)
-    {3: h'02320EC3FDC5604F151A90F36C88EC9588FC320981E3C26D73F290C016FD11CD9D', ; key-data
-     6: 304({1: [44, true, 1729, true, 0, true, 0, true, 0, true]}) ; origin m/44’/1729’/0’/0’/0'
-    }),
+3: 304({1: [44, true, 1729, true, 0, true, 0, true, 0, true]}), ; #6.304(crypto-keypath) origin m/44’/1729’/0’/0’/0'
 4: h'f849808609184e72a00082271094000000000000000000000000000000000000000080a47f7465737432000000000000000000000000000000000000000000000000000000600057808080', ; sign-data
-5: h'1E0281', ; master-fingerprint
+5: 934670036, ; master-fingerprint
 6: "Trust Wallet", ; wallet name
 7: 1422( ; #6.1422(xtz-meta)
     {1: 1, ; operation data-type
-     2: "tz3gLTu4Yxj8tPAcriQVUdxv6BY9QyvzU1az" ; address
+     2: "tz1gLTu4Yxj8tPAcriQVUdxv6BY9QyvzU1az" ; address
     })
 }
 ```
@@ -1121,32 +1073,25 @@ A7                                      # map(7)
          02                             # unsigned(2)
          19 06C1                        # unsigned(1729)
    03                                   # unsigned(3)
-   D9 012F                              # tag(303)
-      A2                                # map(2)
-         03                             # unsigned(3)
-         58 21                          # bytes(33)
-            02320EC3FDC5604F151A90F36C88EC9588FC320981E3C26D73F290C016FD11CD9D 
-         06                             # unsigned(6)
-         D9 0130                        # tag(304)
-            A1                          # map(1)
-               01                       # unsigned(1)
-               8A                       # array(10)
-                  18 2C                 # unsigned(44)
-                  F5                    # primitive(21)
-                  19 06C1               # unsigned(1729)
-                  F5                    # primitive(21)
-                  00                    # unsigned(0)
-                  F5                    # primitive(21)
-                  00                    # unsigned(0)
-                  F5                    # primitive(21)
-                  00                    # unsigned(0)
-                  F5                    # primitive(21)
+   D9 0130                              # tag(304)
+      A1                                # map(1)
+         01                             # unsigned(1)
+         8A                             # array(10)
+            18 2C                       # unsigned(44)
+            F5                          # primitive(21)
+            19 06C1                     # unsigned(1729)
+            F5                          # primitive(21)
+            00                          # unsigned(0)
+            F5                          # primitive(21)
+            00                          # unsigned(0)
+            F5                          # primitive(21)
+            00                          # unsigned(0)
+            F5                          # primitive(21)
    04                                   # unsigned(4)
    58 4B                                # bytes(75)
       F849808609184E72A00082271094000000000000000000000000000000000000000080A47F7465737432000000000000000000000000000000000000000000000000000000600057808080 
    05                                   # unsigned(5)
-   43                                   # bytes(3)
-      1E0281                            
+   1A 37B5EED4                          # unsigned(934670036)
    06                                   # unsigned(6)
    6C                                   # text(12)
       54727573742057616C6C6574          # "Trust Wallet"
@@ -1157,7 +1102,7 @@ A7                                      # map(7)
          01                             # unsigned(1)
          02                             # unsigned(2)
          78 24                          # text(36)
-            747A33674C54753459786A38745041637269515655647876364259395179767A5531617A # "tz3gLTu4Yxj8tPAcriQVUdxv6BY9QyvzU1az"
+            747A31674C54753459786A38745041637269515655647876364259395179767A5531617A # "tz1gLTu4Yxj8tPAcriQVUdxv6BY9QyvzU1az"
 ```
 
 - UR encoding in `ur:crypto-sign-request/<message>` format
@@ -1278,12 +1223,9 @@ An example illustrates how the signing protocol works on MultiversX blockchain:
     {1: 6, ; ed25519 curve
      2: 501 ; MultiversX BIP44
     }),
-3: 303( ; #6.303(crypto-hdkey)
-    {3: h'024137C16B966ABAC1DF4CB893AF421EA0BE61A52266AA7B3AA993900F7139640F', ; key-data
-     6: 304({1: [44, true, 508, true, 0, true, 0, true, 1, true]}) ; origin m/44’/501’/0’/0’/1'
-    }),
+3: 304({1: [44, true, 508, true, 0, true, 0, true, 1, true]}), ; #6.304(crypto-keypath) m/44’/501’/0’/0’/1'
 4: h'f849808609184e72a00082271094000000000000000000000000000000000000000080a47f7465737432000000000000000000000000000000000000000000000000000000600057808080', ; sign-data
-5: h'1E0281', ; master-fingerprint
+5: 934670036, ; master-fingerprint
 6: "Trust Wallet" ; wallet name
 }
 ```
@@ -1304,32 +1246,25 @@ A6                                      # map(6)
          02                             # unsigned(2)
          19 01F5                        # unsigned(501)
    03                                   # unsigned(3)
-   D9 012F                              # tag(303)
-      A2                                # map(2)
-         03                             # unsigned(3)
-         58 21                          # bytes(33)
-            024137C16B966ABAC1DF4CB893AF421EA0BE61A52266AA7B3AA993900F7139640F 
-         06                             # unsigned(6)
-         D9 0130                        # tag(304)
-            A1                          # map(1)
-               01                       # unsigned(1)
-               8A                       # array(10)
-                  18 2C                 # unsigned(44)
-                  F5                    # primitive(21)
-                  19 01FC               # unsigned(508)
-                  F5                    # primitive(21)
-                  00                    # unsigned(0)
-                  F5                    # primitive(21)
-                  00                    # unsigned(0)
-                  F5                    # primitive(21)
-                  01                    # unsigned(1)
-                  F5                    # primitive(21)
+   D9 0130                              # tag(304)
+      A1                                # map(1)
+         01                             # unsigned(1)
+         8A                             # array(10)
+            18 2C                       # unsigned(44)
+            F5                          # primitive(21)
+            19 01FC                     # unsigned(508)
+            F5                          # primitive(21)
+            00                          # unsigned(0)
+            F5                          # primitive(21)
+            00                          # unsigned(0)
+            F5                          # primitive(21)
+            01                          # unsigned(1)
+            F5                          # primitive(21)
    04                                   # unsigned(4)
    58 4B                                # bytes(75)
       F849808609184E72A00082271094000000000000000000000000000000000000000080A47F7465737432000000000000000000000000000000000000000000000000000000600057808080 
    05                                   # unsigned(5)
-   43                                   # bytes(3)
-      1E0281                            
+   1A 37B5EED4                          # unsigned(934670036)
    06                                   # unsigned(6)
    6C                                   # text(12)
       54727573742057616C6C6574          # "Trust Wallet"
@@ -1388,12 +1323,9 @@ Another example illustrates how the signing protocol works on Stellar blockchain
     {1: 6, ; ed25519 curve
      2: 148 ; Stellar BIP44
     }),
-3: 303( ; #6.303(crypto-hdkey)
-    {3: h'024137C16B966ABAC1DF4CB893AF421EA0BE61A52266AA7B3AA993900F7139640F', ; key-data
-     6: 304({1: [44, true, 148, true, 0, true, 0, true, 2, true]}) ; origin m/44’/148/0’/0’/2'
-    }),
+3: 304({1: [44, true, 148, true, 0, true, 0, true, 2, true]}), ; #6.304(crypto-keypath) m/44’/148/0’/0’/2'
 4: h'f849808609184e72a00082271094000000000000000000000000000000000000000080a47f7465737432000000000000000000000000000000000000000000000000000000600057808080', ; sign-data
-5: h'1E0281', ; master-fingerprint
+5: 934670036, ; master-fingerprint
 6: "Trust Wallet" ; wallet name
 }
 ```
@@ -1414,36 +1346,28 @@ A6                                      # map(6)
          02                             # unsigned(2)
          18 94                          # unsigned(148)
    03                                   # unsigned(3)
-   D9 012F                              # tag(303)
-      A2                                # map(2)
-         03                             # unsigned(3)
-         58 21                          # bytes(33)
-            024137C16B966ABAC1DF4CB893AF421EA0BE61A52266AA7B3AA993900F7139640F 
-         06                             # unsigned(6)
-         D9 0130                        # tag(304)
-            A1                          # map(1)
-               01                       # unsigned(1)
-               8A                       # array(10)
-                  18 2C                 # unsigned(44)
-                  F5                    # primitive(21)
-                  18 94                 # unsigned(148)
-                  F5                    # primitive(21)
-                  00                    # unsigned(0)
-                  F5                    # primitive(21)
-                  00                    # unsigned(0)
-                  F5                    # primitive(21)
-                  02                    # unsigned(2)
-                  F5                    # primitive(21)
+   D9 0130                              # tag(304)
+      A1                                # map(1)
+         01                             # unsigned(1)
+         8A                             # array(10)
+            18 2C                       # unsigned(44)
+            F5                          # primitive(21)
+            18 94                       # unsigned(148)
+            F5                          # primitive(21)
+            00                          # unsigned(0)
+            F5                          # primitive(21)
+            00                          # unsigned(0)
+            F5                          # primitive(21)
+            02                          # unsigned(2)
+            F5                          # primitive(21)
    04                                   # unsigned(4)
    58 4B                                # bytes(75)
-      F849808609184E72A00082271094000000000000000000000000000000000000000080A47F7465737432000000000000000000000000000000000000000000000000000000600057808080
+      F849808609184E72A00082271094000000000000000000000000000000000000000080A47F7465737432000000000000000000000000000000000000000000000000000000600057808080 
    05                                   # unsigned(5)
-   43                                   # bytes(3)
-      1E0281                            
+   1A 37B5EED4                          # unsigned(934670036)
    06                                   # unsigned(6)
    6C                                   # text(12)
       54727573742057616C6C6574          # "Trust Wallet"
-
 ```
 
 - UR encoding in `ur:crypto-sign-request/<message>` format
