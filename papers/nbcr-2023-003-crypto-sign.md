@@ -97,7 +97,7 @@ The UR types designed to be used for specific blockchain are based on existing s
 
 The UR types for signing embed common tags, described in the following list:
 
-- Universal Unique IDentifier, noted as UUID, are CBOR binary strings tagged with #6.37, per the IANA [[CBOR Tag]](https://www.iana.org/assignments/cbor-tags/cbor-tags.xhtml).
+- Universal Unique Identifier, noted as UUID, are CBOR binary strings tagged with #6.37, per the IANA [[CBOR Tag]](https://www.iana.org/assignments/cbor-tags/cbor-tags.xhtml).
 - `crypto-keypath` UR type specifies the key derivation path of the signer account. This structure is embedded with the tag #6.304 as defined in [[BCR-2020-007]](https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-007-hdkey.md).
 
 ### Bitcoin UR type
@@ -310,18 +310,28 @@ This UR type is tagged with #6.1411 and embeds:
 - An optional UR type to specify metadata related to a specific coin.
 
 ```
-; Metadata specific for each coin
-; The list is not exhaustive and includes only the metadata for ETH, SOL and XTZ
-coin-meta = #6.1420(eth-meta) / #6.1421(sol-meta) / #6.1422(xtz-meta) 
-
 crypto-sign-request = {
-    ?request-id: uuid,                        ; Identifier of the signing request
+    request-id: uuid,                         ; Identifier of the signing request
     coin-id: #6.1401(crypto-coin-identity),   ; Provides information on the elliptic curve and the blockchain/coin
-    ?derivation-path: #6.304(crypto-keypath), ; Key path for signing this request
+    derivation-path: #6.304(crypto-keypath), ; Key path for signing this request
     sign-data: bytes,                         ; Transaction to be decoded by the offline signer 
     ?master-fingerprint: uint32,              ; Fingerprint for the master public key
     ?origin: text,                            ; Origin of this sign request, e.g. wallet name
-    ?metadata: coin-meta                      ; Specify metadata for some coins
+    ?tx-metadata: coin-meta                   ; Specify transaction metadata for some coins
+}
+
+; Metadata specific for each coin
+; The list is not exhaustive and includes only the metadata for ETH, SOL and XTZ
+coin-meta =  (
+   eth-meta /
+   sol-meta /
+   xtz-meta /
+   any-meta
+) 
+
+; Any-meta is a placeholder for any coin not listed in this document, it accepts string key and any value
+any-meta = {
+   * tstr => any
 }
 
 request-id = 1
@@ -330,17 +340,21 @@ derivation-path = 3
 sign-data = 4
 master-fingerprint = 5
 origin = 6
-metadata = 7
+tx-metadata = 7
 ```
 
 We are listing thereafter the metadata UR types for the blockchains listed in this document. This list is not exhaustive and needs to be updated for each coin needing additional data to the `crypto-sign-request` UR type.
 
-| Blockchain | Metadata required | coin-meta UR type |
-| --- | --- | --- |
-| Ethereum/EVM chains | Yes | - CDDL description: <br> `eth-meta = { data-type: sign-data-type, ?address: eth-address-bytes}` <br> `sign-data-type` and `eth-address-bytes` definition are inherited from eth-sign-request. <br> - Tag: 1420 |
-| Solana | No | - CDDL description: <br> `sol-meta = { ?type: int .default sign-type-transaction, ?address: bytes}`  <br> `type` definition is inherited from sol-sign-request. The default value `sign-type-transaction` should be used in case of missing metadata in crypto-sign-request for a Solana transaction. <br> - Tag: 1421 |
-| Tezos | No | - CDDL description: <br> `xtz-meta = { ?data-type: int .default data-type-operation}` <br> `data-type definition` is inherited from xtz-sign-request. <br> The default value of data-type should be used in case of missing metadata in crypto-sign-request for Tezos transaction. <br> - Tag: 1422 |
-| Bitcoin <br> MultiversX <br> Stellar | No | No metadata needed |
+Metadatas will be checked based on `coin-id` by the implementer.
+
+**Currently Specified Transactıon Metadatas:**
+
+| Coin-Id | Blockchain | Metadata required | coin-meta UR type |
+| --- | --- | --- | --- |
+| `bc-coin://secp256k1/60` | Ethereum/EVM chains | Yes | - CDDL description: <br> `eth-meta = { data-type: sign-data-type, ?address: eth-address-bytes}` <br> `sign-data-type` and `eth-address-bytes` definition are inherited from eth-sign-request. <br> |
+| `bc-coin://Ed25519/501` | Solana | No | - CDDL description: <br> `sol-meta = { ?type: int .default sign-type-transaction, ?address: bytes}`  <br> `type` definition is inherited from sol-sign-request. The default value `sign-type-transaction` should be used in case of missing metadata in crypto-sign-request for a Solana transaction. <br> |
+| -`bc-coin://Ed25519/1729`<br> -`bc-coin://secp256k1/1729`<br> -`bc-coin://P256/1729` | Tezos | No | - CDDL description: <br> `xtz-meta = { ?data-type: int .default data-type-operation}` <br> `data-type definition` is inherited from xtz-sign-request. <br> The default value of data-type should be used in case of missing metadata in crypto-sign-request for Tezos transaction. <br>|
+| | Bitcoin <br> MultiversX <br> Stellar | No | No metadata needed |
 
 - **CDDL for generic signature response** `crypto-signature`
 
