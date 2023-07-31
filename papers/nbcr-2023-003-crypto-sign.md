@@ -755,6 +755,207 @@ A3                                      # map(3)
 
 </details>
 
+#### Contract examples
+<details>
+
+<summary>Example Ethereum ERC20 transaction </summary>
+
+- CBOR diagnosis format:
+    
+```
+{
+1: 37(h'D9E96428277D76B12E2562CA76B301A3'), ; request-id
+2: 1401( #6.1401(crypto-coin-identity)
+   {1: 8, ; secp256k1 curve
+    2: 60 ; Ethereum BIP44
+    }),
+3: 304({1: [44, true, 60, true, 0, true, 0, false, 1, false]}), ; #6.304(crypto-keypath) m/44'/60'/0'/0/1
+4: h'F869068505D90661EB82A31D9427054B13B1B798B345B591A4D22E6562D47EA75A80B844A9059CBB00000000000000000000000042CDA393BBE6D079501B98CC9CCF1906901B10BF0000000000000000000000000000000000000000000000000000000000000001808080', ; sign-data
+7: { ; metadata
+   "dataType": 1 ; data-type = RLP transaction
+   } 
+}
+```
+ 
+- CBOR encoding (see playground [here](https://cbor.me/))
+    
+```
+A5                                      # map(5)
+   01                                   # unsigned(1)
+   D8 25                                # tag(37)
+      50                                # bytes(16)
+         66FAA8FF51D07B7AD09322DDA934DA22 # "f\xFA\xA8\xFFQ\xD0{zГ\"ݩ4\xDA\""
+   02                                   # unsigned(2)
+   D9 0579                              # tag(1401)
+      A2                                # map(2)
+         01                             # unsigned(1)
+         08                             # unsigned(8)
+         02                             # unsigned(2)
+         18 3C                          # unsigned(60)
+   03                                   # unsigned(3)
+   D9 0130                              # tag(304)
+      A1                                # map(1)
+         01                             # unsigned(1)
+         8A                             # array(10)
+            18 2C                       # unsigned(44)
+            F5                          # primitive(21)
+            18 3C                       # unsigned(60)
+            F5                          # primitive(21)
+            00                          # unsigned(0)
+            F5                          # primitive(21)
+            00                          # unsigned(0)
+            F4                          # primitive(20)
+            01                          # unsigned(1)
+            F4                          # primitive(20)
+   04                                   # unsigned(4)
+   58 6B                                # bytes(107)
+      F869068505D90661EB82A31D9427054B13B1B798B345B591A4D22E6562D47EA75A80B844A9059CBB00000000000000000000000042CDA393BBE6D079501B98CC9CCF1906901B10BF0000000000000000000000000000000000000000000000000000000000000001808080 # "\xF8i\u0006\x85\u0005\xD9\u0006a낣\u001D\x94'\u0005K\u0013\xB1\xB7\x98\xB3E\xB5\x91\xA4\xD2.eb\xD4~\xA7Z\x80\xB8D\xA9\u0005\x9C\xBB\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000Bͣ\x93\xBB\xE6\xD0yP\e\x98̜\xCF\u0019\u0006\x90\e\u0010\xBF\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0001\x80\x80\x80"
+   07                                   # unsigned(7)
+   A1                                   # map(1)
+      68                                # text(8)
+         6461746154797065               # "dataType"
+      01                                # unsigned(1)
+
+```
+
+- UR encoding in `ur:crypto-sign-request/<message>` format
+
+</details>
+
+<details>
+
+<summary>Example Ethereum ERC721 transaction </summary>
+
+- CBOR diagnosis format:
+    
+```
+{
+1: 37(h'D9E96428277D76B12E2562CA76B301A3'), ; request-id
+2: 1401( #6.1401(crypto-coin-identity)
+   {1: 8, ; secp256k1 curve
+    2: 60 ; Ethereum BIP44
+    }),
+3: 304({1: [44, true, 60, true, 0, true, 0, false, 1, false]}), ; #6.304(crypto-keypath) m/44'/60'/0'/0/1
+4: h'F88A068506275583F48301281C94C9154424B823B10579895CCBE442D41B9ABD96ED80B86442842E0E000000000000000000000000EB012C6D43542D105B6DE63F4E8F8EFF1F2A916E00000000000000000000000042CDA393BBE6D079501B98CC9CCF1906901B10BF42CDA393BBE6D079501B98CC9CCF1906901B10BF000000000000000000000002808080', ; sign-data
+7: { ; metadata
+   "dataType": 1 ; data-type = RLP transaction
+   } 
+}
+```
+ 
+- CBOR encoding (see playground [here](https://cbor.me/))
+    
+```
+A5                                      # map(5)
+   01                                   # unsigned(1)
+   D8 25                                # tag(37)
+      50                                # bytes(16)
+         DCBC47E80F4B0A666FDDA1DE90CDB33B # "ܼG\xE8\u000FK\nfoݡސͳ;"
+   02                                   # unsigned(2)
+   D9 0579                              # tag(1401)
+      A2                                # map(2)
+         01                             # unsigned(1)
+         08                             # unsigned(8)
+         02                             # unsigned(2)
+         18 3C                          # unsigned(60)
+   03                                   # unsigned(3)
+   D9 0130                              # tag(304)
+      A1                                # map(1)
+         01                             # unsigned(1)
+         8A                             # array(10)
+            18 2C                       # unsigned(44)
+            F5                          # primitive(21)
+            18 3C                       # unsigned(60)
+            F5                          # primitive(21)
+            00                          # unsigned(0)
+            F5                          # primitive(21)
+            00                          # unsigned(0)
+            F4                          # primitive(20)
+            01                          # unsigned(1)
+            F4                          # primitive(20)
+   04                                   # unsigned(4)
+   58 8C                                # bytes(140)
+      F88A068506275583F48301281C94C9154424B823B10579895CCBE442D41B9ABD96ED80B86442842E0E000000000000000000000000EB012C6D43542D105B6DE63F4E8F8EFF1F2A916E00000000000000000000000042CDA393BBE6D079501B98CC9CCF1906901B10BF42CDA393BBE6D079501B98CC9CCF1906901B10BF000000000000000000000002808080 # "\xF8\x8A\u0006\x85\u0006'U\x83\xF4\x83\u0001(\u001C\x94\xC9\u0015D$\xB8#\xB1\u0005y\x89\\\xCB\xE4B\xD4\e\x9A\xBD\x96퀸dB\x84.\u000E\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\xEB\u0001,mCT-\u0010[m\xE6?N\x8F\x8E\xFF\u001F*\x91n\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000Bͣ\x93\xBB\xE6\xD0yP\e\x98̜\xCF\u0019\u0006\x90\e\u0010\xBFBͣ\x93\xBB\xE6\xD0yP\e\x98̜\xCF\u0019\u0006\x90\e\u0010\xBF\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0002\x80\x80\x80"
+   07                                   # unsigned(7)
+   A1                                   # map(1)
+      68                                # text(8)
+         6461746154797065               # "dataType"
+      01                                # unsigned(1)
+
+
+```
+
+- UR encoding in `ur:crypto-sign-request/<message>` format
+
+</details>
+
+<details>
+
+<summary>Example Ethereum ERC1155 transaction </summary>
+
+- CBOR diagnosis format:
+    
+```
+{
+1: 37(h'D9E96428277D76B12E2562CA76B301A3'), ; request-id
+2: 1401( #6.1401(crypto-coin-identity)
+   {1: 8, ; secp256k1 curve
+    2: 60 ; Ethereum BIP44
+    }),
+3: 304({1: [44, true, 60, true, 0, true, 0, false, 1, false]}), ; #6.304(crypto-keypath) m/44'/60'/0'/0/1
+4: h'F8E906850666B5EE5582BA8C94B66A603F4CFE17E3D27B87A8BFCAD319856518B880B8C4F242432A000000000000000000000000EB012C6D43542D105B6DE63F4E8F8EFF1F2A916E00000000000000000000000042CDA393BBE6D079501B98CC9CCF1906901B10BF42CDA393BBE6D079501B98CC9CCF1906901B10BF000000000000000000000007000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000A00000000000000000000000000000000000000000000000000000000000000000808080', ; sign-data
+7: { ; metadata
+   "dataType": 1 ; data-type = RLP transaction
+   } 
+}
+```
+ 
+- CBOR encoding (see playground [here](https://cbor.me/))
+    
+```
+A5                                      # map(5)
+   01                                   # unsigned(1)
+   D8 25                                # tag(37)
+      50                                # bytes(16)
+         D9E96428277D76B12E2562CA76B301A3 # "\xD9\xE9d('}v\xB1.%b\xCAv\xB3\u0001\xA3"
+   02                                   # unsigned(2)
+   D9 0579                              # tag(1401)
+      A2                                # map(2)
+         01                             # unsigned(1)
+         08                             # unsigned(8)
+         02                             # unsigned(2)
+         18 3C                          # unsigned(60)
+   03                                   # unsigned(3)
+   D9 0130                              # tag(304)
+      A1                                # map(1)
+         01                             # unsigned(1)
+         8A                             # array(10)
+            18 2C                       # unsigned(44)
+            F5                          # primitive(21)
+            18 3C                       # unsigned(60)
+            F5                          # primitive(21)
+            00                          # unsigned(0)
+            F5                          # primitive(21)
+            00                          # unsigned(0)
+            F4                          # primitive(20)
+            01                          # unsigned(1)
+            F4                          # primitive(20)
+   04                                   # unsigned(4)
+   58 EB                                # bytes(235)
+      F8E906850666B5EE5582BA8C94B66A603F4CFE17E3D27B87A8BFCAD319856518B880B8C4F242432A000000000000000000000000EB012C6D43542D105B6DE63F4E8F8EFF1F2A916E00000000000000000000000042CDA393BBE6D079501B98CC9CCF1906901B10BF42CDA393BBE6D079501B98CC9CCF1906901B10BF000000000000000000000007000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000A00000000000000000000000000000000000000000000000000000000000000000808080 # "\xF8\xE9\u0006\x85\u0006f\xB5\xEEU\x82\xBA\x8C\x94\xB6j`?L\xFE\u0017\xE3\xD2{\x87\xA8\xBF\xCA\xD3\u0019\x85e\u0018\xB8\x80\xB8\xC4\xF2BC*\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\xEB\u0001,mCT-\u0010[m\xE6?N\x8F\x8E\xFF\u001F*\x91n\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000Bͣ\x93\xBB\xE6\xD0yP\e\x98̜\xCF\u0019\u0006\x90\e\u0010\xBFBͣ\x93\xBB\xE6\xD0yP\e\x98̜\xCF\u0019\u0006\x90\e\u0010\xBF\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\a\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0001\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\xA0\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\x80\x80\x80"
+   07                                   # unsigned(7)
+   A1                                   # map(1)
+      68                                # text(8)
+         6461746154797065               # "dataType"
+      01                                # unsigned(1)
+
+```
+
+- UR encoding in `ur:crypto-sign-request/<message>` format
+
+</details>
+
+
 ### Transaction verification guidance
 
 The watch-only wallet should indicate the transaction information when the signature request is generated. Once the request is received by the offline signer, the user should be able to verify the correspondence of the transaction content he is about to sign.
