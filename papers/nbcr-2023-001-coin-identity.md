@@ -3,8 +3,8 @@
 
 **© 2023 Ngrave**
 
-Authors: İrfan Bilaloğlu, Mathieu Da Silva<br/>
-Date: 19 April 2023<br/>
+Authors: İrfan Bilaloğlu, Mathieu Da Silva, Maher Sallam<br/>
+Date: 17 September 2024<br/>
 
 ---
 
