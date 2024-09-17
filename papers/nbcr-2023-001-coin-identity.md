@@ -86,27 +86,25 @@ subtype = 3
 
 The UR type is designed to be easily convertible to a URI format when human readability or deep linking are required.
 
-The URI format is as follows: **`bc-coin://{subtype1.subtype0}.{curve}/type?optional=parameters`**.
+The URI format is as follows: **`bc-coin://curve.type[.subtype1.subtype2][?optional=parameters]`**. This format uses the reverse DNS notation because it groups closely related coins when sorting them lexically.
 
-
-We are providing several examples in the following table:
+The following table provides several examples:
 
 | Coin | URI coin identity |
 | --- | --- |
-| Bitcoin (BTC) | bc-coin://secp256k1/0 |
-| Ethereum (ETH) | bc-coin://secp256k1/60 |
-| Polygon (MATIC) | bc-coin://137.secp256k1/60 |
-| Solana (SOL) | bc-coin://ed25519/508 |
-| Tezos (XTZ) based on ed25519 | bc-coin://ed25519/1729 |
-| Tezos (XTZ) based on secp256k1 | bc-coin://secp256k1/1729 |
-| Neo | bc-coin://p256/888 |
-| Polkadot | bc-coin://x25519/354 |
-
+| Bitcoin (BTC) | bc-coin://secp256k1.0 |
+| Ethereum (ETH) | bc-coin://secp256k1.60 |
+| Polygon (POL) | bc-coin://secp256k1.60.137 |
+| Solana (SOL) | bc-coin://ed25519.508 |
+| Tezos (XTZ) based on ed25519 | bc-coin://ed25519.1729 |
+| Tezos (XTZ) based on secp256k1 | bc-coin://secp256k1.1729 |
+| Neo | bc-coin://p256.888 |
+| Polkadot | bc-coin://x25519.354 |
 
 ### Example/Test Vector 1
 
-* Solana coin 
-* URI: `bc-coin://ed25519/501`
+* Solana coin
+* URI: `bc-coin://ed25519.501`
 
 * In the CBOR diagnostic notation:
 
@@ -116,7 +114,6 @@ We are providing several examples in the following table:
    2: 501, ; type Solana BIP44
 }
 ```
-
 
 * Encoded as binary using [CBOR-PLAYGROUND]:
 
@@ -147,8 +144,8 @@ ur:crypto-eckey/oeaoykaxhdcxlkahssqzwfvslofzoxwkrewngotktbmwjkwdcmnefsaaehrlolks
 
 ### Example/Test Vector 2
 
-- Polygon coin, ETH with a different chain ID.
-- URI: `bc-coin://137.secp256k1/60`
+* Polygon coin, ETH with a different chain ID.
+* URI: `bc-coin://secp256k1.60.137`
 
 * In the CBOR diagnostic notation:
 
