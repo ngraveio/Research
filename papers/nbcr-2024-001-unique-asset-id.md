@@ -18,7 +18,7 @@ We propose a new URI format, named *Unique Asset ID (UAI)*, to standardize the a
 
 The UAI format is based on the following URL:
 
- **`uai://curve.type[.subtype1.subtype2]:tokenid[.subtype1.subtype2]/purpose/coin_type/account/change/address_index`**
+ **`uai://curve.type[.subtype1.subtype2]:tokenid[.subtype1.subtype2]/derivation_path`**
 
 This format uses the reverse DNS notation because it groups closely related coins when sorting them lexically.
 
@@ -51,8 +51,8 @@ The other fields are ***optional*** and defined as follow:
 3. **`tokenid`** field carries the token information. For example, ERC20 tokens are identified through the token address and MultiversX tokens using their token identifier.   
 For ERC721 and ERC1155 tokens, the token identifier is the combination of a contract address and a token ID. In this case, the sub-type **`tokenid[.subtype1.subtype2]`** fields will be used to specify the token ID associated to the contract address. 
 
-5. **`/purpose/coin_type/account/change/address_index`** field carries the derivation path to indicate the account related to the asset.    
-The hardened paths in the derivation paths will be indicated using the letter `h`.
+5. **`derivation_path`** field carries the derivation path to indicate the account related to the asset.     
+The derivation path is specified by `purpose/coin_type/account/change/address_index` format, without the `m/` prefix used in regular notation. Besides, the hardened paths in the derivation paths will be indicated using the letter `h`.
 
 ### Examples
 
