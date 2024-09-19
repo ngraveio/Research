@@ -4,30 +4,24 @@
 **© 2023 Ngrave**
 
 Authors: İrfan Bilaloğlu, Mathieu Da Silva, Maher Sallam<br/>
-Date: 17 September 2024<br/>
+Date: 18 September 2024<br/>
 
 ---
 
 ### Introduction
 
-In this document, we are defining the new UR type `crypto-coin-identity` based on new types and [IANA-defined](https://www.iana.org/assignments/cose/cose.xhtml#elliptic-curves) constants.
-
-By uniquely identifying a coin, the watch-only wallet is able to request the coin price and its logo, as well as to identify the protocol to derive addresses and to prepare transactions. Currently, many QR-based offline signers are based the coin identification on their homemade enumeration. 
+In this document, we are defining the new UR type `crypto-coin-identity` based on new types and COSE constants defined in [[RFC9053]](https://www.rfc-editor.org/rfc/rfc9053.html).
 
 We propose to define a UR type standardizing the coin identification by aggregating the following information:
 
-1. Curve of the coin (e.g. *`["secp256k1", "ed25519", "p256 (secp256r1)”, “X25519 (sr25519)”]` ).* This information is mandatory in the case of some blockchain (e.g. Tezos) supporting multiple elliptic curves.
-2. BIP44 coin type as defined in [[SLIP44]](https://github.com/satoshilabs/slips/blob/master/slip-0044.md).
-3. Subtype to define additional information to identify the coin (e.g. the chain ID for an EVM chain).
+1. Curve of the coin (e.g. *`["secp256k1", "ed25519", "p256 (secp256r1)”, “X25519 (sr25519)”]` ).* This information is mandatory since some blockchains (e.g. Tezos) support multiple elliptic curves.
+2. Coin type as defined in [[SLIP44]](https://github.com/satoshilabs/slips/blob/master/slip-0044.md) with the high bit turned off.
+3. Subtype to define additional information to identify the coin. For example, every EVM chains require to have the chain ID defined as sub-type.
 
 ### EC Curve Definitions
 
-The required `curve` field carries the elliptic curve information of the coin.
+The required `curve` field carries the elliptic curve information of the coin, with the **value** field defined in the table from [[IANA COSE Elliptic Curves]](https://www.iana.org/assignments/cose/cose.xhtml#elliptic-curves).
 
-This table taken from [IANA COSE Elliptic Curves](https://www.iana.org/assignments/cose/cose.xhtml#elliptic-curves).
-Should be updated as IANA updates the table.
-
-The **value** field is used CBOR encoding and the **Name reference** field is used with lowercase and without special characters in URI encoding. 
 
 | Name                     | Value                           | Key Type | Description                        | Change Controller | Reference | Recommended |
 |--------------------------|---------------------------------|----------|------------------------------------|-------------------|-----------|-------------|
@@ -43,9 +37,7 @@ The **value** field is used CBOR encoding and the **Name reference** field is us
 
 ### Type Data
 
-The required `type` field carries the coin type information as stated in [BIP44 Document](https://github.com/bitcoin/bips/blob/master/bip-0044.mediawiki) data.
-
-Data is taken from [SLIP44](https://github.com/satoshilabs/slips/blob/master/slip-0044.md)
+The required `type` field carries the coin type information as defined in [[SLIP44]](https://github.com/satoshilabs/slips/blob/master/slip-0044.md) with the high bit turned off.
 
 ### CDDL
 
@@ -82,47 +74,59 @@ type = 2
 subtype = 3
 ```
 
-### URI Format
+### Example/Test Vector 1: Bitcoin (BTC)
 
-The UR type is designed to be easily convertible to a URI format when human readability or deep linking are required.
+* In the CBOR diagnostic notation:
 
-The URI format is as follows: **`bc-coin://curve.type[.subtype1.subtype2][?optional=parameters]`**. This format uses the reverse DNS notation because it groups closely related coins when sorting them lexically.
+```
+{
+   1: 8, ; curve-secp256k1
+   2: 0 ; Bitcoin SLIP44
+}
+```
 
-The following table provides several examples:
+* Encoded as binary using [[CBOR-PLAYGROUND]](https://cbor.me/):
 
-| Coin | URI coin identity |
-| --- | --- |
-| Bitcoin (BTC) | bc-coin://secp256k1.0 |
-| Ethereum (ETH) | bc-coin://secp256k1.60 |
-| Polygon (POL) | bc-coin://secp256k1.60.137 |
-| Solana (SOL) | bc-coin://ed25519.508 |
-| Tezos (XTZ) based on ed25519 | bc-coin://ed25519.1729 |
-| Tezos (XTZ) based on secp256k1 | bc-coin://secp256k1.1729 |
-| Neo | bc-coin://p256.888 |
-| Polkadot | bc-coin://x25519.354 |
+```
+A2    # map(2)
+   01 # unsigned(1) curve
+   08 # unsigned(8) secp256k1
+   02 # unsigned(2) type
+   00 # unsigned(0) Bitcoin SLIP44
+```
 
-### Example/Test Vector 1
+* As a hex string:
 
-* Solana coin
-* URI: `bc-coin://ed25519.501`
+```
+A201080200
+
+```
+
+* As a UR:
+
+```
+ur:crypto-coin-identity/hdadbraoae
+```
+
+### Example/Test Vector 2: Solana (SOL)
 
 * In the CBOR diagnostic notation:
 
 ```
 {
    1: 6, ; curve-ed25519
-   2: 501, ; type Solana BIP44
+   2: 501 ; Solana SLIP44
 }
 ```
 
-* Encoded as binary using [CBOR-PLAYGROUND]:
+* Encoded as binary using [[CBOR-PLAYGROUND]](https://cbor.me/):
 
 ```
 A2         # map(2)
    01      # unsigned(1) curve
    06      # unsigned(6) ed25519
    02      # unsigned(2) type
-   19 01F5 # unsigned(501) Solana
+   19 01F5 # unsigned(501) Solana SLIP44
 ```
 
 * As a hex string:
@@ -135,36 +139,30 @@ A20106021901F5
 * As a UR:
 
 ```
-ur:crypto-eckey/oeaoykaxhdcxlkahssqzwfvslofzoxwkrewngotktbmwjkwdcmnefsaaehrlolkskncnktlbaypkrphsmyid
+ur:crypto-coin-identity/hdadbdaoftadpk
 ```
 
-* UR as QR Code:
 
-![](bcr-2020-008/1.png)
-
-### Example/Test Vector 2
-
-* Polygon coin, ETH with a different chain ID.
-* URI: `bc-coin://secp256k1.60.137`
+### Example/Test Vector 3: Polygon (POL)
 
 * In the CBOR diagnostic notation:
 
 ```
 {
    1: 8, ; curve-secp256k1
-   2: 60, ; type ETH BIP44
-   3: [137], ; sub type Polygon
+   2: 60, ; Ethereum SLIP44 
+   3: [137] ; Polygon chain ID
 }
 ```
 
-* Encoded as binary using [CBOR-PLAYGROUND]:
+* Encoded as binary using [[CBOR-PLAYGROUND]](https://cbor.me/):
 
 ```
 A3          # map(3)
    01       # unsigned(1) curve
    08       # unsigned(1) secp256k1
    02       # unsigned(2) type
-   18 3C    # unsigned(60) ETH
+   18 3C    # unsigned(60) Ethereum SLIP44
    03       # unsigned(3) sub type
    81       # array(1) 
       18 89 # unsigned(137) Polygon Chain Id
@@ -177,14 +175,18 @@ A3010802183C03811889
 
 ```
 
+* As a UR:
+
+```
+ur:crypto-coin-identity/hgadbraoetpsatenetfd
+```
+
 
 ### References
 
 | Title | Link |
 | --- | --- |
-| [BIP44] | https://github.com/bitcoin/bips/blob/master/bip-0044.mediawiki |
+| [RFC9053] | https://www.rfc-editor.org/rfc/rfc9053.html |
+| [IANA COSE Elliptic Curves] | https://www.iana.org/assignments/cose/cose.xhtml#elliptic-curves |
 | [SLIP44]  | https://github.com/satoshilabs/slips/blob/master/slip-0044.md |
-| COSE| https://www.rfc-editor.org/rfc/rfc9053.html |
-| IANA COSE Elliptic Curves | https://www.iana.org/assignments/cose/cose.xhtml#elliptic-curves |
-| IANA CBOR Tags | https://www.iana.org/assignments/cbor-tags/cbor-tags.xhtml |
-| Hex String Tag for CBOR | https://github.com/toravir/CBOR-Tag-Specs/blob/master/hexString.md |
+| [CBOR-PLAYGROUND]  | https://cbor.me/ |
