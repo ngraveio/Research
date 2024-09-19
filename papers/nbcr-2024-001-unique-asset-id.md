@@ -83,7 +83,7 @@ The following table provides additional examples to identify some specific asset
 
 ### UAI format/UR types conversion
 
-The UAI format and the UR types defined in [[NBCR-2023-001]](https://github.com/ngraveio/Research/blob/main/papers/nbcr-2023-001-coin-identity.md) and [[NBCR-2023-002]](https://github.com/ngraveio/Research/blob/main/papers/nbcr-2023-002-multi-layer-sync.md) share the same information. While UAI format is human readable and designed to be used internally by the wallets (for both offline signers and watch-only wallets), UR types are a compact format designed for efficient communication between an offline signer and a watch-only wallet.
+The UAI format and the UR types defined in [[NBCR-2023-001]](https://github.com/ngraveio/Research/blob/main/papers/nbcr-2023-001-coin-identity.md) and [[NBCR-2023-002]](https://github.com/ngraveio/Research/blob/main/papers/nbcr-2023-002-multi-layer-sync.md) share the same information. While the UAI format is human readable and designed to be used as asset identifier in a database and in communication between different wallets or between a website and a mobile app to link unique crypto assets, the UR types are a compact format designed for efficient communication between an offline signer and a watch-only wallet.
 
 The UR types and the UAI format can easily be converted to each other:
 
