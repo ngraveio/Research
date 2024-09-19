@@ -16,7 +16,7 @@ We propose to define a UR type standardizing the coin identification by aggregat
 
 1. Curve of the coin (e.g. *`["secp256k1", "ed25519", "p256 (secp256r1)”, “X25519 (sr25519)”]` ).* This information is mandatory since some blockchains (e.g. Tezos) support multiple elliptic curves.
 2. Coin type as defined in [[SLIP44]](https://github.com/satoshilabs/slips/blob/master/slip-0044.md) with the high bit turned off.
-3. Subtype to define additional information to identify the coin. For example, every EVM chains require to have the chain ID defined as sub-type.
+3. Sub-type to define additional information to identify the coin. For example, every EVM chain is required to have the chain ID defined as a sub-type.
 
 ### EC Curve Definitions
 

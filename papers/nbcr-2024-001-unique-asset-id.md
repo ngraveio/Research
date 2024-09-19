@@ -16,14 +16,14 @@ We propose a new URI format, named *Unique Asset ID (UAI)*, to standardize the a
 
 ### UAI format 
 
-The UAI format is based on following URL:
+The UAI format is based on the following URL:
 
  **`uai://curve.type[.subtype1.subtype2]:tokenid[.subtype1.subtype2]/purpose/coin_type/account/change/address_index`**
 
 This format uses the reverse DNS notation because it groups closely related coins when sorting them lexically.
 
-Using an URL format presents several benefits. 
-1. URL parsers exist in standard libraries in all languages. 
+Using a URL format presents several benefits. 
+1. URL parsers exist in the standard libraries of many languages. 
 2. The format is human readable.
 
 ### UAI composition
@@ -44,7 +44,7 @@ The two ***required*** fields in the UAI format are the following:
 | secp256k1                | 8                               | EC2      | SECG secp256k1 curve               | IESG              | [RFC8812] | No          |
 
 2. **`type`** field carries the coin type information as defined in [[SLIP44]](https://github.com/satoshilabs/slips/blob/master/slip-0044.md) with the high bit turned off.    
-In case of additional information required to identify the asset, the sub-type **`type[.subtype1.subtype2]`** fields have to be defined. For example, every EVM chains require the additional chain ID as identifier.
+In case additional information is required to identify the asset, the sub-type **`type[.subtype1.subtype2]`** fields must  be defined. For example, every EVM chain requires the additional chain ID as an identifier.
 
 The other fields are ***optional*** and defined as follow: 
 
@@ -75,17 +75,17 @@ The following table provides additional examples to identify some specific asset
 | ---------------- | --- |
 | Bitcoin (BTC) Taproot accounts | uai://secp256k1.0/86h/0h/0h |
 | USDC on Polygon | uai://secp256k1.60.137:0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359 |
-| USDC on Solana | bc-coin://ed25519.501:EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v |
-| USDC on MultiversX | bc-coin://ed25519.508:USDC-c76f1f |
-| [NFT](https://etherscan.io/nft/0x495f947276749ce646f68ac8c248420045cb7b5e/30215980622330187411918288900688501299580125367569939549692495859506871271425) on Ethereum | bc-coin://secp256k1.60.1:0x495f947276749Ce646f68AC8c248420045cb7b5e. 30215980622330187411918288900688501299580125367569939549692495859506871271425 |
-| USDC on Ethereum account n°2 | bc-coin://secp256k1.60.1:0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48/44h/60h/0h/0/0/1 |
+| USDC on Solana | uai://ed25519.501:EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v |
+| USDC on MultiversX | uai://ed25519.508:USDC-c76f1f |
+| [NFT](https://etherscan.io/nft/0x495f947276749ce646f68ac8c248420045cb7b5e/30215980622330187411918288900688501299580125367569939549692495859506871271425) on Ethereum | uai://secp256k1.60.1:0x495f947276749Ce646f68AC8c248420045cb7b5e.30215980622330187411918288900688501299580125367569939549692495859506871271425 |
+| USDC on Ethereum account n°2 | uai://secp256k1.60.1:0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48/44h/60h/0h/0/0/1 |
 
 
 ### UAI format/UR types conversion
 
 The UAI format and the UR types defined in [[NBCR-2023-001]](https://github.com/ngraveio/Research/blob/main/papers/nbcr-2023-001-coin-identity.md) and [[NBCR-2023-002]](https://github.com/ngraveio/Research/blob/main/papers/nbcr-2023-002-multi-layer-sync.md) share the same information. While UAI format is human readable and designed to be used internally by the wallets (for both offline signers and watch-only wallets), UR types are a compact format designed for efficient communication between an offline signer and a watch-only wallet.
 
-The UR types and the UAI format can be easily convertible to each other:
+The UR types and the UAI format can easily be converted to each other:
 
 - `crypto-coin-identity` UR type defined in [[NBCR-2023-001]](https://github.com/ngraveio/Research/blob/main/papers/nbcr-2023-001-coin-identity.md) contains the same mandatory UAI fields, i.e. the curve, the type and the subtypes. 
 
