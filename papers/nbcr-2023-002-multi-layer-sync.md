@@ -7,7 +7,7 @@
 Authors: Mathieu Da Silva, Irfan Bilaloglu <br/>
 Date: April 19, 2023
 
-Revised: May 16, 2023
+Revised: September 20, 2024
 
 ---
 
@@ -87,7 +87,7 @@ The first layer is based on the `hdkey` UR type (#6.40303) proposed by BC in [[B
 
 The second layer is based on two UR types: 
 1) `account` (#6.40311) proposed by BC in [[BCR-2023-019]](https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2023-019-account-descriptor.md) to share a list of output descriptors associated to an xpub key (mostly useful to sync with Bitcoin-only wallets). A previous version `crypto-account` (#6.311) defined in [[BCR-2020-015]](https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-015-account.md) is deprecated, but may still be supported for backwards compatibility.
-2) `crypto-multi-account` introduced by Keystone in [[solana-qr-data-protocol]](https://github.com/KeystoneHQ/Keystone-developer-hub/blob/main/research/solana-qr-data-protocol.md#setup-watch-only-wallet-by-offline-signer) to share multiple public keys with the watch-only wallet (e.g. with coins based on ed25519 curves where each account contains a fully hardened derivation path). This version still uses however deprecated BCR versions with `crypto-hdkey` (#6.303) and will need an update.
+2) `multi-account` (#6.41103), replacing `crypto-multi-account` (#6.1103) introduced by Keystone in [[solana-qr-data-protocol]](https://github.com/KeystoneHQ/Keystone-developer-hub/blob/main/research/solana-qr-data-protocol.md#setup-watch-only-wallet-by-offline-signer) to share multiple public keys with the watch-only wallet (e.g. with coins based on ed25519 curves where each account contains a fully hardened derivation path). The version defined in [[solana-qr-data-protocol]](https://github.com/KeystoneHQ/Keystone-developer-hub/blob/main/research/solana-qr-data-protocol.md#setup-watch-only-wallet-by-offline-signer)  still uses deprecated BCR versions with `crypto-hdkey` (#6.303). We propose in this document the updated version, even if the legacy version may still be supported for backwards compatibility. 
 
 Finally we propose in this document a third layer based on the `crypto-portfolio` UR type extended the two other layers to add extra information: 1) by defining a coin identity to specify the elliptic curve and any subtype (e.g. chain ID for EVM chains), 2) by adding token IDs and 3) by sending device-related metadata in the sync payload.
 
@@ -105,7 +105,8 @@ Finally we propose in this document a third layer based on the `crypto-portfolio
 | (Deprecated) `crypto-output` | 308 | BlockchainCommons (BC) | Previous version of Output descriptor (Version 1) | [[BCR-2020-010]](https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-010-output-desc.md) |
 | `account` | 40311 | BlockchainCommons (BC) | Import an account based on several output descriptors (Version 2) | [[BCR-2023-019]](https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2023-019-account-descriptor.md)  |
 | (Deprecated) `crypto-account` | 311 | BlockchainCommons (BC) | Previous version of Import an account based on several output descriptors (Version 1) | [[BCR-2020-015]](https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-015-account.md)  |
-| `crypto-multi-account` | 1103 | Keystone | Import multiple accounts in one animated QR | [[solana-qr-data-protocol]](https://github.com/KeystoneHQ/Keystone-developer-hub/blob/main/research/solana-qr-data-protocol.md#setup-watch-only-wallet-by-offline-signer) |
+| `multi-account` | 41103 | Ngrave | Import multiple accounts in one animated QR | This document |
+| (Deprecated) `crypto-multi-account` | 1103 | Keystone | Previous version of Import multiple accounts in one animated QR | [[solana-qr-data-protocol]](https://github.com/KeystoneHQ/Keystone-developer-hub/blob/main/research/solana-qr-data-protocol.md#setup-watch-only-wallet-by-offline-signer) |
 | `crypto-coin-identity` | 1401 | Ngrave | Add additional information to a specific hdkey | [[NBCR-2023-001]](https://github.com/ngraveio/Research/blob/main/papers/nbcr-2023-001-coin-identity.md) |
 | `crypto-detailed-account` | 1402 | Ngrave | Import multiple accounts with and without output descriptors and specify optionally tokens to synchronize | This document |
 | `crypto-portfolio-coin` | 1403 | Ngrave | Associate several accounts to its coin identity  | This document |
@@ -324,13 +325,13 @@ chain-code-bytes = bytes .size 32
 
 ### UR registry constituting the layer 2
 
-The second layer of the proposed sync protocol is based on `crypto-multi-account` and `account` UR types, wrapping as lists `crypto-hdkey` (the previous version of `hdkey`) and `output-descriptor` respectively. 
+The second layer of the proposed sync protocol is based on `multi-account` and `account` UR types, wrapping as lists `hdkey` and `output-descriptor` respectively. 
 
-When using `crypto-multi-account`, this layer aims to synchronize several public keys for the same coin. While when using `account`, this layer aims to add script types for each synchronized public key.
+When using `multi-account`, this layer aims to synchronize several public keys for the same coin. While when using `account`, this layer aims to add script types for each synchronized public key.
 
-The CDDL for version 1 `crypto-hdkey` differs from version 2 `hdkey` only in the UR types and CBOR tags it uses, respectively `#6.403` for version 1 and `#6.40403` for version 2.
+The CDDL for version 1 `crypto-multi-account` differs from version 2 `multi-account` only in the UR types and CBOR tags it uses, respectively `#6.1103` for version 1 and `#6.41103` for version 2.
 
-We break down the structures of `crypto-multi-account` and `account` in Figure 4. The CDDL for the other UR types are given hereafter.
+We break down the structures of `multi-account` and `account` in Figure 4. The CDDL for the other UR types are given hereafter.
 
 ```mermaid
 flowchart TB  
@@ -348,19 +349,19 @@ flowchart TB
 	out -.-> keys[(key)]
     out -.-> name
     out -.-> note
-    key --> HD2[(hdkey)]
-    key -.-> |not preferred| ec[(eckey)]
-    key -.-> |not preferred| add[(address)]
+    keys --> HD2[(hdkey)]
+    keys -.-> |not preferred| ec[(eckey)]
+    keys -.-> |not preferred| add[(address)]
 	end
 
-	%% crypto-multi-account breakdown
-	subgraph crypto-multi-account
+	%% multi-account breakdown
+	subgraph multi-account
     direction TB
-	Mult[(crypto-multi-account)] --> MF3[master-fingerprint]
-	Mult --> HD3[[crypto-hdkey]]
+	Mult[(multi-account)] --> MF3[master-fingerprint]
+	Mult --> HD3[[hdkey]]
 	end
 ```
-Figure 4. Breakdown of crypto-multi-account and account forming the layer 2 of the Sync protocol
+Figure 4. Breakdown of multi-account and account forming the layer 2 of the Sync protocol
 
 - **CDDL for output descriptor** `output-descriptor`
 
@@ -426,14 +427,16 @@ master-fingerprint = 1
 output-descriptors = 2
 ```
 
-- **CDDL for syncing multiple accounts without their output descriptors** `crypto-multi-account`
+- **CDDL for syncing multiple accounts without their output descriptors** `multi-account`
 
-This UR type has been added to the initial registry by keystone in [[solana-qr-data-protocol]](https://github.com/KeystoneHQ/Keystone-developer-hub/blob/main/research/solana-qr-data-protocol.md#setup-watch-only-wallet-by-offline-signer) in order to be able to send multiple `crypto-hdkey` describing several accounts of the same coin.
+A first version of this UR type has been added to the initial registry by keystone in [[solana-qr-data-protocol]](https://github.com/KeystoneHQ/Keystone-developer-hub/blob/main/research/solana-qr-data-protocol.md#setup-watch-only-wallet-by-offline-signer) in order to be able to send multiple `crypto-hdkey` describing several accounts of the same coin.
 
-When used embedded in another CBOR structure, this structure should be tagged #6.1103.
+We propose an updated version `multi-account` using the updated version `hdkey`.
+
+When used embedded in another CBOR structure, this structure should be tagged #6.41103.
 
 ```
-key_exp = #6.303(crypto-hdkey)
+key_exp = #6.4303(hdkey)
 
 accounts = {
     master-fingerprint: uint32, ; Master fingerprint (fingerprint for the master public key as per BIP32)
@@ -445,8 +448,6 @@ master-fingerprint = 1
 keys = 2
 device = 3
 ```
-
-As already mentioned, this UR type still uses a previous `hdkey` version and should be updated in the future.
 
 ### UR registry constituting the layer 3
 
@@ -502,7 +503,7 @@ Figure 5. Breakdown of crypto-portfolio forming the layer 3 of the sync protocol
 
 - **CDDL for synchronizing several accounts with detailed information** `crypto-detailed-account`
 
-In this document, we are defining the new `crypto-detailed-account` UR type, extending the scope of the previously defined `crypto-account` and `crypto-multi-account` UR types in [UR registry constituting the layer 2](nbcr-2023-002-multi-layer-sync.md#ur-registry-constituting-the-layer-2). The information contained in `account` and `crypto-multi-account` can be easily converted to `crypto-detailed-account` type.
+In this document, we are defining the new `crypto-detailed-account` UR type, extending the scope of the previously defined `account` and `cmulti-account` UR types in [UR registry constituting the layer 2](nbcr-2023-002-multi-layer-sync.md#ur-registry-constituting-the-layer-2). The information contained in the layer 2 sync protocol can be easily converted to `crypto-detailed-account` type.
 
 This new type aims to incorporate in the same structure:
 
@@ -789,7 +790,7 @@ GovgcGs4SvM7SdkDHdh5Y7WTLfYa3NBt4dhSKfgkF3R4
 
 ```
 {1: 934670036, ; master-fingerprint
- 2: [303(  ; #6.303(crypto-hdkey)
+ 2: [40303(  ; #6.40303(hdkey)
   {3: h'02EAE4B876A8696134B868F88CC2F51F715F2DBEDB7446B8E6EDF3D4541C4EB67B', ; key-data
    6: 304({1: [44, true, 501, true, 0, true, 0, true]}) ; origin m/44’/501’/0’/0’
  })],
@@ -805,7 +806,7 @@ A3                                      # map(3)
    1A 37B5EED4                          # unsigned(934670036)
    02                                   # unsigned(2)
    81                                   # array(1)
-      D9 012F                           # tag(303)
+      D9 9D6F                           # tag(40303)
          A2                             # map(2)
             03                          # unsigned(3)
             58 21                       # bytes(33)
@@ -831,7 +832,7 @@ A3                                      # map(3)
 - UR encoding 
 
 ```
-ur:crypto-multi-accounts/hgadfwnehnntlgaoenleadldhdatbkhkaonrmeiadthlcebemwiactphfhlypkglctbekgkkmecesdiamhnspelgzofltnhtenbdleadlyhladfeetkkpkftadpkpkaepkaepkatbntnspvtrsahse
+ur:crypto-multi-accounts/hgadfwnehnntlgaoenlegtcdhdatbkhkaonrmeiadthlcebemwiactphfhlypkglctbekgkkmecesdiamhnspelgzofltnhtenbdleadlyhladfeetkkpkftadpkpkaepkaepkatbntnspvtrsahse
 ```
 
 </details>
@@ -858,11 +859,11 @@ erd1gymuz6ukd2avrh6vhzf67ss75zlxrffzv648kw4fjwgq7ufevs8s463da3 ; m/44’/508’/
 
 ```
 {1: 934670036, ; master-fingerprint
- 2: [303(  ; #6.303(crypto-hdkey)
+ 2: [40303(  ; #6.40303(hdkey)
   {3: h'02954768223BB94015350462BADA20DAEED7E25C4777F997B56C027746E4F8AC67', ; key-data
    6: 304({1: [44, true, 508, true, 0, true, 0, true, 0, true]}) ; origin m/44’/501’/0’/0’/0'
  }),
- 303(  ; #6.303(crypto-hdkey)
+ 40303(  ; #6.40303(hdkey)
   {3: h'024137C16B966ABAC1DF4CB893AF421EA0BE61A52266AA7B3AA993900F7139640F', ; key-data
    6: 304({1: [44, true, 508, true, 0, true, 0, true, 1, true]}) ; origin m/44’/501’/0’/0’/1'
  })],
@@ -878,7 +879,7 @@ A3                                      # map(3)
    1A 37B5EED4                          # unsigned(934670036)
    02                                   # unsigned(2)
    82                                   # array(2)
-      D9 012F                           # tag(303)
+      D9 9D6F                           # tag(40303)
          A2                             # map(2)
             03                          # unsigned(3)
             58 21                       # bytes(33)
@@ -898,7 +899,7 @@ A3                                      # map(3)
                      F5                 # primitive(21)
                      00                 # unsigned(0)
                      F5                 # primitive(21)
-      D9 012F                           # tag(303)
+      D9 9D6F                           # tag(40303)
          A2                             # map(2)
             03                          # unsigned(3)
             58 21                       # bytes(33)
@@ -925,7 +926,7 @@ A3                                      # map(3)
 
 - UR encoding 
 ```
-ur:crypto-multi-accounts/hgadfwnehnntlgaofeleadldhdatbkhkaofmspcthepyjnrkdtmhasbkjemlhtmlntlemtblspdrpkfyhncmaodrsdmephhdcdbdleadlyhladfeetkkpkftadpkpkaepkaepkaepkleadldhdatbkhkaorsnelecpfechjelemdspiafthtrkgwgwkkbehmhebnhtenpthrftfdcbctpnbscbbdleadlyhladfeetkkpkftadpkpkaepkaepkadpkatbntnspvtrsahse
+ur:crypto-multi-accounts/hgadfwnehnntlgaofelegtcdhdatbkhkaofmspcthepyjnrkdtmhasbkjemlhtmlntlemtblspdrpkfyhncmaodrsdmephhdcdbdleadlyhladfeetkkpkftadpkpkaepkaepkaepklegtcdhdatbkhkaorsnelecpfechjelemdspiafthtrkgwgwkkbehmhebnhtenpthrftfdcbctpnbscbbdleadlyhladfeetkkpkftadpkpkaepkaepkadpkatbntnspvtrsahse
 ```
 
 </details>
@@ -1354,7 +1355,7 @@ We have listed below the watch-only wallets allowing the synchronization through
 | Cosmos (ATOM) | `crypto-multi-accounts` | [Keplr](http://support.keyst.one/3rd-party-wallets/cosmos-wallets/keplr-extension) |
 | Near (NEAR) | `crypto-multi-accounts` | [Sender Wallet](https://support.keyst.one/3rd-party-wallets/near-wallets/sender-wallet-extension) |
 
-The sync communication protocol is fully compatible with the listed watch-only wallets.
+The sync communication protocol is fully compatible with the listed watch-only wallets. Most of them uses however previous versions of the UR types presented in this paper.
 
 The internal sync communication protocol in NGRAVE presents however an important rework with the introduction of the UR types, but the same information is shared to the watch-only wallet making the sync operation unchanged for the end-user. This document also proposed to standardize the more advanced layer of synchronization between the existing QR-based hardware wallet.
 
@@ -1382,7 +1383,7 @@ The information shared with the watch-only wallet can be altered on the device r
 | [BCR-2020-010] | https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-010-output-desc.md |
 | [BCR-2023-010] | https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2023-010-output-descriptor.md |
 | [BCR-2020-008] | https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-008-eckey.md |
-| [BCR-2020-009] | (https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-009-address.md |
+| [BCR-2020-009] | https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-009-address.md |
 | [BCR-2023-019] | https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2023-019-account-descriptor.md |
 | [BCR-2020-015] | https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-015-account.md |
 | [NBCR-2023-001] | https://github.com/ngraveio/Research/blob/main/papers/nbcr-2023-001-coin-identity.md |
