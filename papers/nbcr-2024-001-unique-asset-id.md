@@ -52,9 +52,10 @@ Extra **optional** information can be provided in the UAI format in order to lin
 For ERC721 and ERC1155 tokens, the token identifier is the combination of a contract address and a token ID. In this case, the sub-type **`tokenid[.subtype1.subtype2]`** fields will be used to specify the token ID associated to the contract address. 
 
 5. **`derivation_path`** field carries the derivation path to indicate the account related to the asset.     
-The derivation path is specified by `purpose/coin_type/account/change/address_index` format, without the `m/` prefix used in regular notation. Besides, the hardened paths in the derivation paths will be indicated using the letter `h`.
+The derivation path is specified by `purpose/coin_type/account/change/address_index` format, without the `m/` prefix used in regular notation. Besides, the hardened paths in the derivation paths will be indicated using the letter `h`.    
+The derivation path can be defined with a range of index in case of specifying specific account associated to the asset, e.g. `44h/60h/0h/0/0/[0-2]` to sync the first 3 ETH accounts.
 
-6. **`master_fingerprint`** field provides the fingerprint for the master public key as per BIP32.
+6. **`master_fingerprint`** field provides the fingerprint for the master public key as per BIP32 and defined as `master_fingerprint=uint32` in the URI format where `uint32` is the master fingerprint value in the 32-bit unsigned integer format.
 
 ### Examples
 
@@ -80,7 +81,8 @@ The following table provides additional examples to identify some specific asset
 | USDC on Solana | uai://ed25519.501:EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v |
 | USDC on MultiversX | uai://ed25519.508:USDC-c76f1f |
 | [NFT](https://etherscan.io/nft/0x495f947276749ce646f68ac8c248420045cb7b5e/30215980622330187411918288900688501299580125367569939549692495859506871271425) on Ethereum | uai://secp256k1.60.1:0x495f947276749Ce646f68AC8c248420045cb7b5e.30215980622330187411918288900688501299580125367569939549692495859506871271425 |
-| USDC on Ethereum account n°2 | uai://secp256k1.60.1:0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48/44h/60h/0h/0/0/1?master_fingerprint=934670036 |
+| USDC on Ethereum account 2 | uai://secp256k1.60.1:0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48/44h/60h/0h/0/0/1?master_fingerprint=934670036 |
+| Ethereum accounts 1 to 3 | uai://secp256k1.60.1/44h/60h/0h/0/0/[0-2]?master_fingerprint=934670036 |
 
 
 ### UAI format/UR types conversion
