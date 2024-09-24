@@ -18,7 +18,7 @@ We propose a new URI format, named *Unique Asset ID (UAI)*, to standardize the a
 
 The UAI format is based on the following URL:
 
- **`uai://curve.type[.subtype1.subtype2]:tokenid[.subtype1.subtype2]/derivation_path`**
+ **`uai://curve.type[.subtype1.subtype2]:tokenid[.subtype1.subtype2]/derivation_path?master_fingerprint=uint32`**
 
 This format uses the reverse DNS notation because it groups closely related coins when sorting them lexically.
 
@@ -28,7 +28,7 @@ Using a URL format presents several benefits.
 
 ### UAI composition
 
-The two ***required*** fields in the UAI format are the following:
+An asset is identified by two ***required*** fields in the UAI format:
 
 1. **`curve`** field carries the elliptic curve information of the coin, based on the **Name reference** in lowercase defined in the table from [[IANA COSE Elliptic Curves]](https://www.iana.org/assignments/cose/cose.xhtml#elliptic-curves). 
 
@@ -46,13 +46,15 @@ The two ***required*** fields in the UAI format are the following:
 2. **`type`** field carries the coin type information as defined in [[SLIP44]](https://github.com/satoshilabs/slips/blob/master/slip-0044.md) with the high bit turned off.    
 In case additional information is required to identify the asset, the sub-type **`type[.subtype1.subtype2]`** fields must  be defined. For example, every EVM chain requires the additional chain ID as an identifier.
 
-The other fields are ***optional*** and defined as follow: 
+Extra **optional** information can be provided in the UAI format in order to link an asset to a wallet:
 
 3. **`tokenid`** field carries the token information. For example, ERC20 tokens are identified through the token address and MultiversX tokens using their token identifier.   
 For ERC721 and ERC1155 tokens, the token identifier is the combination of a contract address and a token ID. In this case, the sub-type **`tokenid[.subtype1.subtype2]`** fields will be used to specify the token ID associated to the contract address. 
 
 5. **`derivation_path`** field carries the derivation path to indicate the account related to the asset.     
 The derivation path is specified by `purpose/coin_type/account/change/address_index` format, without the `m/` prefix used in regular notation. Besides, the hardened paths in the derivation paths will be indicated using the letter `h`.
+
+6. **`master_fingerprint`** field provides the fingerprint for the master public key as per BIP32.
 
 ### Examples
 
@@ -78,7 +80,7 @@ The following table provides additional examples to identify some specific asset
 | USDC on Solana | uai://ed25519.501:EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v |
 | USDC on MultiversX | uai://ed25519.508:USDC-c76f1f |
 | [NFT](https://etherscan.io/nft/0x495f947276749ce646f68ac8c248420045cb7b5e/30215980622330187411918288900688501299580125367569939549692495859506871271425) on Ethereum | uai://secp256k1.60.1:0x495f947276749Ce646f68AC8c248420045cb7b5e.30215980622330187411918288900688501299580125367569939549692495859506871271425 |
-| USDC on Ethereum account n°2 | uai://secp256k1.60.1:0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48/44h/60h/0h/0/0/1 |
+| USDC on Ethereum account n°2 | uai://secp256k1.60.1:0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48/44h/60h/0h/0/0/1?master_fingerprint=934670036 |
 
 
 ### UAI format/UR types conversion
@@ -96,8 +98,8 @@ We provide an example how UR types and UAI format can be converted to each other
 - USDC on Polygon account `44h/60h/0h/1/0`:
 
 ```
-uai://secp256k1.60.137:0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359/44h/60h/0h/1/0
-     |_______________| |_______________________________________________________|
+uai://secp256k1.60.137:0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359/44h/60h/0h/1/0?master_fingerprint=2819587291
+     |_______________| |_____________________________________________________________________________________|
               |                                     |
       crypto-coin-identity                crypto-detailed-accounts
 
@@ -108,6 +110,7 @@ CBOR diagnostic notation
          3: [137] ; Polygon chain ID                 4: h'719EA8CADCA1BBC71BF8511AC3A487286B4D34A860007B8FD498F2732EB89906', ; chain-code
       }                                              6: 304({1: [44, true, 60, true, 0, true]}), ; origin m/44'/60'/0'
                                                      7: 304({1: [1, false, 0, false]}) ; children m/44'/60'/0'/1/0 
+                                                     8: 2819587291 ; parent fingerprint
                                             })],
                                             2: [ h'0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359' ]  ; USDC ERC20 token on Polygon 
                                            }
