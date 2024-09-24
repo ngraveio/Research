@@ -503,11 +503,11 @@ Figure 5. Breakdown of crypto-portfolio forming the layer 3 of the sync protocol
 
 - **CDDL for synchronizing several accounts with detailed information** `crypto-detailed-account`
 
-In this document, we are defining the new `crypto-detailed-account` UR type, extending the scope of the previously defined `account` and `cmulti-account` UR types in [UR registry constituting the layer 2](nbcr-2023-002-multi-layer-sync.md#ur-registry-constituting-the-layer-2). The information contained in the layer 2 sync protocol can be easily converted to `crypto-detailed-account` type.
+In this document, we are defining the new `crypto-detailed-account` UR type, extending the scope of the previously defined `account` and `multi-account` UR types in [UR registry constituting the layer 2](nbcr-2023-002-multi-layer-sync.md#ur-registry-constituting-the-layer-2). The information contained in the layer 2 sync protocol can be easily converted to `crypto-detailed-account` type.
 
 This new type aims to incorporate in the same structure:
 
-- The accounts with and without scripts by selecting either `hdkey` or `output-descriptor`.
+- The accounts with and without scripts by selecting either `hdkey` or `output-descriptor`. When a `hdkey` is embedded inside `crypto-detailed-account`, the optional `coin-info` in `hdkey` should **not** be defined since `crypto-detailed-account` is used in combination with `crypto-coin-identity` used already as asset identifier. 
 - An optional list of tokens to synchronize them at the same time of the associated account. A token identifier is defined as a string or tagged with #6.263 to specify a [[hexString]](https://github.com/toravir/CBOR-Tag-Specs/blob/master/hexString.md).
 
 The following specification of `crypto-detailed-account` is written in CDDL. When used embedded in another CBOR structure, this structure should be tagged #6.1402.
