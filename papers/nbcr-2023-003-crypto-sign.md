@@ -1198,7 +1198,7 @@ There are no existing signing protocol based on UR types for other blockchains (
 
 - **MultiversX and Stellar sign request**
 
-A MultiversX transaction is uniquely identified thanks to `crypto-coin-identity` UR type, i.e. ed25519 as elliptic curve and 508 as coin type. Identically, a Stellar transaction is identified by `with ed25519 as elliptic curve and 148 as coin type.
+A MultiversX transaction is uniquely identified thanks to `crypto-coin-identity` UR type, i.e. ed25519 as elliptic curve and 508 as coin type. Identically, a Stellar transaction is identified with ed25519 as an elliptic curve and 148 as a coin type.
 
 Several fields are required for requesting the signature of a MultiversX or Stellar transaction:
 
@@ -1486,7 +1486,7 @@ We have listed below the watch-only wallets allowing the signing of transactions
 | Near (NEAR) | `near-sign-request` | `near-signature` | [Sender wallet](https://support.keyst.one/3rd-party-wallets/near-wallets/sender-wallet-extension) |
 | Tezos (XTZ) | `xtz-sign-request` | `xtz-signature` | No known wallet |
 
-The signing communication protocol is fully compatible with existing proposals and implementations based on UR types for several blockchains (e.g. Bitcoin with [[BCR-2021-001]](https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2021-001-request.md), Ethereum with [[EIP-4527]](https://eips.ethereum.org/EIPS/eip-4527), Solana with [[solana-qr-data-protocol]](https://github.com/KeystoneHQ/Keystone-developer-hub/blob/main/research/solana-qr-data-protocol.md#sending-the-unsigned-data-from-wallet-only-wallet-to-offline-signer) and Tezos with [[TZIP-25]](https://gitlab.com/tezos/tzip/-/blob/master/proposals/tzip-25/tzip-25.md)). For the blockchains without reference implementation (examples with MultiversX and Stellar), this document proposes new UR types as communication layer via QR code between a watch-only wallet and an offline signer to sign transaction. 
+The signing communication protocol is fully compatible with existing proposals and implementations based on UR types for several blockchains (e.g. Bitcoin with [[BCR-2021-001]](https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2021-001-request.md), Ethereum with [[EIP-4527]](https://eips.ethereum.org/EIPS/eip-4527), Solana with [[solana-qr-data-protocol]](https://github.com/KeystoneHQ/Keystone-developer-hub/blob/main/research/solana-qr-data-protocol.md#sending-the-unsigned-data-from-wallet-only-wallet-to-offline-signer) and Tezos with [[TZIP-25]](https://gitlab.com/tezos/tzip/-/blob/master/proposals/tzip-25/tzip-25.md)). For the blockchains without a reference implementation (examples with MultiversX and Stellar), this document proposes new UR types as a communication layer via QR codes between a watch-only wallet and an offline signer to sign transactions. 
 
 The existing QR protocol between the NGRAVE watch-only wallet, LIQUID, and the NGRAVE offline signer, ZERO, presents major changes with the proposed communication. These changes are however needed for better standardization between the QR-based hardware wallet and to enhance overall security with a common definition on the transaction verification. 
 
