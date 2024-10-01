@@ -17,9 +17,9 @@ The goal of this document is to propose a QR protocol enabling the synchronizati
 
 The protocol aims to support the synchronization of coins based on several elliptic curves (e.g. Secp256k1 and Ed25519) by sharing all the necessary information for syncing coins ([[BIP44]](https://github.com/bitcoin/bips/blob/master/bip-0044.mediawiki) derivation paths, account level xpubs, etc...), with little user interaction required, only scanning a QR code.
 
-This work is based on existing sync protocol, e.g. [[EIP-4527]](https://eips.ethereum.org/EIPS/eip-4527) to sync EVM accounts between an offline signer and a watch-only wallet. The contribution of this paper relies on the definition of a general-purpose synchronization payload for blockchain-agnostic use. 
+This work is based on existing sync protocols, e.g. [[EIP-4527]](https://eips.ethereum.org/EIPS/eip-4527) to sync EVM accounts between an offline signer and a watch-only wallet. The contribution of this paper relies on the definition of a general-purpose synchronization payload for blockchain-agnostic use. 
 
-## **Specification**
+## **Definitions**
 
 **Offline signer**: An offline signer is a device or application which holds the user’s private keys and does not have network access.
 
@@ -1354,7 +1354,7 @@ We have listed below the watch-only wallets allowing the synchronization through
 | Cosmos (ATOM) | `crypto-multi-accounts` | [Keplr](http://support.keyst.one/3rd-party-wallets/cosmos-wallets/keplr-extension) |
 | Near (NEAR) | `crypto-multi-accounts` | [Sender Wallet](https://support.keyst.one/3rd-party-wallets/near-wallets/sender-wallet-extension) |
 
-The sync communication protocol is fully compatible with the listed watch-only wallets. Most of them uses however previous versions of the UR types presented in this paper.
+The sync communication protocol is fully compatible with the listed watch-only wallets. However, most of them use previous versions of the UR types presented in this paper.
 
 The internal sync communication protocol in NGRAVE presents however an important rework with the introduction of the UR types, but the same information is shared to the watch-only wallet making the sync operation unchanged for the end-user. This document also proposed to standardize the more advanced layer of synchronization between the existing QR-based hardware wallet.
 
