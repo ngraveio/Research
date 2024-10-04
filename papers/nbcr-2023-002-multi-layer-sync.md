@@ -89,7 +89,7 @@ The second layer is based on two UR types:
 1) `account` (#6.40311) proposed by BC in [[BCR-2023-019]](https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2023-019-account-descriptor.md) to share a list of output descriptors associated to an xpub key (mostly useful to sync with Bitcoin-only wallets). A previous version `crypto-account` (#6.311) defined in [[BCR-2020-015]](https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-015-account.md) is deprecated, but may still be supported for backwards compatibility.
 2) `multi-account` (#6.41103), replacing `crypto-multi-account` (#6.1103) introduced by Keystone in [[solana-qr-data-protocol]](https://github.com/KeystoneHQ/Keystone-developer-hub/blob/main/research/solana-qr-data-protocol.md#setup-watch-only-wallet-by-offline-signer) to share multiple public keys with the watch-only wallet (e.g. with coins based on ed25519 curves where each account contains a fully hardened derivation path). The version defined in [[solana-qr-data-protocol]](https://github.com/KeystoneHQ/Keystone-developer-hub/blob/main/research/solana-qr-data-protocol.md#setup-watch-only-wallet-by-offline-signer)  still uses deprecated BCR versions with `crypto-hdkey` (#6.303). We propose in this document the updated version, even if the legacy version may still be supported for backwards compatibility. 
 
-Finally we propose in this document a third layer based on the `crypto-portfolio` UR type extended the two other layers to add extra information: 1) by defining a coin identity to specify the elliptic curve and any subtype (e.g. chain ID for EVM chains), 2) by adding token IDs and 3) by sending device-related metadata in the sync payload.
+Finally we propose in this document a third layer based on the `portfolio` UR type extended the two other layers to add extra information: 1) by defining a coin identity to specify the elliptic curve and any subtype (e.g. chain ID for EVM chains), 2) by adding token IDs and 3) by sending device-related metadata in the sync payload.
 
 ## Sync UR types registry
 
@@ -111,7 +111,7 @@ Finally we propose in this document a third layer based on the `crypto-portfolio
 | `detailed-account` | 41402 | Ngrave | Import multiple accounts with and without output descriptors and specify optionally tokens to synchronize | This document |
 | `portfolio-coin` | 41403 | Ngrave | Associate several accounts to its coin identity  | This document |
 | `portfolio-metadata` | 41404 | Ngrave | Specify wallet metadata | This document |
-| `crypto-portfolio` | 1405 | Ngrave | Aggregate the portfolio information | This document |
+| `portfolio` | 41405 | Ngrave | Aggregate the portfolio information | This document |
 
 The table contains deprecated BlockchainCommons UR types that may still be used by some wallets, and therefore should be supported along with the new versions for backward compatibility. In the following document, we will however describe the sync protocol using the latest versions proposed by BlockchainCommons. 
 
@@ -451,15 +451,15 @@ device = 3
 
 ### UR registry constituting the layer 3
 
-The third layer of the proposed sync protocol is based on `crypto-portfolio` UR type, aiming to synchronize the accounts related to multiple coins.
+The third layer of the proposed sync protocol is based on `portfolio` UR type, aiming to synchronize the accounts related to multiple coins.
 
 We break down its structure in Figure 5 based on newly defined UR types: `portfolio-coin`, `coin-identity`, `detailed-account` and `portfolio-metadata`. The CDDL for the new UR types are given hereafter.
 
 ```mermaid
 flowchart TB
 	%% crypto-sync breakdown
-	Sync[(crypto-portfolio)]
-	subgraph crypto-portfolio
+	Sync[(portfolio)]
+	subgraph portfolio
     direction TB
 	Sync --> Coins[[portfolio-coin]]
 	Sync -.-> Meta[(portfolio-metadata)]
@@ -499,7 +499,7 @@ flowchart TB
 	ID -..-> Subtypes[(subtype)]
 	end
 ```
-Figure 5. Breakdown of crypto-portfolio forming the layer 3 of the sync protocol
+Figure 5. Breakdown of portfolio forming the layer 3 of the sync protocol
 
 - **CDDL for synchronizing several accounts with detailed information** `detailed-account`
 
@@ -603,11 +603,11 @@ language_code = string ; following [ISO 639-1] Code (e.g. "en" for English,
 
 The language is encoded with alpha-2 code to represent the names of the language following [[ISO 639-1]](https://www.iso.org/standard/22109.html).
 
-- **CDDL for syncing the general purpose payload** `crypto-portfolio`
+- **CDDL for syncing the general purpose payload** `portfolio`
 
-In this document, we are defining the new UR type `crypto-portfolio` to aggregate accounts, coin identity and metadata information together.
+In this document, we are defining the new UR type `portfolio` to aggregate accounts, coin identity and metadata information together.
 
-When used embedded in another CBOR structure, this structure should be tagged #6.1405.
+When used embedded in another CBOR structure, this structure should be tagged #6.41405.
 
 ```
 ; Top level multi coin sync payload
@@ -632,7 +632,7 @@ The online watch-only wallet has different needs regarding the information neede
    a. The accounts are defined with different output descriptors using `account` UR type (e.g. syncing Bitcoin accounts with BTC-only watch-only wallet).     
    b. The accounts of the same coin are defined by several public keys and different derivation paths using `crypto-multi-accounts` UR type (e.g. syncing Solana accounts with Solflare wallet as watch-only wallet). 
 
-3) Sync the accounts of multiple coins identified with their coin identity, along with optional tokens information and device-related metadata, using `crypto-portfolio` UR type (e.g. syncing any coin and token between NGRAVE ZERO offline signer and NGRAVE LIQUID watch-only wallet).
+3) Sync the accounts of multiple coins identified with their coin identity, along with optional tokens information and device-related metadata, using `portfolio` UR type (e.g. syncing any coin and token between NGRAVE ZERO offline signer and NGRAVE LIQUID watch-only wallet).
 
 ### 1) Sync a single coin based on a unique extended public key (Metamask case)
 
@@ -933,7 +933,7 @@ ur:crypto-multi-accounts/hgadfwnehnntlgaofelegtcdhdatbkhkaofmspcthepyjnrkdtmhasb
 
 ### 3) Sync multiple coins with their coin identifier (NGRAVE case)
 
-Compared to the first and second layers of the sync protocol, the third layer is made for every watch-only wallets aiming to support any coins, representing the generic case how NGRAVE ZERO offline signer and NGRAVE LIQUID app are functioning. The `crypto-portfolio` UR type includes multiple coins/blockchains based on different elliptic curves. 
+Compared to the first and second layers of the sync protocol, the third layer is made for every watch-only wallets aiming to support any coins, representing the generic case how NGRAVE ZERO offline signer and NGRAVE LIQUID app are functioning. The `portfolio` UR type includes multiple coins/blockchains based on different elliptic curves. 
 
 The accounts of each coin are described using a list of `detailed-account` indicating a public key or extended public key, a derivation path, a potential script type and a potential list of tokens associated to the account.
 
@@ -1048,8 +1048,7 @@ An example illustrates how the sync payload is formed using the third layer of c
                40303({ ; hdkey
                   3: h'03EB3E2863911826374DE86C231A4B76F0B89DFA174AFB78D7F478199884D9DD32', ; key-data
                   4: h'6456A5DF2DB0F6D9AF72B2A1AF4B25F45200ED6FCC29C3440B311D4796B70B5B', ; chain-code
-                  6: 40304({1: [44, true, 0, true, 0, true]}), ; origin 44'/0'/0'
-                  8: 2583285239 ; parent fingerprint
+                  6: 40304({1: [44, true, 0, true, 0, true]}) ; origin 44'/0'/0'
             })]	 
 	     })}),
          41402( ; #6.441402(detailed-account)
@@ -1059,8 +1058,7 @@ An example illustrates how the sync payload is formed using the third layer of c
                40303({ ; hdkey
                   3: h'02C7E4823730F6EE2CF864E2C352060A88E60B51A84E89E4C8C75EC22590AD6B69', ; key-data
                   4: h'9D2F86043276F9251A4A4F577166A5ABEB16B6EC61E226B5B8FA11038BFDA42D', ; chain-code
-                  6: 40304({1: [49, true, 0, true, 1, true]}), ; origin 49'/0'/1'
-                  8: 2819587291 ; parent fingerprint
+                  6: 40304({1: [49, true, 0, true, 1, true]}) ; origin 49'/0'/1'
             })]  
           })}
 	   )]
@@ -1081,10 +1079,10 @@ An example illustrates how the sync payload is formed using the third layer of c
 A2                                      # map(2)
    01                                   # unsigned(1)
    84                                   # array(4)
-      D9 057B                           # tag(1403)
+      D9 A1BB                           # tag(41403)
          A2                             # map(2)
             01                          # unsigned(1)
-            D9 0579                     # tag(1401)
+            D9 A1B9                     # tag(41401)
                A3                       # map(3)
                   01                    # unsigned(1)
                   08                    # unsigned(8)
@@ -1095,7 +1093,7 @@ A2                                      # map(2)
                      01                 # unsigned(1)
             02                          # unsigned(2)
             81                          # array(1)
-               D9 057A                  # tag(1402)
+               D9 A1BA                  # tag(41402)
                   A2                    # map(2)
                      01                 # unsigned(1)
                      D9 9D6F            # tag(40303)
@@ -1132,10 +1130,10 @@ A2                                      # map(2)
                      81                 # array(1)
                         54              # bytes(20)
                            A0B86991C6218B36C1D19D4A2E9EB0CE3606EB48 
-      D9 057B                           # tag(1403)
+      D9 A1BB                           # tag(41403)
          A2                             # map(2)
             01                          # unsigned(1)
-            D9 0579                     # tag(1401)
+            D9 A1B9                     # tag(41401)
                A2                       # map(2)
                   01                    # unsigned(1)
                   06                    # unsigned(6)
@@ -1143,7 +1141,7 @@ A2                                      # map(2)
                   19 01F5               # unsigned(501)
             02                          # unsigned(2)
             82                          # array(2)
-               D9 057A                  # tag(1402)
+               D9 A1BA                  # tag(41402)
                   A2                    # map(2)
                      01                 # unsigned(1)
                      D9 9D6F            # tag(40303)
@@ -1168,7 +1166,7 @@ A2                                      # map(2)
                      81                 # array(1)
                         78 2C           # text(44)
                            45506A465764643541756671535371654D32714E31787A7962617043384734774547476B5A77795444743176 # "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
-               D9 057A                  # tag(1402)
+               D9 A1BA                  # tag(41402)
                   A1                    # map(1)
                      01                 # unsigned(1)
                      D9 9D6F            # tag(40303)
@@ -1189,10 +1187,10 @@ A2                                      # map(2)
                                     F5  # primitive(21)
                                     01  # unsigned(1)
                                     F5  # primitive(21)
-      D9 057B                           # tag(1403)
+      D9 A1BB                           # tag(41403)
          A2                             # map(2)
             01                          # unsigned(1)
-            D9 0579                     # tag(1401)
+            D9 A1B9                     # tag(41401)
                A3                       # map(3)
                   01                    # unsigned(1)
                   08                    # unsigned(8)
@@ -1203,7 +1201,7 @@ A2                                      # map(2)
                      18 89              # unsigned(137)
             02                          # unsigned(2)
             81                          # array(1)
-               D9 057A                  # tag(1402)
+               D9 A1BA                  # tag(41402)
                   A2                    # map(2)
                      01                 # unsigned(1)
                      D9 9D6F            # tag(40303)
@@ -1240,10 +1238,10 @@ A2                                      # map(2)
                      81                 # array(1)
                         54              # bytes(20)
                            2791BCA1F2DE4661ED88A30C99A7A9449AA84174 
-      D9 057B                           # tag(1403)
+      D9 A1BB                           # tag(41403)
          A2                             # map(2)
             01                          # unsigned(1)
-            D9 0579                     # tag(1401)
+            D9 A1B9                     # tag(41401)
                A2                       # map(2)
                   01                    # unsigned(1)
                   08                    # unsigned(8)
@@ -1251,7 +1249,7 @@ A2                                      # map(2)
                   00                    # unsigned(0)
             02                          # unsigned(2)
             82                          # array(2)
-               D9 057A                  # tag(1402)
+               D9 A1BA                  # tag(41402)
                   A1                    # map(1)
                      01                 # unsigned(1)
                      D9 9D74            # tag(40308)
@@ -1262,7 +1260,7 @@ A2                                      # map(2)
                            02           # unsigned(2)
                            81           # array(1)
                               D9 9D6F   # tag(40303)
-                                 A4     # map(4)
+                                 A3     # map(3)
                                     03  # unsigned(3)
                                     58 21 # bytes(33)
                                        03EB3E2863911826374DE86C231A4B76F0B89DFA174AFB78D7F478199884D9DD32 
@@ -1280,9 +1278,7 @@ A2                                      # map(2)
                                              F5 # primitive(21)
                                              00 # unsigned(0)
                                              F5 # primitive(21)
-                                    08  # unsigned(8)
-                                    1A 99F9CDF7 # unsigned(2583285239)
-               D9 057A                  # tag(1402)
+               D9 A1BA                  # tag(41402)
                   A1                    # map(1)
                      01                 # unsigned(1)
                      D9 9D74            # tag(40308)
@@ -1293,7 +1289,7 @@ A2                                      # map(2)
                            02           # unsigned(2)
                            81           # array(1)
                               D9 9D6F   # tag(40303)
-                                 A4     # map(4)
+                                 A3     # map(3)
                                     03  # unsigned(3)
                                     58 21 # bytes(33)
                                        02C7E4823730F6EE2CF864E2C352060A88E60B51A84E89E4C8C75EC22590AD6B69 
@@ -1311,10 +1307,8 @@ A2                                      # map(2)
                                              F5 # primitive(21)
                                              01 # unsigned(1)
                                              F5 # primitive(21)
-                                    08  # unsigned(8)
-                                    1A A80F7CDB # unsigned(2819587291)
    02                                   # unsigned(2)
-   D9 057B                              # tag(1403)
+   D9 A1BC                              # tag(41404)
       A4                                # map(4)
          01                             # unsigned(1)
          1A 37B5EED4                    # unsigned(934670036)
@@ -1332,7 +1326,7 @@ A2                                      # map(2)
 - UR encoding 
 
 ```
-ur:crypto-portfolio/hdadftlebeenhdadlebedwhgadbraoetpsatenadaoenlebedthdadlegtcdhdatbkhkathtatlemkhdpybefkonrkteahetfrrkhlfgftbkftrelnmwlfdmehfmleengdptlgasbkhtctgdhlltmkhljplffgphutfwldhdflimcptemwhlbdaeenfplggnorcwkeiagpbdbdlegtckhladfdetkkpketpspkaepkbklegtckhladftaeprfeaeadpraoenzogwiacefdlahkfmnslelngtsnkegdhdltnsbdnksplebeenhdadlebedwhdadbdaoftadpkaofelebedthdadlegtcdhdatbkhkaonrmeiadthlcebemwiactphfhlypkglctbekgkkmecesdiamhnspelgzofltnhtenbdleadlyhladfeetkkpkftadpkpkaepkaepkaoendnkksetgchsdadbsbsmhrsdnbnctwfwfctbmtelpcttnlndndtdwbkbeckrlolspmwdrsespspcpbkdrdwzorecelndtlebedthladlegtcdhdatbkhkaobdahqznlcfieftsdhkhdcpcebkbbhtcwhepedtltrlgtaonenldnaonkknpshgsdbdlegtckhladfeetkkpkftadpkpkaepkadpklebeenhdadlebedwhgadbraoetpsatenetfdaoenlebedthdadlegtcdhdatbkhkathtatlemkhdpybefkonrkteahetfrrkhlfgftbkftrelnmwlfdmehfmleengdptlgasbkhtctgdhlltmkhljplffgphutfwldhdflimcptemwhlbdaeenfplggnorcwkeiagpbdbdlegtckhladfdetkkpketpspkaepkbklegtckhladftaeprfeaeaopraoenzoinfdjthlormksdbensfehgcfgphehrregthlrscelebeenhdadlebedwhdadbraoaeaofelebedthladlegtcehdadcdckcpctimrklyjeaoenlegtcdhdatbkhkatnkqzimbtfdetienetenlcmhefwsydtoniagtpkehsnpednleprdnftgnftlemelpasbkhtbsahhmmdkghdptlehtcbhyhlhtsyhtprvtaenscdlejeldrebblngespfehebbbnbdlegtckhladfdetkkpkaepkaepkbrfwgppklkpslebedthladlegtcehdadcmcwctimdrckcpctimrklyjejeaoenlegtcdhdatbkhkaolfmefenelyptntkkphbsmtldvtbdbpfemhbbuthltnfdmelnlfbwlyhtfdhecpceasbkhtgtldfdaslpdtpkhtfwsntpadctbnhmhpnkdmhtndbemtiehniapkcnatfmpehdkgbdlegtckhladfdetlnpkaepkadpkbrfwhlcbeymeaolebeenhdadfwnehnntlgaobkbmctatctlnkenekglpkecbbtasbntnspvtrsahse
+ur:portfolio/hdadftlehljphdadlehljnhgadbraoetpsatenadaoenlehljehdadlegtcdhdatbkhkathtatlemkhdpybefkonrkteahetfrrkhlfgftbkftrelnmwlfdmehfmleengdptlgasbkhtctgdhlltmkhljplffgphutfwldhdflimcptemwhlbdaeenfplggnorcwkeiagpbdbdlegtckhladfdetkkpketpspkaepkbklegtckhladftaeprfeaeadpraoenzogwiacefdlahkfmnslelngtsnkegdhdltnsbdnksplehljphdadlehljnhdadbdaoftadpkaofelehljehdadlegtcdhdatbkhkaonrmeiadthlcebemwiactphfhlypkglctbekgkkmecesdiamhnspelgzofltnhtenbdleadlyhladfeetkkpkftadpkpkaepkaepkaoendnkksetgchsdadbsbsmhrsdnbnctwfwfctbmtelpcttnlndndtdwbkbeckrlolspmwdrsespspcpbkdrdwzorecelndtlehljehladlegtcdhdatbkhkaobdahqznlcfieftsdhkhdcpcebkbbhtcwhepedtltrlgtaonenldnaonkknpshgsdbdlegtckhladfeetkkpkftadpkpkaepkadpklehljphdadlehljnhgadbraoetpsatenetfdaoenlehljehdadlegtcdhdatbkhkathtatlemkhdpybefkonrkteahetfrrkhlfgftbkftrelnmwlfdmehfmleengdptlgasbkhtctgdhlltmkhljplffgphutfwldhdflimcptemwhlbdaeenfplggnorcwkeiagpbdbdlegtckhladfdetkkpketpspkaepkbklegtckhladftaeprfeaeaopraoenzoinfdjthlormksdbensfehgcfgphehrregthlrscelehljphdadlehljnhdadbraoaeaofelehljehladlegtcehdadcdckcpctimrklyjeaoenlegtcdhgatbkhkatnkqzimbtfdetienetenlcmhefwsydtoniagtpkehsnpednleprdnftgnftlemelpasbkhtbsahhmmdkghdptlehtcbhyhlhtsyhtprvtaenscdlejeldrebblngespfehebbbnbdlegtckhladfdetkkpkaepkaepklehljehladlegtcehdadcmcwctimdrckcpctimrklyjejeaoenlegtcdhgatbkhkaolfmefenelyptntkkphbsmtldvtbdbpfemhbbuthltnfdmelnlfbwlyhtfdhecpceasbkhtgtldfdaslpdtpkhtfwsntpadctbnhmhpnkdmhtndbemtiehniapkcnatfmpehdkgbdlegtckhladfdetlnpkaepkadpkaolehljthdadfwnehnntlgaobkbmctatctlnkenekglpkecbbtasbntnspvtrsahse
 ```
 
 </details>
