@@ -239,7 +239,7 @@ For Tezos blockchain, the UR types are based on the [[TZIP-25]](https://gitlab.c
 
 - **CDDL for XTZ signature request** `xtz-sign-request`
 
-This UR type belongs to the [[TZIP-25]](https://gitlab.com/tezos/tzip/-/blob/master/proposals/tzip-25/tzip-25.md) proposal and is tagged with #6.41411. 
+This UR type belongs to the [[TZIP-25]](https://gitlab.com/tezos/tzip/-/blob/master/proposals/tzip-25/tzip-25.md) proposal and is tagged with #6.501. 
 
 Two different CDDL expressions have been proposed regarding how to specify the signer account. The [[TZIP-25]](https://gitlab.com/tezos/tzip/-/blob/master/proposals/tzip-25/tzip-25.md) proposal opted for specifying the signer account through the derivation path, while the implementation [[ur-registry-xtz]](https://socket.dev/npm/package/@airgap/ur-registry-xtz/overview/0.0.1-beta.0) proposed to specify only the associated public key. 
 
@@ -285,7 +285,7 @@ public-key-type-sapling = 4
 
 - **CDDL for XTZ signature response** `xtz-signature`
 
-This UR type belongs to the [[TZIP-25]](https://gitlab.com/tezos/tzip/-/blob/master/proposals/tzip-25/tzip-25.md) proposal and is tagged with #6.41412.
+This UR type belongs to the [[TZIP-25]](https://gitlab.com/tezos/tzip/-/blob/master/proposals/tzip-25/tzip-25.md) proposal and is tagged with #6.502.
 
 ```
 xtz-signature  = (
@@ -309,21 +309,18 @@ This document aims to propose common UR types for signing on every blockchain.
 
 This UR type is tagged with #6.41411 and embeds:
 
-- The `coin-identity` UR type tagged with #6.140 and introduced in [[NBCR-2023-001]](https://github.com/ngraveio/Research/blob/main/papers/nbcr-2023-001-coin-identity.md). This UR type identifies the elliptic curve and the blockchain on which the sign request is initiated.
+- The `coin-identity` UR type tagged with #6.41401 and introduced in [[NBCR-2023-001]](https://github.com/ngraveio/Research/blob/main/papers/nbcr-2023-001-coin-identity.md). This UR type identifies the elliptic curve and the blockchain on which the sign request is initiated.
 - An optional UR type to specify metadata related to a specific coin.
 
 ```
-; Metadata specific for each coin
-; The list is not exhaustive and includes only the metadata for ETH, SOL and XTZ
-coin-meta = #6.1420(eth-meta) / #6.1421(sol-meta) / #6.1422(xtz-meta) 
-
 sign-request = {
     ?request-id: uuid,                        ; Identifier of the signing request
-    coin-id: #6.441401(coin-identity),   ; Provides information on the elliptic curve and the blockchain/coin
+    coin-id: #6.41401(coin-identity),         ; Provides information on the elliptic curve and the blockchain/coin
     ?derivation-path: #6.40304(keypath),      ; Key path for signing this request
     sign-data: bytes,                         ; Transaction to be decoded by the offline signer 
     ?origin: text,                            ; Origin of this sign request, e.g. wallet name
-    ?metadata: coin-meta                      ; Specify metadata for some coins
+    ?tx-type: int .default 1                  ; Specify type of transaction required for some blockchains
+    ?address: string / bytes                  ; Specify sender address if not already specified in the sign-data and derivation-path
 }
 
 request-id = 1
@@ -331,17 +328,12 @@ coin-id = 2
 derivation-path = 3
 sign-data = 4
 origin = 5
-metadata = 6
+tx-type = 7
+address=8
 ```
 
-We are listing thereafter the metadata UR types for the blockchains listed in this document. This list is not exhaustive and needs to be updated for each coin needing additional data to the `sign-request` UR type.
-
-| Blockchain | Metadata required | coin-meta UR type |
-| --- | --- | --- |
-| Ethereum/EVM chains | Yes | - CDDL description: <br> `eth-meta = { data-type: sign-data-type, ?address: eth-address-bytes}` <br> `sign-data-type` and `eth-address-bytes` definition are inherited from eth-sign-request. <br> - Tag: 1420 |
-| Solana | No | - CDDL description: <br> `sol-meta = { ?type: int .default sign-type-transaction, ?address: bytes}`  <br> `type` definition is inherited from sol-sign-request. The default value `sign-type-transaction` should be used in case of missing metadata in sign-request for a Solana transaction. <br> - Tag: 1421 |
-| Tezos | No | - CDDL description: <br> `xtz-meta = { ?data-type: int .default data-type-operation}` <br> `data-type definition` is inherited from xtz-sign-request. <br> The default value of data-type should be used in case of missing metadata in sign-request for Tezos transaction. <br> - Tag: 1422 |
-| Bitcoin <br> MultiversX <br> Stellar | No | No metadata needed |
+The type definition takes over the same enumeration from the existing UR types `sign-data-type` for Ethereum, `type` for Solana and `key-type` for Tezos.    
+In case of new blockchain integration to the sign protocol, we will need to create a new enumeration if there is more than one type of transaction on the new blockchain. 
 
 - **CDDL for generic signature response** `sign-response`
 
@@ -596,8 +588,8 @@ The following table indicates the corresponding fields between the UR types `eth
 | 3. derivation-path | 5. derivation-path |
 | 4. sign-data | 2. sign-data |
 | 5. origin (optional) | 7. origin |
-| 6.1. eth-meta.data-type | 3. data-type |
-| 6.2. eth-meta.address (optional) | 6. address (optional, completing the provided derivation path for account identification) |
+| 6. tx-type | 3. data-type |
+| 7. address (optional) | 6. address (optional, completing the provided derivation path for account identification) |
 
 `sign-request` UR type provides the exact same information as `eth-sign-request`, with the advantage of `sign-request` to be blockchain-agnostic.
 
@@ -657,23 +649,21 @@ An example illustrates how the signing protocol works on EVM blockchains:
           2: 934670036}), ; master fingerprint
 4: h'f849808609184e72a00082271094000000000000000000000000000000000000000080a47f7465737432000000000000000000000000000000000000000000000000000000600057808080', ; sign-data
 5: "NGRAVE LIQUID", ; wallet name
-6: 1420( ; #6.1420(eth-meta)
-    {1: 1, ; data-type = RLP transaction
-     2: h'1efecb61a2f80aa34d3b9218b564a64d05946290' ; address
-    })
+7: 1, ; RLP transaction
+8: h'1efecb61a2f80aa34d3b9218b564a64d05946290' ; address
 }
 ```
  
 - CBOR encoding
     
 ```
-A6                                      # map(6)
+A7                                      # map(7)
    01                                   # unsigned(1)
    D8 25                                # tag(37)
       50                                # bytes(16)
          9B1DEB4D3B7D4BAD9BDD2B0D7B3DCB6D 
    02                                   # unsigned(2)
-   D9 0579                              # tag(1401)
+   D9 A1B9                              # tag(41401)
       A3                                # map(3)
          01                             # unsigned(1)
          08                             # unsigned(8)
@@ -704,20 +694,17 @@ A6                                      # map(6)
    05                                   # unsigned(5)
    6D                                   # text(13)
       4E4752415645204C4951554944        # "NGRAVE LIQUID"
-   06                                   # unsigned(6)
-   D9 058C                              # tag(1420)
-      A2                                # map(2)
-         01                             # unsigned(1)
-         01                             # unsigned(1)
-         02                             # unsigned(2)
-         54                             # bytes(20)
-            1EFECB61A2F80AA34D3B9218B564A64D05946290 
+   07                                   # unsigned(7)
+   01                                   # unsigned(1)
+   08                                   # unsigned(8)
+   54                                   # bytes(20)
+      1EFECB61A2F80AA34D3B9218B564A64D05946290 
 ```
 
 - UR encoding 
 
 ```
-ur:sign-request/headlkhttgglgenktepyeosyheglmekncyenptlecyaolebedwhgadbraoetpsatetfdatlegtckhdadfeetkkpketpspkaepkaepraepraofwnehnntlgasbksyphsoecfdbtettncbgwaefeinclfkaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeechdeycebmcwcelpaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaebdaeadecececbecytnspvtrsahsehtspsoutzmsorebdlebefhhdadadaozogwpnlebehdphbphgtepyfdethnbshetebefkbkfd
+ur:sign-request/headlkhttgglgenktepyeosyheglmekncyenptlecyaolehljnhgadbraoetpsatetfdatlegtckhdadfeetkkpketpspkaepkaepraepraofwnehnntlgasbksyphsoecfdbtettncbgwaefeinclfkaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeechdeycebmcwcelpaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaebdaeadecececbecytnspvtrsahsehtspsoutzmsorebkadbrzogwpnlebehdphbphgtepyfdethnbshetebefkbkfd
 ```
 
 </details>
@@ -870,23 +857,21 @@ An example illustrates how the signing protocol works on Solana blockchain:
           2: 934670036}), ; master fingerprint
 4: h'01000103c8d842a2f17fd7aab608ce2ea535a6e958dffa20caf669b347b911c4171965530f957620b228bae2b94c82ddd4c093983a67365555b737ec7ddc1117e61c72e0000000000000000000000000000000000000000000000000000000000000000010295cc2f1f39f3604718496ea00676d6a72ec66ad09d926e3ece34f565f18d201020200010c0200000000e1f50500000000', ; sign-data
 5: "NGRAVE LIQUID", ; wallet name
-6: 1421( ; #6.1421(sol-meta)
-    {1: 1, ; data-type = sign-type-transaction
-     2: "9FPebKDGZAdcpT7SpfB1UowuqobV8Zww9TwPDSyzXJMr" ; address
-    })
+7: 1, ; sign-type-transaction
+8: "9FPebKDGZAdcpT7SpfB1UowuqobV8Zww9TwPDSyzXJMr" ; address
 }
 ```
 
 - CBOR encoding 
     
 ```
-A6                                      # map(6)
+AA7                                      # map(7)
    01                                   # unsigned(1)
    D8 25                                # tag(37)
       50                                # bytes(16)
          9B1DEB4D3B7D4BAD9BDD2B0D7B3DCB6D 
    02                                   # unsigned(2)
-   D9 0579                              # tag(1401)
+   D9 A1B9                              # tag(41401)
       A2                                # map(2)
          01                             # unsigned(1)
          06                             # unsigned(6)
@@ -913,20 +898,17 @@ A6                                      # map(6)
    05                                   # unsigned(5)
    6D                                   # text(13)
       4E4752415645204C4951554944        # "NGRAVE LIQUID"
-   06                                   # unsigned(6)
-   D9 058D                              # tag(1421)
-      A2                                # map(2)
-         01                             # unsigned(1)
-         01                             # unsigned(1)
-         02                             # unsigned(2)
-         78 2C                          # text(44)
-            39465065624B44475A4164637054375370664231556F7775716F6256385A7777395477504453797A584A4D72 # "9FPebKDGZAdcpT7SpfB1UowuqobV8Zww9TwPDSyzXJMr"
+   07                                   # unsigned(7)
+   01                                   # unsigned(1)
+   08                                   # unsigned(8)
+   78 2C                                # text(44)
+      39465065624B44475A4164637054375370664231556F7775716F6256385A7777395477504453797A584A4D72 # "9FPebKDGZAdcpT7SpfB1UowuqobV8Zww9TwPDSyzXJMr"
 ```
 
 - UR encoding
 
 ```
-ur:sign-request/A601D825509B1DEB4D3B7D4BAD9BDD2B0D7B3DCB6D02D90579A20106021901F503D99D70A20188182CF51901F5F500F500F5021A37B5EED404589601000103C8D842A2F17FD7AAB608CE2EA535A6E958DFFA20CAF669B347B911C4171965530F957620B228BAE2B94C82DDD4C093983A67365555B737EC7DDC1117E61C72E0000000000000000000000000000000000000000000000000000000000000000010295CC2F1F39F3604718496EA00676D6A72EC66AD09D926E3ECE34F565F18D201020200010C0200000000E1F50500000000056D4E4752415645204C495155494406D9058DA2010102782C39465065624B44475A4164637054375370664231556F7775716F6256385A7777395477504453797A584A4D72
+ur:sign-request/headlkhttgglgenktepyeosyheglmekncyenptlecyaolehljnhdadbdaoftadpkatlegtckhdadfeetkkpkftadpkpkaepkaepkaofwnehnntlgasbkfeadaeadatlnlkrkhdoleylehthtbrltkehmmhhenebkmdpkhtltptcehespjncnleehftbmwfcbfmdththyimjemtjnspfemelgkeftgnptcdnszmzmhenendeomkcnehmhflcbmeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaecljebllyolpegmnsasctftfenraecdcychcbndbnhebtleiemnndmntpahbeetlkadaoaoaeadcfaoaeaeaeaemkpkbeaeaeaeaebecytnspvtrsahsehtspsoutzmsorebkadbrdnkkpnsdtgbmbksyrespbkrsbsbtckzonewfckbnrklnzmcddrdnctcdbkaholbkdrdrpnzodrtgrewfdwdtbksntecb
 ```
 
 </details>
@@ -1076,23 +1058,21 @@ An example illustrates how the signing protocol works on Tezos blockchain:
         5: 934670036}), ; master-fingerprint
 4: h'f849808609184e72a00082271094000000000000000000000000000000000000000080a47f7465737432000000000000000000000000000000000000000000000000000000600057808080', ; sign-data
 5: "NGRAVE LIQUID", ; wallet name
-6: 1422( ; #6.1422(xtz-meta)
-    {1: 1, ; operation data-type
-     2: "tz1gLTu4Yxj8tPAcriQVUdxv6BY9QyvzU1az" ; address
-    })
+6: 1, ; operation data-type
+7: "tz1gLTu4Yxj8tPAcriQVUdxv6BY9QyvzU1az" ; address
 }
 ```
 
 - CBOR encoding 
     
 ```
-A6                                      # map(6)
+A7                                      # map(7)
    01                                   # unsigned(1)
    D8 25                                # tag(37)
       50                                # bytes(16)
          9B1DEB4D3B7D4BAD9BDD2B0D7B3DCB6D 
    02                                   # unsigned(2)
-   D9 0579                              # tag(1401)
+   D9 A1B9                              # tag(41401)
       A2                                # map(2)
          01                             # unsigned(1)
          06                             # unsigned(6)
@@ -1122,18 +1102,15 @@ A6                                      # map(6)
    6D                                   # text(13)
       4E4752415645204C4951554944        # "NGRAVE LIQUID"
    06                                   # unsigned(6)
-   D9 058E                              # tag(1422)
-      A2                                # map(2)
-         01                             # unsigned(1)
-         01                             # unsigned(1)
-         02                             # unsigned(2)
-         78 24                          # text(36)
-            747A31674C54753459786A38745041637269515655647876364259395179767A5531617A # "tz1gLTu4Yxj8tPAcriQVUdxv6BY9QyvzU1az"
+   01                                   # unsigned(1)
+   07                                   # unsigned(7)
+   78 24                                # text(36)
+      747A31674C54753459786A38745041637269515655647876364259395179767A5531617A # "tz1gLTu4Yxj8tPAcriQVUdxv6BY9QyvzU1az"
 ```
 
 - UR encoding
 ```
-ur:sign-request/headlkhttgglgenktepyeosyheglmekncyenptlecyaolebedwhdadbdaoftbdleatlegtckhdadfeetkkpkftbdlepkaepkaepkaepkbefwnehnntlgasbksyphsoecfdbtettncbgwaefeinclfkaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeechdeycebmcwcelpaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaebdaeadecececbecytnspvtrsahsehtspsoutzmsorebdlebefthdadadaodnhecedtlncdspzodnmwbedncholcetgrsbtcbceutahzmbsdndtnsrkbepnutdwdtdtzmlnbedt
+ur:sign-request/headlkhttgglgenktepyeosyheglmekncyenptlecyaolehljnhdadbdaoftbdleatlegtckhdadfeetkkpkftbdlepkaepkaepkaepkbefwnehnntlgasbksyphsoecfdbtettncbgwaefeinclfkaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeechdeycebmcwcelpaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaebdaeadecececbecytnspvtrsahsehtspsoutzmsorebdadbkdnhecedtlncdspzodnmwbedncholcetgrsbtcbceutahzmbsdndtnsrkbepnutdwdtdtzmlnbedt
 ```
 
 </details>

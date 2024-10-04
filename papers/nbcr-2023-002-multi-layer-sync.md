@@ -508,7 +508,7 @@ In this document, we are defining the new `detailed-account` UR type, extending 
 This new type aims to incorporate in the same structure:
 
 - The accounts with and without scripts by selecting either `hdkey` or `output-descriptor`. When a `hdkey` is embedded inside `detailed-account`, the optional `coin-info` in `hdkey` should **not** be defined since `detailed-account` is used in combination with `coin-identity` used already as asset identifier. 
-- An optional list of tokens to synchronize them at the same time of the associated account. A token identifier is defined as a string or tagged with #6.263 to specify a [[hexString]](https://github.com/toravir/CBOR-Tag-Specs/blob/master/hexString.md).
+- An optional list of tokens to synchronize them at the same time of the associated account. A token identifier is defined either as a string or as bytes.
 
 The following specification of `detailed-account` is written in CDDL. When used embedded in another CBOR structure, this structure should be tagged #6.41402.
 
@@ -521,9 +521,6 @@ account_exp = #6.40303(hdkey) / #6.40308(output-descriptor)
 ; extended public keys.
 ; '#6.308(output-descriptor)' should be used to share an output descriptor, 
 ; e.g. for the different Bitcoin address formats (P2PKH, P2SH-P2WPKH, P2WPKH, P2TR).
-
-hex_string = #6.263(bstr) ; byte string is a hexadecimal string no need for decoding
-token-id = string / hex_string
 
 ; Optional 'token-ids' to indicate the synchronization of a list of tokens with
 ; the associated accounts
@@ -540,7 +537,7 @@ token-id = string / hex_string
 
 detailed-account = { 
   account: account_exp,
-  ? token-ids: [+ token-id] ; Specify multiple tokens associated to one account
+  ? token-ids: [+ string / bytes] ; Specify multiple tokens associated to one account
 }
 
 account = 1
@@ -1382,4 +1379,3 @@ The information shared with the watch-only wallet can be altered on the device r
 | [NBCR-2023-001] | https://github.com/ngraveio/Research/blob/main/papers/nbcr-2023-001-coin-identity.md |
 | [BIP32] | https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki |
 | [SLIP44]  | https://github.com/satoshilabs/slips/blob/master/slip-0044.md |
-| [hexString] | https://github.com/toravir/CBOR-Tag-Specs/blob/master/hexString.md |
