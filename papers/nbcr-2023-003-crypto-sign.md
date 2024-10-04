@@ -77,7 +77,7 @@ The user can initiate the signing protocol on a watch-only wallet synchronized w
 
 The existing communication protocol for signing are based on UR types specific to each blockchain. Except for Bitcoin with `psbt` UR type, the signing request prepared by the watch-only wallet is embedded in a UR type with the extension `sign-request`. Once the transaction is signed, the offline signer sends the signature back to the watch-only wallet by encoding the data in a UR type with the extension `signature`.
 
-This document proposes to standardize into one UR type `sign-request` for the signing request and another UR type `crypto-signature` for the signed message.
+This document proposes to standardize into one UR type `sign-request` for the signing request and another UR type `sign-response` for the signed message.
 
 The following table listed the existing UR types depending on the blockchain and introduced the new UR types intended to be blockchain agnostic.
 
@@ -88,7 +88,7 @@ The following table listed the existing UR types depending on the blockchain and
 | Ethereum/EVM | eth-sign-request <br> Tag: 401 | eth-signature <br> Tag: 402 | Keystone | [[EIP-4527]](https://eips.ethereum.org/EIPS/eip-4527) | [[ur-registry-eth]](https://github.com/KeystoneHQ/keystone-airgaped-base/tree/master/packages/ur-registry-eth) |
 | Solana| sol-sign-request <br> Tag: 1101 | sol-signature <br> Tag: 1102 | Keystone | [[solana-qr-data-protocol]](https://github.com/KeystoneHQ/Keystone-developer-hub/blob/main/research/solana-qr-data-protocol.md#sending-the-unsigned-data-from-wallet-only-wallet-to-offline-signer)  | [[ur-registry-sol]](https://github.com/KeystoneHQ/keystone-airgaped-base/tree/master/packages/ur-registry-sol) |
 | Tezos | xtz-sign-request <br> Tag: 501 | xtz-signature <br> Tag: 502 | Airgap  | [[tzip-25]](https://gitlab.com/tezos/tzip/-/blob/master/proposals/tzip-25/tzip-25.md) | [[ur-registry-xtz]](https://socket.dev/npm/package/@airgap/ur-registry-xtz/overview/0.0.1-beta.0) |
-| Generic | sign-request <br> Tag: 41411 | crypto-signature <br> Tag: 1412 | Ngrave | This document | [[ur-registry]](https://github.com/ngraveio/ur-registry/tree/main) |
+| Generic | sign-request <br> Tag: 41411 | sign-response <br> Tag: 41412 | Ngrave | This document | [[ur-registry]](https://github.com/ngraveio/ur-registry/tree/main) |
 
 The specification for each UR type contains CBOR structure, expressed thereafter in Concise Data Definition Language [[CDDL]](https://datatracker.ietf.org/doc/html/rfc8610).
 
@@ -285,7 +285,7 @@ public-key-type-sapling = 4
 
 - **CDDL for XTZ signature response** `xtz-signature`
 
-This UR type belongs to the [[TZIP-25]](https://gitlab.com/tezos/tzip/-/blob/master/proposals/tzip-25/tzip-25.md) proposal and is tagged with #6.1412.
+This UR type belongs to the [[TZIP-25]](https://gitlab.com/tezos/tzip/-/blob/master/proposals/tzip-25/tzip-25.md) proposal and is tagged with #6.41412.
 
 ```
 xtz-signature  = (
@@ -343,12 +343,12 @@ We are listing thereafter the metadata UR types for the blockchains listed in th
 | Tezos | No | - CDDL description: <br> `xtz-meta = { ?data-type: int .default data-type-operation}` <br> `data-type definition` is inherited from xtz-sign-request. <br> The default value of data-type should be used in case of missing metadata in sign-request for Tezos transaction. <br> - Tag: 1422 |
 | Bitcoin <br> MultiversX <br> Stellar | No | No metadata needed |
 
-- **CDDL for generic signature response** `crypto-signature`
+- **CDDL for generic signature response** `sign-response`
 
-This UR type is tagged with #6.1412. 
+This UR type is tagged with #6.41412. 
 
 ```
-crypto-signature = {
+sign-response = {
   ?request-id: uuid,     ; Identifier of the signing request 
   signature: bytes,      ; Signature result
   ?origin: text,         ; The device info providing this signature
@@ -370,7 +370,7 @@ This Section gives more details on the use case for each blockchain, the signing
 
 ## III - 1. Bitcoin transactions
 
-Since Bitcoin transactions follow [[BIP174]](https://github.com/bitcoin/bips/blob/master/bip-0174.mediawiki) defining PSBT, the privileged UR type for signing is `psbt`. In this document, we present its integration into the common UR types `sign-request` and `crypto-signature`.
+Since Bitcoin transactions follow [[BIP174]](https://github.com/bitcoin/bips/blob/master/bip-0174.mediawiki) defining PSBT, the privileged UR type for signing is `psbt`. In this document, we present its integration into the common UR types `sign-request` and `sign-response`.
 
 ### Integration with the generic UR types registry
 
@@ -400,17 +400,17 @@ The following table indicates the corresponding fields between the UR types `psb
 
 A Bitcoin sign request results in a signed transaction after user verification. A Bitcoin signature is contained in the same format as the request, a PSBT transaction.
 
-The only required field for a Bitcoin signature is the bytes composing the signed PSBT transaction, corresponding to the `signature` fields of `crypto-signature` UR type.
+The only required field for a Bitcoin signature is the bytes composing the signed PSBT transaction, corresponding to the `signature` fields of `sign-response` UR type.
 
-The following table indicates the corresponding fields between the UR types `psbt` and `crypto-signature`.
+The following table indicates the corresponding fields between the UR types `psbt` and `sign-response`.
 
-| crypto-signature fields <br> Associated number corresponds to the order in UR type | Corresponding crypto-psbt fields <br> Associated number corresponds to the order in UR type |
+| sign-response fields <br> Associated number corresponds to the order in UR type | Corresponding crypto-psbt fields <br> Associated number corresponds to the order in UR type |
 | --- | --- |
 | 1. request-id | No corresponding field, adds verification step  |
 | 2. signature | 1. bytes |
 | 3. origin | No corresponding field, provides an additional description |
 
-`crypto-signature` UR type has the advantage to provide additional optional fields compared to `psbt` when used as a signature: 
+`sign-response` UR type has the advantage to provide additional optional fields compared to `psbt` when used as a signature: 
 - an unique identifier to link the signature to the request
 - a text describing the origin (e.g. the device name). 
 
@@ -434,7 +434,7 @@ A typical use case follows the following process between a watch-only wallet and
     6. The Signer must only add data to a PSBT. Any signatures created by the Signer must be added as a "Partial Signature" key-value pair for the respective input it relates to. 
     7. The Signer can additionally compute the addresses and values being sent, and the transaction fee, showing this data to the user as a confirmation of intent and the consequences of signing the PSBT.
     8. Signers do not need to sign for all possible input types. For example, a signer may choose to only sign Segwit inputs.
-- The offline signer responds with `crypto-signature` containing the output signatures in the PSBT and if provided replied with the same identifier used for the request.
+- The offline signer responds with `sign-response` containing the output signatures in the PSBT and if provided replied with the same identifier used for the request.
 
 ### Example
 
@@ -547,7 +547,7 @@ A3                                      # map(3)
 - UR encoding 
 
 ```
-ur:crypto-signature/hgadlkhttgpyzoddnebwptsebbfpmkhtfljtknrnhnaobkheckcwbkcepyadaegtaoaeaeaeaobknldthkhncyhtcfhekkftckcksecmmecdeyjehmlndndwhepksefeenhyhpmednaeaeaeaeaepypypypyfmfgasinldndbmbpcthtsdjpbbbtfenrrehekecthyltdnmhjybkdwbeldeynrgeadaeaeaeaepypypypyaockhtonbraeaeaeaedmaeddlkblknctldbdbbbtldfechnkenbwtggpgemlcxteaemkpkbeaeaeaeaedmaeddaehlhrhdmeonphdthmfemdzmsdnlcekggeflaefpaeaeaeaeaeaeaeaeaeatcptnspvtrsahsehtbksevttp
+ur:sign-response/hgadlkhttgpyzoddnebwptsebbfpmkhtfljtknrnhnaobkheckcwbkcepyadaegtaoaeaeaeaobknldthkhncyhtcfhekkftckcksecmmecdeyjehmlndndwhepksefeenhyhpmednaeaeaeaeaepypypypyfmfgasinldndbmbpcthtsdjpbbbtfenrrehekecthyltdnmhjybkdwbeldeynrgeadaeaeaeaepypypypyaockhtonbraeaeaeaedmaeddlkblknctldbdbbbtldfechnkenbwtggpgemlcxteaemkpkbeaeaeaeaedmaeddaehlhrhdmeonphdthmfemdzmsdnlcekggeflaefpaeaeaeaeaeaeaeaeaeatcptnspvtrsahsehtbksevttp
 ```
 
 </details>
@@ -567,7 +567,7 @@ The received PSBT should be decoded by the offline signer to know each input and
 
 ## II - 2. Ethereum transactions
 
-[[EIP-4527]](https://eips.ethereum.org/EIPS/eip-4527) proposes the specific UR types `eth-sign-request` and `eth-signature` for signing Ethereum transactions and in the same way transactions on every EVM blockchains. In this document, we present their integration into the common UR types `sign-request` and `crypto-signature`.
+[[EIP-4527]](https://eips.ethereum.org/EIPS/eip-4527) proposes the specific UR types `eth-sign-request` and `eth-signature` for signing Ethereum transactions and in the same way transactions on every EVM blockchains. In this document, we present their integration into the common UR types `sign-request` and `sign-response`.
 
 ### Integration with the generic UR types registry
 
@@ -607,15 +607,15 @@ An Ethereum sign request results in a signed transaction after user verification
 
 The required fields for an Ethereum signature are the signature itself and potentially the request identifier to identify uniquely the response. Additionally, a description can be provided to specify the device name for example.
 
-The following table indicates the corresponding fields between the UR types `eth-signature` and `crypto-signature`.
+The following table indicates the corresponding fields between the UR types `eth-signature` and `sign-response`.
 
-| crypto-signature fields <br> Associated number corresponds to the order in UR type | Corresponding eth-signature fields <br> Associated number corresponds to the order in UR type |
+| sign-response fields <br> Associated number corresponds to the order in UR type | Corresponding eth-signature fields <br> Associated number corresponds to the order in UR type |
 | --- | --- |
 | 1. request-id (optional) | 1. request-id (optional) |
 | 2. signature | 2. signature |
 | 3. origin (optional) | 3. origin (optional) |
 
-`crypto-signature` and `eth-signature` provides identical information, with the advantage of `crypto-signature` to be blockchain-agnostic.
+`sign-response` and `eth-signature` provides identical information, with the advantage of `sign-response` to be blockchain-agnostic.
 
 ### Use case
 
@@ -629,7 +629,7 @@ The watch-only wallet generates a QR code containing the `sign-request` UR type 
 6. Data type (legacy RLP encoding, typed data, raw bytes or typed transaction)
 7. (Optional) Sender address for verification, redundant however with derivation path where the public key can already be included
 
-The offline signer decodes the transaction depending on the data type and responds to the request with the signature once the transaction has been verified and approved by the user. The offline signer generates a QR code containing the `crypto-signature` UR type with the following information:
+The offline signer decodes the transaction depending on the data type and responds to the request with the signature once the transaction has been verified and approved by the user. The offline signer generates a QR code containing the `sign-response` UR type with the following information:
 
 1. (Mandatory if provided in the request) Request ID indicating the UUID of the transaction
 2. Signature 
@@ -755,7 +755,7 @@ A3                                      # map(3)
 - UR encoding 
 
 ```
-ur:crypto-signature/hgadlkhttgglgenktepyeosyheglmekncyenptlecyaobkrslgonhejtlebnjegljpclutfetgzocwcwrnspbdrkfeadbkhdleaopekgchgtddmlgwbngpgwnscyqzmwbdlycfaehdbtcwnepeeyeobsgwbnmhgwlehrglpnfdpemhpsdtatcptnspvtrsahsehtbksevttp
+ur:sign-response/hgadlkhttgglgenktepyeosyheglmekncyenptlecyaobkrslgonhejtlebnjegljpclutfetgzocwcwrnspbdrkfeadbkhdleaopekgchgtddmlgwbngpgwnscyqzmwbdlycfaehdbtcwnepeeyeobsgwbnmhgwlehrglpnfdpemhpsdtatcptnspvtrsahsehtbksevttp
 ```
 
 </details>
@@ -782,7 +782,7 @@ In case of more complex transactions, the offline signer should be able to recog
 
 ## II - 3. Solana transactions
 
-Keystone has proposed and implemented the specific UR types `sol-sign-request` and `sol-signature` for signing Solana transactions in [[solana-qr-data-protocol]](https://github.com/KeystoneHQ/Keystone-developer-hub/blob/main/research/solana-qr-data-protocol.md#sending-the-unsigned-data-from-wallet-only-wallet-to-offline-signer). In this document, we present their integration into the common UR types `sign-request` and `crypto-signature`.
+Keystone has proposed and implemented the specific UR types `sol-sign-request` and `sol-signature` for signing Solana transactions in [[solana-qr-data-protocol]](https://github.com/KeystoneHQ/Keystone-developer-hub/blob/main/research/solana-qr-data-protocol.md#sending-the-unsigned-data-from-wallet-only-wallet-to-offline-signer). In this document, we present their integration into the common UR types `sign-request` and `sign-response`.
 
 ### Integration with the generic UR types registry
 
@@ -821,15 +821,15 @@ A Solana sign request results in a signed transaction after user verification.
 
 The required fields for a Solana signature are the signature itself and potentially the request identifier to identify uniquely the response. 
 
-The following table indicates the corresponding fields between the UR types `sol-signature` and `crypto-signature`.
+The following table indicates the corresponding fields between the UR types `sol-signature` and `sign-response`.
 
-| crypto-signature fields <br> Associated number corresponds to the order in UR type | Corresponding sol-signature fields <br> Associated number corresponds to the order in UR type |
+| sign-response fields <br> Associated number corresponds to the order in UR type | Corresponding sol-signature fields <br> Associated number corresponds to the order in UR type |
 | --- | --- |
 | 1. request-id (optional) | 1. request-id (optional) |
 | 2. signature | 2. signature |
 | 3. origin (optional) | No corresponding field, provides an additional description |
 
-`crypto-signature` UR type provides the exact same information as `sol-signature` and has even the advantage to provide an additional optional field to describe the origin with the device name for example.
+`sign-response` UR type provides the exact same information as `sol-signature` and has even the advantage to provide an additional optional field to describe the origin with the device name for example.
 
 ### Use case
 
@@ -843,7 +843,7 @@ The watch-only wallet generates a QR code containing the `sign-request` UR type 
 6. (Optional) Data type with either transaction or message type (if not specified, transaction type is defined by default)
 7. (Optional) Sender address for verification, redundant however with derivation path where the public key is already included
 
-The offline signer decodes the transaction depending on the data type and responds to the request with the signature once the transaction has been verified and approved by the user. The offline signer generates a QR code containing the `crypto-signature` UR type with the following information:
+The offline signer decodes the transaction depending on the data type and responds to the request with the signature once the transaction has been verified and approved by the user. The offline signer generates a QR code containing the `sign-response` UR type with the following information:
 
 1. (Mandatory if provided in the request) Request ID indicating the UUID of the transaction
 2. Signature 
@@ -964,7 +964,7 @@ A3                                      # map(3)
 - UR encoding 
 
 ```
-ur:crypto-signature/hgadlkhttgglgenktepyeosyheglmekncyenptlecyaobkrklgonhejtlebnjegljpclutfetgzocwcwrnspbdrkfeadbkhdleaopekgchgtddmlgwbngpgwnscyqzmwbdlycfaehdbtcwnepeeyeobsgwbnmhgwlehrglpnfdpemhpsatcptnspvtrsahsehtbksevttp
+ur:sign-response/hgadlkhttgglgenktepyeosyheglmekncyenptlecyaobkrklgonhejtlebnjegljpclutfetgzocwcwrnspbdrkfeadbkhdleaopekgchgtddmlgwbngpgwnscyqzmwbdlycfaehdbtcwnepeeyeobsgwbnmhgwlehrglpnfdpemhpsatcptnspvtrsahsehtbksevttp
 ```
 
 </details>
@@ -988,7 +988,7 @@ In case of more complex transactions, the offline signer should be able to recog
 
 ## II - 4. Tezos transactions
 
-[[TZIP-25]](https://gitlab.com/tezos/tzip/-/blob/master/proposals/tzip-25/tzip-25.md) proposes the specific UR types `xtz-sign-request` and `xtz-signature` for signing Tezos transactions. In this document, we present their integration into the common UR types `sign-request` and `crypto-signature`.
+[[TZIP-25]](https://gitlab.com/tezos/tzip/-/blob/master/proposals/tzip-25/tzip-25.md) proposes the specific UR types `xtz-sign-request` and `xtz-signature` for signing Tezos transactions. In this document, we present their integration into the common UR types `sign-request` and `sign-response`.
 
 ### Integration with the generic UR types registry
 
@@ -1026,17 +1026,17 @@ A Tezos sign request results in a signed transaction after user verification.
 
 The required fields for a Tezos signature are the signature itself and potentially the request identifier to identify uniquely the response. 
 
-The following table indicates the corresponding fields between the UR types `xtz-signature` and `crypto-signature`.
+The following table indicates the corresponding fields between the UR types `xtz-signature` and `sign-response`.
 
-| crypto-signature fields <br> Associated number corresponds to the order in UR type | Corresponding xtz-signature fields <br> Associated number corresponds to the order in UR type |
+| sign-response fields <br> Associated number corresponds to the order in UR type | Corresponding xtz-signature fields <br> Associated number corresponds to the order in UR type |
 | --- | --- |
 | 1. request-id (optional) | 1. request-id (optional) |
 | 2. signature | 2. signature |
 | 3. origin (optional) | No corresponding field, adds a description |
 
-`crypto-signature` UR type provides the exact same information as `xtz-signature`, except regarding the optional `payload` field available in `xtz-signature`. This field is however a redundant information since the signature can be identified using the `request-id` field.
+`sign-response` UR type provides the exact same information as `xtz-signature`, except regarding the optional `payload` field available in `xtz-signature`. This field is however a redundant information since the signature can be identified using the `request-id` field.
 
-Additionally, `crypto-signature` has the advantage to provide an additional optional field to describe the origin with the device name for example.
+Additionally, `sign-response` has the advantage to provide an additional optional field to describe the origin with the device name for example.
 
 ### Use case
 
@@ -1171,7 +1171,7 @@ A3                                      # map(3)
 - UR encoding
 
 ```
-ur:crypto-signature/hgadlkhttgglgenktepyeosyheglmekncyenptlecyaobkrkgmhkhentbbfwlolohemhgdhelnmtfdspdngdheimdtbnrnlklkhlhemwbkbrkehlrepknlenpseohejnfyhtspfteeheaseyashtatmnhyaslthrhlcwfgptpelthtbtatcptnspvtrsahsehtbksevttp
+ur:sign-response/hgadlkhttgglgenktepyeosyheglmekncyenptlecyaobkrkgmhkhentbbfwlolohemhgdhelnmtfdspdngdheimdtbnrnlklkhlhemwbkbrkehlrepknlenpseohejnfyhtspfteeheaseyashtatmnhyaslthrhlcwfgptpelthtbtatcptnspvtrsahsehtbksevttp
 ```
 
 </details>
@@ -1192,7 +1192,7 @@ Smart contracts decoding on Tezos are not addressed in this document.
 
 ## II - 5. Other blockchains transactions
 
-There are no existing signing protocol based on UR types for other blockchains (at the time of writing). This document introduces the signing of MultiversX and Stellar transactions as examples for the blockchain-agnostic `sign-request` and `crypto-signature` UR types introduced.
+There are no existing signing protocol based on UR types for other blockchains (at the time of writing). This document introduces the signing of MultiversX and Stellar transactions as examples for the blockchain-agnostic `sign-request` and `sign-response` UR types introduced.
 
 ### Integration with the generic UR types registry
 
@@ -1218,7 +1218,7 @@ A MultiversX or Stellar sign request results in a signed transaction after user 
 
 The required fields for a MultiversX or Stellar signature are the signature itself and potentially the request identifier to identify uniquely the response. Additionally, a description can be provided to specify the device name for example.
 
-This listed information for sending a MultiversX and Stellar signature can be included in `crypto-signature` UR type.
+This listed information for sending a MultiversX and Stellar signature can be included in `sign-response` UR type.
 
 ### Use case
 
@@ -1341,7 +1341,7 @@ A3                                      # map(3)
 - UR encoding
 
 ```
-ur:crypto-signature/hgadlkhttgglgenktepyeosyheglmekncyenptlecyaobkrkgmhkhentbbfwlolohemhgdhelnmtfdspdngdheimdtbnrnlklkhlhemwbkbrkehlrepknlenpseohejnfyhtspfteeheaseyashtatmnhyaslthrhlcwfgptpelthtbtatcptnspvtrsahsehtbksevttp
+ur:sign-response/hgadlkhttgglgenktepyeosyheglmekncyenptlecyaobkrkgmhkhentbbfwlolohemhgdhelnmtfdspdngdheimdtbnrnlklkhlhemwbkbrkehlrepknlenpseohejnfyhtspfteeheaseyashtatmnhyaslthrhlcwfgptpelthtbtatcptnspvtrsahsehtbksevttp
 ```
 
 </details>
@@ -1449,7 +1449,7 @@ A3                                      # map(3)
 - UR encoding
 
 ```
-ur:crypto-signature/hgadlkhttgglgenktepyeosyheglmekncyenptlecyaobkrkgmhkhentbbfwlolohemhgdhelnmtfdspdngdheimdtbnrnlklkhlhemwbkbrkehlrepknlenpseohejnfyhtspfteeheaseyashtatmnhyaslthrhlcwfgptpelthtbtatcptnspvtrsahsehtbksevttp
+ur:sign-response/hgadlkhttgglgenktepyeosyheglmekncyenptlecyaobkrkgmhkhentbbfwlolohemhgdhelnmtfdspdngdheimdtbnrnlklkhlhemwbkbrkehlrepknlenpseohejnfyhtspfteeheaseyashtatmnhyaslthrhlcwfgptpelthtbtatcptnspvtrsahsehtbksevttp
 ```
 
 </details>
