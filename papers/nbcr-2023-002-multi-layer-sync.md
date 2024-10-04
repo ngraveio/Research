@@ -108,7 +108,7 @@ Finally we propose in this document a third layer based on the `crypto-portfolio
 | `multi-account` | 41103 | Ngrave | Import multiple accounts in one animated QR | This document |
 | (Deprecated) `crypto-multi-account` | 1103 | Keystone | Previous version of Import multiple accounts in one animated QR | [[solana-qr-data-protocol]](https://github.com/KeystoneHQ/Keystone-developer-hub/blob/main/research/solana-qr-data-protocol.md#setup-watch-only-wallet-by-offline-signer) |
 | `coin-identity` | 41401 | Ngrave | Add additional information to a specific hdkey | [[NBCR-2023-001]](https://github.com/ngraveio/Research/blob/main/papers/nbcr-2023-001-coin-identity.md) |
-| `crypto-detailed-account` | 1402 | Ngrave | Import multiple accounts with and without output descriptors and specify optionally tokens to synchronize | This document |
+| `detailed-account` | 41402 | Ngrave | Import multiple accounts with and without output descriptors and specify optionally tokens to synchronize | This document |
 | `crypto-portfolio-coin` | 1403 | Ngrave | Associate several accounts to its coin identity  | This document |
 | `crypto-portfolio-metadata` | 1404 | Ngrave | Specify wallet metadata | This document |
 | `crypto-portfolio` | 1405 | Ngrave | Aggregate the portfolio information | This document |
@@ -453,7 +453,7 @@ device = 3
 
 The third layer of the proposed sync protocol is based on `crypto-portfolio` UR type, aiming to synchronize the accounts related to multiple coins.
 
-We break down its structure in Figure 5 based on newly defined UR types: `crypto-portfolio-coin`, `coin-identity`, `crypto-detailed-account` and `crypto-portfolio-metadata`. The CDDL for the new UR types are given hereafter.
+We break down its structure in Figure 5 based on newly defined UR types: `crypto-portfolio-coin`, `coin-identity`, `detailed-account` and `crypto-portfolio-metadata`. The CDDL for the new UR types are given hereafter.
 
 ```mermaid
 flowchart TB
@@ -479,11 +479,11 @@ flowchart TB
     direction TB
 	Coins --> ID[(coin-identity)]
     Coins -.-> MF2[master-fingerprint]
-	Coins --> DetAcc[[crypto-detailed-account]]
+	Coins --> DetAcc[[detailed-account]]
     end
 
-    %% crypto-detailed-account breakdown
-    subgraph crypto-detailed-account
+    %% detailed-account breakdown
+    subgraph detailed-account
     direction TB
     DetAcc --> key{Account}
 	key --> HD[(hdkey)]
@@ -501,16 +501,16 @@ flowchart TB
 ```
 Figure 5. Breakdown of crypto-portfolio forming the layer 3 of the sync protocol
 
-- **CDDL for synchronizing several accounts with detailed information** `crypto-detailed-account`
+- **CDDL for synchronizing several accounts with detailed information** `detailed-account`
 
-In this document, we are defining the new `crypto-detailed-account` UR type, extending the scope of the previously defined `account` and `multi-account` UR types in [UR registry constituting the layer 2](nbcr-2023-002-multi-layer-sync.md#ur-registry-constituting-the-layer-2). The information contained in the layer 2 sync protocol can be easily converted to `crypto-detailed-account` type.
+In this document, we are defining the new `detailed-account` UR type, extending the scope of the previously defined `account` and `multi-account` UR types in [UR registry constituting the layer 2](nbcr-2023-002-multi-layer-sync.md#ur-registry-constituting-the-layer-2). The information contained in the layer 2 sync protocol can be easily converted to `detailed-account` type.
 
 This new type aims to incorporate in the same structure:
 
-- The accounts with and without scripts by selecting either `hdkey` or `output-descriptor`. When a `hdkey` is embedded inside `crypto-detailed-account`, the optional `coin-info` in `hdkey` should **not** be defined since `crypto-detailed-account` is used in combination with `coin-identity` used already as asset identifier. 
+- The accounts with and without scripts by selecting either `hdkey` or `output-descriptor`. When a `hdkey` is embedded inside `detailed-account`, the optional `coin-info` in `hdkey` should **not** be defined since `detailed-account` is used in combination with `coin-identity` used already as asset identifier. 
 - An optional list of tokens to synchronize them at the same time of the associated account. A token identifier is defined as a string or tagged with #6.263 to specify a [[hexString]](https://github.com/toravir/CBOR-Tag-Specs/blob/master/hexString.md).
 
-The following specification of `crypto-detailed-account` is written in CDDL. When used embedded in another CBOR structure, this structure should be tagged #6.1402.
+The following specification of `detailed-account` is written in CDDL. When used embedded in another CBOR structure, this structure should be tagged #6.41402.
 
 ```
 account_exp = #6.40303(hdkey) / #6.40308(output-descriptor)
@@ -549,7 +549,7 @@ token-ids = 2
 
 - **CDDL for synchronizing accounts with their coin identity** `crypto-portfolio-coin`
 
-In this document, we are defining the new `crypto-portfolio-coin` UR type associating the `coin-identity` defined in [[NBCR-2023-001]](https://github.com/ngraveio/Research/blob/main/papers/nbcr-2023-001-coin-identity.md) with their accounts. The accounts are preferably defined using a list of `crypto-detailed-account`. 
+In this document, we are defining the new `crypto-portfolio-coin` UR type associating the `coin-identity` defined in [[NBCR-2023-001]](https://github.com/ngraveio/Research/blob/main/papers/nbcr-2023-001-coin-identity.md) with their accounts. The accounts are preferably defined using a list of `detailed-account`. 
 
 To keep full compatibility with the layer 2, the accounts can also be specified using `account` and `crypto-multi-account` UR types. Using these UR types will however limit the information which can be synchronized.
 
@@ -558,9 +558,9 @@ The following specification of `crypto-portfolio-coin` is written in CDDL. When 
 ```
 ; Associate a coin identity to its accounts
 
-detailed_accounts = [+ #6.1402(crypto-detailed-account)]
+detailed_accounts = [+ #6.41402(detailed-account)]
 
-; The accounts are listed using #6.1402(crypto-detailed-account) to share the maximum of information related to the accounts
+; The accounts are listed using #6.41402(detailed-account) to share the maximum of information related to the accounts
 
 coin = {
   coin-id: #6.41401(coin-identity),
@@ -613,7 +613,7 @@ When used embedded in another CBOR structure, this structure should be tagged #6
 ; Top level multi coin sync payload
 
 sync = {
-		coins: [+ #6.1402(crypto-portfolio-coin)],           ; Multiple coins with their respective accounts and coin identities
+		coins: [+ #6.41402(crypto-portfolio-coin)],           ; Multiple coins with their respective accounts and coin identities
 		? metadata: #6.1403(crypto-portfolio-metadata) ; Optional wallet metadata
 }
 
@@ -935,7 +935,7 @@ ur:crypto-multi-accounts/hgadfwnehnntlgaofelegtcdhdatbkhkaofmspcthepyjnrkdtmhasb
 
 Compared to the first and second layers of the sync protocol, the third layer is made for every watch-only wallets aiming to support any coins, representing the generic case how NGRAVE ZERO offline signer and NGRAVE LIQUID app are functioning. The `crypto-portfolio` UR type includes multiple coins/blockchains based on different elliptic curves. 
 
-The accounts of each coin are described using a list of `crypto-detailed-account` indicating a public key or extended public key, a derivation path, a potential script type and a potential list of tokens associated to the account.
+The accounts of each coin are described using a list of `detailed-account` indicating a public key or extended public key, a derivation path, a potential script type and a potential list of tokens associated to the account.
 
 The accounts are always grouped under a coin identity with the `coin-identity` UR type.
 
@@ -991,7 +991,7 @@ An example illustrates how the sync payload is formed using the third layer of c
          2: 60, ; Ethereum BIP44
          3: [ 1 ] ; Ethereum chain ID
         }),
-    2: [1402( ; #6.1402(crypto-detailed-account)
+    2: [41402( ; #6.41402(detailed-account)
         {1: 40303( ; #6.40303(hdkey)
            {3: h'032503D7DCA4FF0594F0404D56188542A18D8E0784443134C716178BC1819C3DD4', ; key-data
             4: h'719EA8CADCA1BBC71BF8511AC3A487286B4D34A860007B8FD498F2732EB89906', ; chain-code
@@ -1006,14 +1006,14 @@ An example illustrates how the sync payload is formed using the third layer of c
         {1: 6, ; ed25519 curve
          2: 501 ; Solana BIP44
         }),
-    2: [1402( ; #6.1402(crypto-detailed-account)
+    2: [41402( ; #6.41402(detailed-account)
         {1: 40303(  ; #6.40303(hdkey)
            {3: h'02EAE4B876A8696134B868F88CC2F51F715F2DBEDB7446B8E6EDF3D4541C4EB67B', ; key-data
             6: 304({1: [44, true, 501, true, 0, true, 0, true]}) ; origin m/44’/501’/0’/0’
           }),
         2: [ "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v" ] ; USDC SPL token
        }),
-	   1402( ; #6.1402(crypto-detailed-account)
+	   41402( ; #6.41402(detailed-account)
         {1: 40303(  ; #6.40303(hdkey)
            {3: h'0260563EE80C26844621B06B74070BAF0E23FB76CE439D0237E87502EBBD3CA346', ; key-data
             6: 40304({1: [44, true, 501, true, 0, true, 1, true]}) ; origin m/44’/501’/0’/1’
@@ -1026,7 +1026,7 @@ An example illustrates how the sync payload is formed using the third layer of c
          2: 60, ; Ethereum BIP44
          3: [ 137 ] ; Polygon chain ID
         }),
-    2: [1402( ; #6.1402(crypto-detailed-account)
+    2: [41402( ; #6.41402(detailed-account)
         {1: 40303(  ; #6.40303(hdkey)
            {3: h'032503D7DCA4FF0594F0404D56188542A18D8E0784443134C716178BC1819C3DD4', ; key-data
             4: h'719EA8CADCA1BBC71BF8511AC3A487286B4D34A860007B8FD498F2732EB89906', ; chain-code
@@ -1041,7 +1041,7 @@ An example illustrates how the sync payload is formed using the third layer of c
         {1: 8, ; secp256k1 curve
          2: 0 ; Bitcoin BIP44
         }),
-    2: [1402( ; #6.1402(crypto-detailed-account)
+    2: [41402( ; #6.41402(detailed-account)
          {1: 40308({ ; output-descriptor
             1: "pkh(@0)", ; source (text descriptor)
             2: [ ; keys array
@@ -1052,7 +1052,7 @@ An example illustrates how the sync payload is formed using the third layer of c
                   8: 2583285239 ; parent fingerprint
             })]	 
 	     })}),
-         1402( ; #6.1402(crypto-detailed-account)
+         41402( ; #6.441402(detailed-account)
          {1: 40308({ ; output-descriptor
             1: "sh(wpkh(@0))", ; source (text descriptor)
             2: [ ; keys array
