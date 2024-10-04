@@ -7,7 +7,7 @@
 Authors: Mathieu Da Silva, Irfan Bilaloglu <br/>
 Date: April 19, 2023
 
-Revised: September 20, 2024
+Revised: October 04, 2024
 
 ---
 
@@ -107,7 +107,7 @@ Finally we propose in this document a third layer based on the `crypto-portfolio
 | (Deprecated) `crypto-account` | 311 | BlockchainCommons (BC) | Previous version of Import an account based on several output descriptors (Version 1) | [[BCR-2020-015]](https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-015-account.md)  |
 | `multi-account` | 41103 | Ngrave | Import multiple accounts in one animated QR | This document |
 | (Deprecated) `crypto-multi-account` | 1103 | Keystone | Previous version of Import multiple accounts in one animated QR | [[solana-qr-data-protocol]](https://github.com/KeystoneHQ/Keystone-developer-hub/blob/main/research/solana-qr-data-protocol.md#setup-watch-only-wallet-by-offline-signer) |
-| `crypto-coin-identity` | 1401 | Ngrave | Add additional information to a specific hdkey | [[NBCR-2023-001]](https://github.com/ngraveio/Research/blob/main/papers/nbcr-2023-001-coin-identity.md) |
+| `coin-identity` | 41401 | Ngrave | Add additional information to a specific hdkey | [[NBCR-2023-001]](https://github.com/ngraveio/Research/blob/main/papers/nbcr-2023-001-coin-identity.md) |
 | `crypto-detailed-account` | 1402 | Ngrave | Import multiple accounts with and without output descriptors and specify optionally tokens to synchronize | This document |
 | `crypto-portfolio-coin` | 1403 | Ngrave | Associate several accounts to its coin identity  | This document |
 | `crypto-portfolio-metadata` | 1404 | Ngrave | Specify wallet metadata | This document |
@@ -453,7 +453,7 @@ device = 3
 
 The third layer of the proposed sync protocol is based on `crypto-portfolio` UR type, aiming to synchronize the accounts related to multiple coins.
 
-We break down its structure in Figure 5 based on newly defined UR types: `crypto-portfolio-coin`, `crypto-coin-identity`, `crypto-detailed-account` and `crypto-portfolio-metadata`. The CDDL for the new UR types are given hereafter.
+We break down its structure in Figure 5 based on newly defined UR types: `crypto-portfolio-coin`, `coin-identity`, `crypto-detailed-account` and `crypto-portfolio-metadata`. The CDDL for the new UR types are given hereafter.
 
 ```mermaid
 flowchart TB
@@ -477,7 +477,7 @@ flowchart TB
 	%% crypto-portfolio-coin breakdown
 	subgraph crypto-portfolio-coin
     direction TB
-	Coins --> ID[(crypto-coin-identity)]
+	Coins --> ID[(coin-identity)]
     Coins -.-> MF2[master-fingerprint]
 	Coins --> DetAcc[[crypto-detailed-account]]
     end
@@ -491,8 +491,8 @@ flowchart TB
 	DetAcc -.-> token-id
 	end
 
-	%% crypto-coin-identity breakdown
-	subgraph crypto-coin-identity
+	%% coin-identity breakdown
+	subgraph coin-identity
     direction TB
 	ID ---> elliptic_curve
 	ID ---> coin_type
@@ -507,7 +507,7 @@ In this document, we are defining the new `crypto-detailed-account` UR type, ext
 
 This new type aims to incorporate in the same structure:
 
-- The accounts with and without scripts by selecting either `hdkey` or `output-descriptor`. When a `hdkey` is embedded inside `crypto-detailed-account`, the optional `coin-info` in `hdkey` should **not** be defined since `crypto-detailed-account` is used in combination with `crypto-coin-identity` used already as asset identifier. 
+- The accounts with and without scripts by selecting either `hdkey` or `output-descriptor`. When a `hdkey` is embedded inside `crypto-detailed-account`, the optional `coin-info` in `hdkey` should **not** be defined since `crypto-detailed-account` is used in combination with `coin-identity` used already as asset identifier. 
 - An optional list of tokens to synchronize them at the same time of the associated account. A token identifier is defined as a string or tagged with #6.263 to specify a [[hexString]](https://github.com/toravir/CBOR-Tag-Specs/blob/master/hexString.md).
 
 The following specification of `crypto-detailed-account` is written in CDDL. When used embedded in another CBOR structure, this structure should be tagged #6.1402.
@@ -549,7 +549,7 @@ token-ids = 2
 
 - **CDDL for synchronizing accounts with their coin identity** `crypto-portfolio-coin`
 
-In this document, we are defining the new `crypto-portfolio-coin` UR type associating the `crypto-coin-identity` defined in [[NBCR-2023-001]](https://github.com/ngraveio/Research/blob/main/papers/nbcr-2023-001-coin-identity.md) with their accounts. The accounts are preferably defined using a list of `crypto-detailed-account`. 
+In this document, we are defining the new `crypto-portfolio-coin` UR type associating the `coin-identity` defined in [[NBCR-2023-001]](https://github.com/ngraveio/Research/blob/main/papers/nbcr-2023-001-coin-identity.md) with their accounts. The accounts are preferably defined using a list of `crypto-detailed-account`. 
 
 To keep full compatibility with the layer 2, the accounts can also be specified using `account` and `crypto-multi-account` UR types. Using these UR types will however limit the information which can be synchronized.
 
@@ -563,7 +563,7 @@ detailed_accounts = [+ #6.1402(crypto-detailed-account)]
 ; The accounts are listed using #6.1402(crypto-detailed-account) to share the maximum of information related to the accounts
 
 coin = {
-  coin-id: #6.1401(crypto-coin-identity),
+  coin-id: #6.41401(coin-identity),
   accounts: accounts_exp,
   ? master-fingerprint: uint32 ; Master fingerprint (fingerprint for the master public key as per BIP32)
 }
@@ -937,7 +937,7 @@ Compared to the first and second layers of the sync protocol, the third layer is
 
 The accounts of each coin are described using a list of `crypto-detailed-account` indicating a public key or extended public key, a derivation path, a potential script type and a potential list of tokens associated to the account.
 
-The accounts are always grouped under a coin identity with the `crypto-coin-identity` UR type.
+The accounts are always grouped under a coin identity with the `coin-identity` UR type.
 
 Additionally, the offline signer can send metadata in `crypto-portfolio-metadata` along with the coins and the accounts.
 
@@ -986,7 +986,7 @@ An example illustrates how the sync payload is formed using the third layer of c
 ```
 {
  1: [ 1403( ; #6.1403(crypto-portfolio-coin)
-   {1: 1401( ; #6.1401(crypto-coin-identity)
+   {1: 41401( ; #6.41401(coin-identity)
         {1: 8, ; secp256k1 curve
          2: 60, ; Ethereum BIP44
          3: [ 1 ] ; Ethereum chain ID
@@ -1002,7 +1002,7 @@ An example illustrates how the sync payload is formed using the third layer of c
        })]
    }),
    1403( ; #6.1403(crypto-portfolio-coin) 
-   {1: 1401( ; #6.1401(crypto-coin-identity)
+   {1: 41401( ; #6.41401(coin-identity)
         {1: 6, ; ed25519 curve
          2: 501 ; Solana BIP44
         }),
@@ -1021,7 +1021,7 @@ An example illustrates how the sync payload is formed using the third layer of c
        })]
    }),
    1403( ; #6.1403(crypto-portfolio-coin)
-   {1: 1401( ; #6.1401(crypto-coin-identity)
+   {1: 41401( ; #6.41401(coin-identity)
         {1: 8, ; secp256k1 curve
          2: 60, ; Ethereum BIP44
          3: [ 137 ] ; Polygon chain ID
@@ -1037,7 +1037,7 @@ An example illustrates how the sync payload is formed using the third layer of c
        })]
    }),
    1403( ; #6.1403(crypto-portfolio-coin)
-   {1: 1401( ; #6.1401(crypto-coin-identity)
+   {1: 41401( ; #6.41401(coin-identity)
         {1: 8, ; secp256k1 curve
          2: 0 ; Bitcoin BIP44
         }),

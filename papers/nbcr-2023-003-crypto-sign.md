@@ -6,7 +6,7 @@
 Authors: Mathieu Da Silva, Irfan Bilaloglu <br/>
 Date: April 26, 2023
 
-Revised: September 25, 2024
+Revised: October 04, 2024
 
 ---
 
@@ -309,7 +309,7 @@ This document aims to propose common UR types for signing on every blockchain.
 
 This UR type is tagged with #6.1411 and embeds:
 
-- The `crypto-coin-identity` UR type tagged with #6.140 and introduced in [[NBCR-2023-001]](https://github.com/ngraveio/Research/blob/main/papers/nbcr-2023-001-coin-identity.md). This UR type identifies the elliptic curve and the blockchain on which the sign request is initiated.
+- The `coin-identity` UR type tagged with #6.140 and introduced in [[NBCR-2023-001]](https://github.com/ngraveio/Research/blob/main/papers/nbcr-2023-001-coin-identity.md). This UR type identifies the elliptic curve and the blockchain on which the sign request is initiated.
 - An optional UR type to specify metadata related to a specific coin.
 
 ```
@@ -319,7 +319,7 @@ coin-meta = #6.1420(eth-meta) / #6.1421(sol-meta) / #6.1422(xtz-meta)
 
 crypto-sign-request = {
     ?request-id: uuid,                        ; Identifier of the signing request
-    coin-id: #6.1401(crypto-coin-identity),   ; Provides information on the elliptic curve and the blockchain/coin
+    coin-id: #6.441401(coin-identity),   ; Provides information on the elliptic curve and the blockchain/coin
     ?derivation-path: #6.40304(keypath),      ; Key path for signing this request
     sign-data: bytes,                         ; Transaction to be decoded by the offline signer 
     ?origin: text,                            ; Origin of this sign request, e.g. wallet name
@@ -376,7 +376,7 @@ Since Bitcoin transactions follow [[BIP174]](https://github.com/bitcoin/bips/blo
 
 - **Bitcoin sign request**
 
-A Bitcoin transaction is uniquely identified thanks to the information shared in `crypto-coin-identity` UR type, i.e. secp256k1 as elliptic curve and 0 as coin type. 
+A Bitcoin transaction is uniquely identified thanks to the information shared in `coin-identity` UR type, i.e. secp256k1 as elliptic curve and 0 as coin type. 
 
 The only other required field for requesting the signature of a Bitcoin transaction is the bytes composing the unsigned PSBT transaction, corresponding to the `sign-data` field of `crypto-sign-request` UR type.
 
@@ -455,7 +455,7 @@ An example illustrates how the signature request and response for Bitcoin PSBT a
 ```
 {
 1: 37(h'3B5414375E3A450B8FE1251CBC2B3FB5'), ; request-id
-2: 1401( ; #6.1401(crypto-coin-identity)
+2: 41401( ; #6.41401(coin-identity)
     {1: 8, ; secp256k1 curve
      2: 0 ; Bitcoin BIP44
     }),
@@ -475,7 +475,7 @@ A5                                      # map(5)
       50                                # bytes(16)
          3B5414375E3A450B8FE1251CBC2B3FB5 
    02                                   # unsigned(2)
-   D9 0579                              # tag(1401)
+   D9 A1B9                              # tag(41401)
       A2                                # map(2)
          01                             # unsigned(1)
          08                             # unsigned(8)
@@ -509,7 +509,7 @@ A5                                      # map(5)
 - UR encoding 
 
 ```
-ur:crypto-sign-request/hmadlkhttgpyzoddnebwptsebbfpmkhtfljtknrnhnaolebedwhdadbraoaeatlegtckhdadfeetkkpkaepkaepkaepraepraofwnehnntlgasbkheckcwbkcepyadaegtaoaeaeaeaobknldthkhncyhtcfhekkftckcksecmmecdeyjehmlndndwhepksefeenhyhpmednaeaeaeaeaepypypypyfmfgasinldndbmbpcthtsdjpbbbtfenrrehekecthyltdnmhjybkdwbeldeynrgeadaeaeaeaepypypypyaockhtonbraeaeaeaedmaeddlkblknctldbdbbbtldfechnkenbwtggpgemlcxteaemkpkbeaeaeaeaedmaeddaehlhrhdmeonphdthmfemdzmsdnlcekggeflaefpaeaeaeaeaeaeaeaeaebecytnspvtrsahsehtspsoutzmsore
+ur:crypto-sign-request/hmadlkhttgpyzoddnebwptsebbfpmkhtfljtknrnhnaolehljnhdadbraoaeatlegtckhdadfeetkkpkaepkaepkaepraepraofwnehnntlgasbkheckcwbkcepyadaegtaoaeaeaeaobknldthkhncyhtcfhekkftckcksecmmecdeyjehmlndndwhepksefeenhyhpmednaeaeaeaeaepypypypyfmfgasinldndbmbpcthtsdjpbbbtfenrrehekecthyltdnmhjybkdwbeldeynrgeadaeaeaeaepypypypyaockhtonbraeaeaeaedmaeddlkblknctldbdbbbtldfechnkenbwtggpgemlcxteaemkpkbeaeaeaeaedmaeddaehlhrhdmeonphdthmfemdzmsdnlcekggeflaefpaeaeaeaeaeaeaeaeaebecytnspvtrsahsehtspsoutzmsore
 ```
 
 </details>
@@ -573,7 +573,7 @@ The received PSBT should be decoded by the offline signer to know each input and
 
 - **Ethereum sign request**
 
-An Ethereum transaction is uniquely identified thanks to the information shared in `crypto-coin-identity` UR type, i.e. secp256k1 as elliptic curve, 60 as coin type and chain ID as subtype to identify the EVM chain (e.g. 1 for Ethereum).
+An Ethereum transaction is uniquely identified thanks to the information shared in `coin-identity` UR type, i.e. secp256k1 as elliptic curve, 60 as coin type and chain ID as subtype to identify the EVM chain (e.g. 1 for Ethereum).
 
 Several fields are required for requesting the signature of an Ethereum transaction:
 
@@ -648,7 +648,7 @@ An example illustrates how the signing protocol works on EVM blockchains:
 ```
 {
 1: 37(h'9b1deb4d3b7d4bad9bdd2b0d7b3dcb6d'), ; request-id
-2: 1401( ; #6.1401(crypto-coin-identity)
+2: 41401( ; #6.41401(coin-identity)
     {1: 8, ; secp256k1 curve
      2: 60, ; Ethereum BIP44
      3: 137 ; Polygon chain ID
@@ -788,7 +788,7 @@ Keystone has proposed and implemented the specific UR types `sol-sign-request` a
 
 - **Solana sign request**
 
-A Solana transaction is uniquely identified thanks to the information shared in `crypto-coin-identity` UR type, i.e. ed25519 as elliptic curve and 501 as coin type.
+A Solana transaction is uniquely identified thanks to the information shared in `coin-identity` UR type, i.e. ed25519 as elliptic curve and 501 as coin type.
 
 Several fields are required for requesting the signature of a Solana transaction:
 
@@ -862,7 +862,7 @@ An example illustrates how the signing protocol works on Solana blockchain:
 ```
 {
 1: 37(h'9b1deb4d3b7d4bad9bdd2b0d7b3dcb6d'), ; request-id
-2: 1401( ; #6.1401(crypto-coin-identity)
+2: 41401( ; #6.41401(coin-identity)
     {1: 6, ; ed25519 curve
      2: 501 ; Solana BIP44
     }),
@@ -994,7 +994,7 @@ In case of more complex transactions, the offline signer should be able to recog
 
 - **Tezos sign request**
 
-A Tezos transaction is uniquely identified thanks to `crypto-coin-identity` UR type, indicating which elliptic curve should be used (either secp256k1, ed25519 or P256) for the coin type 1729.
+A Tezos transaction is uniquely identified thanks to `coin-identity` UR type, indicating which elliptic curve should be used (either secp256k1, ed25519 or P256) for the coin type 1729.
 
 Several fields are required for requesting the signature of a Tezos transaction:
 
@@ -1068,7 +1068,7 @@ An example illustrates how the signing protocol works on Tezos blockchain:
 ```
 {
 1: 37(h'9b1deb4d3b7d4bad9bdd2b0d7b3dcb6d'), ; request-id
-2: 1401( ; #6.1401(crypto-coin-identity)
+2: 41401( ; #6.41401(coin-identity)
     {1: 6, ; ed25519 curve
      2: 1729 ; Tezos BIP44
     }),
@@ -1198,7 +1198,7 @@ There are no existing signing protocol based on UR types for other blockchains (
 
 - **MultiversX and Stellar sign request**
 
-A MultiversX transaction is uniquely identified thanks to `crypto-coin-identity` UR type, i.e. ed25519 as elliptic curve and 508 as coin type. Identically, a Stellar transaction is identified with ed25519 as an elliptic curve and 148 as a coin type.
+A MultiversX transaction is uniquely identified thanks to `coin-identity` UR type, i.e. ed25519 as elliptic curve and 508 as coin type. Identically, a Stellar transaction is identified with ed25519 as an elliptic curve and 148 as a coin type.
 
 Several fields are required for requesting the signature of a MultiversX or Stellar transaction:
 
@@ -1250,7 +1250,7 @@ An example illustrates how the signing protocol works on MultiversX blockchain:
 ```
 {
 1: 37(h'9b1deb4d3b7d4bad9bdd2b0d7b3dcb6d'), ; request-id
-2: 1401( ; #6.1401(crypto-coin-identity)
+2: 41401( ; #6.41401(coin-identity)
     {1: 6, ; ed25519 curve
      2: 501 ; MultiversX BIP44
     }),
@@ -1268,9 +1268,9 @@ A5                                      # map(5)
    01                                   # unsigned(1)
    D8 25                                # tag(37)
       50                                # bytes(16)
-         9B1DEB4D3B7D4BAD9BDD2B0D7B3DCB6D
+         9B1DEB4D3B7D4BAD9BDD2B0D7B3DCB6D 
    02                                   # unsigned(2)
-   D9 0579                              # tag(1401)
+   D9 A1B9                              # tag(41401)
       A2                                # map(2)
          01                             # unsigned(1)
          06                             # unsigned(6)
@@ -1295,7 +1295,7 @@ A5                                      # map(5)
          1A 37B5EED4                    # unsigned(934670036)
    04                                   # unsigned(4)
    58 4B                                # bytes(75)
-      F849808609184E72A00082271094000000000000000000000000000000000000000080A47F7465737432000000000000000000000000000000000000000000000000000000600057808080 
+      F849808609184E72A00082271094000000000000000000000000000000000000000080A47F7465737432000000000000000000000000000000000000000000000000000000600057808080
    05                                   # unsigned(5)
    6D                                   # text(13)
       4E4752415645204C4951554944        # "NGRAVE LIQUID"
@@ -1303,7 +1303,7 @@ A5                                      # map(5)
 
 - UR encoding 
 ```
-ur:crypto-sign-request/hmadlkhttgglgenktepyeosyheglmekncyenptlecyaolebedwhdadbdaoftadpkatlegtckhdadfeetkkpkftadpkpkaepkaepkadpkaofwnehnntlgasbksyphsoecfdbtettncbgwaefeinclfkaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeechdeycebmcwcelpaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaebdaeadecececbecytnspvtrsahsehtspsoutzmsore
+ur:crypto-sign-request/hmadlkhttgglgenktepyeosyheglmekncyenptlecyaolehljnhdadbdaoftadpkatlegtckhdadfeetkkpkftadpkpkaepkaepkadpkaofwnehnntlgasbksyphsoecfdbtettncbgwaefeinclfkaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeechdeycebmcwcelpaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaebdaeadecececbecytnspvtrsahsehtspsoutzmsore
 ```
 
 </details>
@@ -1357,7 +1357,7 @@ Another example illustrates how the signing protocol works on Stellar blockchain
 ```
 {
 1: 37(h'9b1deb4d3b7d4bad9bdd2b0d7b3dcb6d'), ; request-id
-2: 1401( ; #6.1401(crypto-coin-identity)
+2: 41401( ; #6.41401(coin-identity)
     {1: 6, ; ed25519 curve
      2: 148 ; Stellar BIP44
     }),
@@ -1375,9 +1375,9 @@ A5                                      # map(5)
    01                                   # unsigned(1)
    D8 25                                # tag(37)
       50                                # bytes(16)
-         9B1DEB4D3B7D4BAD9BDD2B0D7B3DCB6D 
+         9B1DEB4D3B7D4BAD9BDD2B0D7B3DCB6D # "\x9B\u001D\xEBM;}K\xAD\x9B\xDD+\r{=\xCBm"
    02                                   # unsigned(2)
-   D9 0579                              # tag(1401)
+   D9 A1B9                              # tag(41401)
       A2                                # map(2)
          01                             # unsigned(1)
          06                             # unsigned(6)
@@ -1411,7 +1411,7 @@ A5                                      # map(5)
 - UR encoding
 
 ```
-ur:crypto-sign-request/hmadlkhttgglgenktepyeosyheglmekncyenptlecyaolebedwhdadbdaoetfkatlegtckhdadfeetkkpketfkpkaepkaepkaopkbefwnehnntlgasbkgwaeaeaeaoaeaeaeaekgorcdbelyfdcyfelnierssycfmkvthtpttpzohekeglpsfeorlnknpslemtlecyaeaeaebsaecnhemkaeaeaeadaeaeaeadaeaeaeaeaeaeaebsaeaeaeaebsctfezmaeaeaeadaeaeaecfspbmcmcmcdhtadcdcbcmbshkaeaeaeadaeaeaeaeaeaeaeadaeaeaeaelpftcnneeedmbslpdrhlbkhebplkcxbkvtldgngmcblnmlbelpftnlpnbkdnlkjnaeaeaeaeaeaeaeaozobbmeaeaeaeaeaeaeaeaeaebdcytnspvtrsahsehtspsoutzmsore
+ur:crypto-sign-request/hmadlkhttgglgenktepyeosyheglmekncyenptlecyaolehljnhdadbdaoetfkatlegtckhdadfeetkkpketfkpkaepkaepkaopkbefwnehnntlgasbkgwaeaeaeaoaeaeaeaekgorcdbelyfdcyfelnierssycfmkvthtpttpzohekeglpsfeorlnknpslemtlecyaeaeaebsaecnhemkaeaeaeadaeaeaeadaeaeaeaeaeaeaebsaeaeaeaebsctfezmaeaeaeadaeaeaecfspbmcmcmcdhtadcdcbcmbshkaeaeaeadaeaeaeaeaeaeaeadaeaeaeaelpftcnneeedmbslpdrhlbkhebplkcxbkvtldgngmcblnmlbelpftnlpnbkdnlkjnaeaeaeaeaeaeaeaozobbmeaeaeaeaeaeaeaeaeaebdcytnspvtrsahsehtspsoutzmsore
 ```
 
 </details>
