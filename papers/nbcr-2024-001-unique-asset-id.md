@@ -6,6 +6,8 @@
 Authors: İrfan Bilaloğlu, Mathieu Da Silva, Maher Sallam<br/>
 Date: 18 September 2024<br/>
 
+Revised: October 04, 2024
+
 ---
 
 ### Introduction
@@ -91,9 +93,9 @@ The UAI format and the UR types defined in [[NBCR-2023-001]](https://github.com/
 
 The UR types and the UAI format can easily be converted to each other:
 
-- `crypto-coin-identity` UR type defined in [[NBCR-2023-001]](https://github.com/ngraveio/Research/blob/main/papers/nbcr-2023-001-coin-identity.md) contains the same mandatory UAI fields, i.e. the curve, the type and the subtypes. 
+- `coin-identity` UR type defined in [[NBCR-2023-001]](https://github.com/ngraveio/Research/blob/main/papers/nbcr-2023-001-coin-identity.md) contains the same mandatory UAI fields, i.e. the curve, the type and the subtypes. 
 
-- `crypto-detailed-accounts` UR type defined in [[NBCR-2023-002]](https://github.com/ngraveio/Research/blob/main/papers/nbcr-2023-002-multi-layer-sync.md) contains the same optional UAI fields, i.e. the token ID and the derivation path.
+- `detailed-account` UR type defined in [[NBCR-2023-002]](https://github.com/ngraveio/Research/blob/main/papers/nbcr-2023-002-multi-layer-sync.md) contains the same optional UAI fields, i.e. the token ID and the derivation path.
 
 We provide an example how UR types and UAI format can be converted to each other:
 
@@ -103,7 +105,7 @@ We provide an example how UR types and UAI format can be converted to each other
 uai://secp256k1.60.137:0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359/44h/60h/0h/1/0?master_fingerprint=2819587291
      |_______________| |_____________________________________________________________________________________|
               |                                     |
-      crypto-coin-identity                crypto-detailed-accounts
+      coin-identity                       detailed-account
 
 CBOR diagnostic notation          
       {                                   {

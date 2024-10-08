@@ -6,7 +6,7 @@
 Authors: Mathieu Da Silva, Irfan Bilaloglu <br/>
 Date: April 26, 2023
 
-Revised: September 25, 2024
+Revised: October 04, 2024
 
 ---
 
@@ -77,7 +77,7 @@ The user can initiate the signing protocol on a watch-only wallet synchronized w
 
 The existing communication protocol for signing are based on UR types specific to each blockchain. Except for Bitcoin with `psbt` UR type, the signing request prepared by the watch-only wallet is embedded in a UR type with the extension `sign-request`. Once the transaction is signed, the offline signer sends the signature back to the watch-only wallet by encoding the data in a UR type with the extension `signature`.
 
-This document proposes to standardize into one UR type `crypto-sign-request` for the signing request and another UR type `crypto-signature` for the signed message.
+This document proposes to standardize into one UR type `sign-request` for the signing request and another UR type `sign-response` for the signed message.
 
 The following table listed the existing UR types depending on the blockchain and introduced the new UR types intended to be blockchain agnostic.
 
@@ -88,7 +88,7 @@ The following table listed the existing UR types depending on the blockchain and
 | Ethereum/EVM | eth-sign-request <br> Tag: 401 | eth-signature <br> Tag: 402 | Keystone | [[EIP-4527]](https://eips.ethereum.org/EIPS/eip-4527) | [[ur-registry-eth]](https://github.com/KeystoneHQ/keystone-airgaped-base/tree/master/packages/ur-registry-eth) |
 | Solana| sol-sign-request <br> Tag: 1101 | sol-signature <br> Tag: 1102 | Keystone | [[solana-qr-data-protocol]](https://github.com/KeystoneHQ/Keystone-developer-hub/blob/main/research/solana-qr-data-protocol.md#sending-the-unsigned-data-from-wallet-only-wallet-to-offline-signer)  | [[ur-registry-sol]](https://github.com/KeystoneHQ/keystone-airgaped-base/tree/master/packages/ur-registry-sol) |
 | Tezos | xtz-sign-request <br> Tag: 501 | xtz-signature <br> Tag: 502 | Airgap  | [[tzip-25]](https://gitlab.com/tezos/tzip/-/blob/master/proposals/tzip-25/tzip-25.md) | [[ur-registry-xtz]](https://socket.dev/npm/package/@airgap/ur-registry-xtz/overview/0.0.1-beta.0) |
-| Generic | crypto-sign-request <br> Tag: 1411 | crypto-signature <br> Tag: 1412 | Ngrave | This document | [[ur-registry]](https://github.com/ngraveio/ur-registry/tree/main) |
+| Generic | sign-request <br> Tag: 41411 | sign-response <br> Tag: 41412 | Ngrave | This document | [[ur-registry]](https://github.com/ngraveio/ur-registry/tree/main) |
 
 The specification for each UR type contains CBOR structure, expressed thereafter in Concise Data Definition Language [[CDDL]](https://datatracker.ietf.org/doc/html/rfc8610).
 
@@ -239,7 +239,7 @@ For Tezos blockchain, the UR types are based on the [[TZIP-25]](https://gitlab.c
 
 - **CDDL for XTZ signature request** `xtz-sign-request`
 
-This UR type belongs to the [[TZIP-25]](https://gitlab.com/tezos/tzip/-/blob/master/proposals/tzip-25/tzip-25.md) proposal and is tagged with #6.1411. 
+This UR type belongs to the [[TZIP-25]](https://gitlab.com/tezos/tzip/-/blob/master/proposals/tzip-25/tzip-25.md) proposal and is tagged with #6.501. 
 
 Two different CDDL expressions have been proposed regarding how to specify the signer account. The [[TZIP-25]](https://gitlab.com/tezos/tzip/-/blob/master/proposals/tzip-25/tzip-25.md) proposal opted for specifying the signer account through the derivation path, while the implementation [[ur-registry-xtz]](https://socket.dev/npm/package/@airgap/ur-registry-xtz/overview/0.0.1-beta.0) proposed to specify only the associated public key. 
 
@@ -285,7 +285,7 @@ public-key-type-sapling = 4
 
 - **CDDL for XTZ signature response** `xtz-signature`
 
-This UR type belongs to the [[TZIP-25]](https://gitlab.com/tezos/tzip/-/blob/master/proposals/tzip-25/tzip-25.md) proposal and is tagged with #6.1412.
+This UR type belongs to the [[TZIP-25]](https://gitlab.com/tezos/tzip/-/blob/master/proposals/tzip-25/tzip-25.md) proposal and is tagged with #6.502.
 
 ```
 xtz-signature  = (
@@ -305,25 +305,22 @@ payload = 3
 
 This document aims to propose common UR types for signing on every blockchain. 
 
-- **CDDL for generic signature request** `crypto-sign-request`
+- **CDDL for generic signature request** `sign-request`
 
-This UR type is tagged with #6.1411 and embeds:
+This UR type is tagged with #6.41411 and embeds:
 
-- The `crypto-coin-identity` UR type tagged with #6.140 and introduced in [[NBCR-2023-001]](https://github.com/ngraveio/Research/blob/main/papers/nbcr-2023-001-coin-identity.md). This UR type identifies the elliptic curve and the blockchain on which the sign request is initiated.
+- The `coin-identity` UR type tagged with #6.41401 and introduced in [[NBCR-2023-001]](https://github.com/ngraveio/Research/blob/main/papers/nbcr-2023-001-coin-identity.md). This UR type identifies the elliptic curve and the blockchain on which the sign request is initiated.
 - An optional UR type to specify metadata related to a specific coin.
 
 ```
-; Metadata specific for each coin
-; The list is not exhaustive and includes only the metadata for ETH, SOL and XTZ
-coin-meta = #6.1420(eth-meta) / #6.1421(sol-meta) / #6.1422(xtz-meta) 
-
-crypto-sign-request = {
+sign-request = {
     ?request-id: uuid,                        ; Identifier of the signing request
-    coin-id: #6.1401(crypto-coin-identity),   ; Provides information on the elliptic curve and the blockchain/coin
+    coin-id: #6.41401(coin-identity),         ; Provides information on the elliptic curve and the blockchain/coin
     ?derivation-path: #6.40304(keypath),      ; Key path for signing this request
     sign-data: bytes,                         ; Transaction to be decoded by the offline signer 
     ?origin: text,                            ; Origin of this sign request, e.g. wallet name
-    ?metadata: coin-meta                      ; Specify metadata for some coins
+    ?tx-type: int .default 1                  ; Specify type of transaction required for some blockchains
+    ?address: string / bytes                  ; Specify sender address if not already specified in the sign-data and derivation-path
 }
 
 request-id = 1
@@ -331,30 +328,25 @@ coin-id = 2
 derivation-path = 3
 sign-data = 4
 origin = 5
-metadata = 6
+tx-type = 7
+address=8
 ```
 
-We are listing thereafter the metadata UR types for the blockchains listed in this document. This list is not exhaustive and needs to be updated for each coin needing additional data to the `crypto-sign-request` UR type.
+The type definition takes over the same enumeration from the existing UR types `sign-data-type` for Ethereum, `type` for Solana and `key-type` for Tezos.    
+In case of new blockchain integration to the sign protocol, we will need to create a new enumeration if there is more than one type of transaction on the new blockchain. 
 
-| Blockchain | Metadata required | coin-meta UR type |
-| --- | --- | --- |
-| Ethereum/EVM chains | Yes | - CDDL description: <br> `eth-meta = { data-type: sign-data-type, ?address: eth-address-bytes}` <br> `sign-data-type` and `eth-address-bytes` definition are inherited from eth-sign-request. <br> - Tag: 1420 |
-| Solana | No | - CDDL description: <br> `sol-meta = { ?type: int .default sign-type-transaction, ?address: bytes}`  <br> `type` definition is inherited from sol-sign-request. The default value `sign-type-transaction` should be used in case of missing metadata in crypto-sign-request for a Solana transaction. <br> - Tag: 1421 |
-| Tezos | No | - CDDL description: <br> `xtz-meta = { ?data-type: int .default data-type-operation}` <br> `data-type definition` is inherited from xtz-sign-request. <br> The default value of data-type should be used in case of missing metadata in crypto-sign-request for Tezos transaction. <br> - Tag: 1422 |
-| Bitcoin <br> MultiversX <br> Stellar | No | No metadata needed |
+- **CDDL for generic signature response** `sign-response`
 
-- **CDDL for generic signature response** `crypto-signature`
-
-This UR type is tagged with #6.1412. 
+This UR type is tagged with #6.41412. 
 
 ```
-crypto-signature = {
+sign-response = {
   ?request-id: uuid,     ; Identifier of the signing request 
   signature: bytes,      ; Signature result
   ?origin: text,         ; The device info providing this signature
 }
 
-; request-id must be present in case of response to a crypto-sign-request where 
+; request-id must be present in case of response to a sign-request where 
 ; the request-id is specified
 
 request-id = 1
@@ -370,19 +362,19 @@ This Section gives more details on the use case for each blockchain, the signing
 
 ## III - 1. Bitcoin transactions
 
-Since Bitcoin transactions follow [[BIP174]](https://github.com/bitcoin/bips/blob/master/bip-0174.mediawiki) defining PSBT, the privileged UR type for signing is `psbt`. In this document, we present its integration into the common UR types `crypto-sign-request` and `crypto-signature`.
+Since Bitcoin transactions follow [[BIP174]](https://github.com/bitcoin/bips/blob/master/bip-0174.mediawiki) defining PSBT, the privileged UR type for signing is `psbt`. In this document, we present its integration into the common UR types `sign-request` and `sign-response`.
 
 ### Integration with the generic UR types registry
 
 - **Bitcoin sign request**
 
-A Bitcoin transaction is uniquely identified thanks to the information shared in `crypto-coin-identity` UR type, i.e. secp256k1 as elliptic curve and 0 as coin type. 
+A Bitcoin transaction is uniquely identified thanks to the information shared in `coin-identity` UR type, i.e. secp256k1 as elliptic curve and 0 as coin type. 
 
-The only other required field for requesting the signature of a Bitcoin transaction is the bytes composing the unsigned PSBT transaction, corresponding to the `sign-data` field of `crypto-sign-request` UR type.
+The only other required field for requesting the signature of a Bitcoin transaction is the bytes composing the unsigned PSBT transaction, corresponding to the `sign-data` field of `sign-request` UR type.
 
-The following table indicates the corresponding fields between the UR types `psbt` and `crypto-sign-request`.
+The following table indicates the corresponding fields between the UR types `psbt` and `sign-request`.
 
-| crypto-sign-request fields <br> Associated number corresponds to the order in UR type | Corresponding crypto-psbt fields <br> Associated number corresponds to the order in UR type |
+| sign-request fields <br> Associated number corresponds to the order in UR type | Corresponding crypto-psbt fields <br> Associated number corresponds to the order in UR type |
 | --- | --- |
 | 1. request-id (optional) | No corresponding field, adds verification step  |
 | 2. coin-id | No corresponding field, serves as identifier for BTC transactions |
@@ -390,7 +382,7 @@ The following table indicates the corresponding fields between the UR types `psb
 | 4. sign-data | 1. bytes |
 | 5. origin (optional) | No corresponding field, provides an additional description |
 
-`crypto-sign-request` UR type has the advantage to provide additional fields compared to `psbt` when used as a signing request: 
+`sign-request` UR type has the advantage to provide additional fields compared to `psbt` when used as a signing request: 
 - an unique identifier for the request to link the generated signature to the sign request, 
 - the derivation path of the account required to sign (not mandatory but important to identify the account(s) signing the psbt), 
 - the master fingerprint to identify the wallet,
@@ -400,17 +392,17 @@ The following table indicates the corresponding fields between the UR types `psb
 
 A Bitcoin sign request results in a signed transaction after user verification. A Bitcoin signature is contained in the same format as the request, a PSBT transaction.
 
-The only required field for a Bitcoin signature is the bytes composing the signed PSBT transaction, corresponding to the `signature` fields of `crypto-signature` UR type.
+The only required field for a Bitcoin signature is the bytes composing the signed PSBT transaction, corresponding to the `signature` fields of `sign-response` UR type.
 
-The following table indicates the corresponding fields between the UR types `psbt` and `crypto-signature`.
+The following table indicates the corresponding fields between the UR types `psbt` and `sign-response`.
 
-| crypto-signature fields <br> Associated number corresponds to the order in UR type | Corresponding crypto-psbt fields <br> Associated number corresponds to the order in UR type |
+| sign-response fields <br> Associated number corresponds to the order in UR type | Corresponding crypto-psbt fields <br> Associated number corresponds to the order in UR type |
 | --- | --- |
 | 1. request-id | No corresponding field, adds verification step  |
 | 2. signature | 1. bytes |
 | 3. origin | No corresponding field, provides an additional description |
 
-`crypto-signature` UR type has the advantage to provide additional optional fields compared to `psbt` when used as a signature: 
+`sign-response` UR type has the advantage to provide additional optional fields compared to `psbt` when used as a signature: 
 - an unique identifier to link the signature to the request
 - a text describing the origin (e.g. the device name). 
 
@@ -424,8 +416,8 @@ A typical use case follows the following process between a watch-only wallet and
 - The watch-only adds then information to the PSBT that it has access to, following the Updater role in [[BIP174]](https://github.com/bitcoin/bips/blob/master/bip-0174.mediawiki):
     1. If the Updater has the UTXO for an input, it should add it to the PSBT. 
     2. The Updater should also add redeemScripts, witnessScripts, and BIP 32 derivation paths to the input and output data if it knows them.
-- The watch-only wallet generates a QR code containing the `crypto-sign-request` UR type with the unsigned transaction and BTC as coin identity. Additionally, some recommended information is provided to the offline signer for verification purposes: request identifier, derivation path of the signer account, master fingerprint of the master public key and the watch-only wallet name.
-- The offline signer accepts the transmitted PSBT in `crypto-sign-request` UR type and provides the signature, following the Signer role in [[BIP174]](https://github.com/bitcoin/bips/blob/master/bip-0174.mediawiki):
+- The watch-only wallet generates a QR code containing the `sign-request` UR type with the unsigned transaction and BTC as coin identity. Additionally, some recommended information is provided to the offline signer for verification purposes: request identifier, derivation path of the signer account, master fingerprint of the master public key and the watch-only wallet name.
+- The offline signer accepts the transmitted PSBT in `sign-request` UR type and provides the signature, following the Signer role in [[BIP174]](https://github.com/bitcoin/bips/blob/master/bip-0174.mediawiki):
     1. The Signer must only use the UTXOs provided in the PSBT to produce signatures for inputs.
     2. Before signing a non-witness input, the Signer must verify that the TXID of the non-witness UTXO matches the TXID specified in the unsigned transaction. 
     3. Before signing a witness input, the Signer must verify that the witnessScript (if provided) matches the hash specified in the UTXO or the redeemScript, and the redeemScript (if provided) matches the hash in the UTXO. 
@@ -434,7 +426,7 @@ A typical use case follows the following process between a watch-only wallet and
     6. The Signer must only add data to a PSBT. Any signatures created by the Signer must be added as a "Partial Signature" key-value pair for the respective input it relates to. 
     7. The Signer can additionally compute the addresses and values being sent, and the transaction fee, showing this data to the user as a confirmation of intent and the consequences of signing the PSBT.
     8. Signers do not need to sign for all possible input types. For example, a signer may choose to only sign Segwit inputs.
-- The offline signer responds with `crypto-signature` containing the output signatures in the PSBT and if provided replied with the same identifier used for the request.
+- The offline signer responds with `sign-response` containing the output signatures in the PSBT and if provided replied with the same identifier used for the request.
 
 ### Example
 
@@ -455,7 +447,7 @@ An example illustrates how the signature request and response for Bitcoin PSBT a
 ```
 {
 1: 37(h'3B5414375E3A450B8FE1251CBC2B3FB5'), ; request-id
-2: 1401( ; #6.1401(crypto-coin-identity)
+2: 41401( ; #6.41401(coin-identity)
     {1: 8, ; secp256k1 curve
      2: 0 ; Bitcoin BIP44
     }),
@@ -475,7 +467,7 @@ A5                                      # map(5)
       50                                # bytes(16)
          3B5414375E3A450B8FE1251CBC2B3FB5 
    02                                   # unsigned(2)
-   D9 0579                              # tag(1401)
+   D9 A1B9                              # tag(41401)
       A2                                # map(2)
          01                             # unsigned(1)
          08                             # unsigned(8)
@@ -509,7 +501,7 @@ A5                                      # map(5)
 - UR encoding 
 
 ```
-ur:crypto-sign-request/hmadlkhttgpyzoddnebwptsebbfpmkhtfljtknrnhnaolebedwhdadbraoaeatlegtckhdadfeetkkpkaepkaepkaepraepraofwnehnntlgasbkheckcwbkcepyadaegtaoaeaeaeaobknldthkhncyhtcfhekkftckcksecmmecdeyjehmlndndwhepksefeenhyhpmednaeaeaeaeaepypypypyfmfgasinldndbmbpcthtsdjpbbbtfenrrehekecthyltdnmhjybkdwbeldeynrgeadaeaeaeaepypypypyaockhtonbraeaeaeaedmaeddlkblknctldbdbbbtldfechnkenbwtggpgemlcxteaemkpkbeaeaeaeaedmaeddaehlhrhdmeonphdthmfemdzmsdnlcekggeflaefpaeaeaeaeaeaeaeaeaebecytnspvtrsahsehtspsoutzmsore
+ur:sign-request/hmadlkhttgpyzoddnebwptsebbfpmkhtfljtknrnhnaolehljnhdadbraoaeatlegtckhdadfeetkkpkaepkaepkaepraepraofwnehnntlgasbkheckcwbkcepyadaegtaoaeaeaeaobknldthkhncyhtcfhekkftckcksecmmecdeyjehmlndndwhepksefeenhyhpmednaeaeaeaeaepypypypyfmfgasinldndbmbpcthtsdjpbbbtfenrrehekecthyltdnmhjybkdwbeldeynrgeadaeaeaeaepypypypyaockhtonbraeaeaeaedmaeddlkblknctldbdbbbtldfechnkenbwtggpgemlcxteaemkpkbeaeaeaeaedmaeddaehlhrhdmeonphdthmfemdzmsdnlcekggeflaefpaeaeaeaeaeaeaeaeaebecytnspvtrsahsehtspsoutzmsore
 ```
 
 </details>
@@ -547,7 +539,7 @@ A3                                      # map(3)
 - UR encoding 
 
 ```
-ur:crypto-signature/hgadlkhttgpyzoddnebwptsebbfpmkhtfljtknrnhnaobkheckcwbkcepyadaegtaoaeaeaeaobknldthkhncyhtcfhekkftckcksecmmecdeyjehmlndndwhepksefeenhyhpmednaeaeaeaeaepypypypyfmfgasinldndbmbpcthtsdjpbbbtfenrrehekecthyltdnmhjybkdwbeldeynrgeadaeaeaeaepypypypyaockhtonbraeaeaeaedmaeddlkblknctldbdbbbtldfechnkenbwtggpgemlcxteaemkpkbeaeaeaeaedmaeddaehlhrhdmeonphdthmfemdzmsdnlcekggeflaefpaeaeaeaeaeaeaeaeaeatcptnspvtrsahsehtbksevttp
+ur:sign-response/hgadlkhttgpyzoddnebwptsebbfpmkhtfljtknrnhnaobkheckcwbkcepyadaegtaoaeaeaeaobknldthkhncyhtcfhekkftckcksecmmecdeyjehmlndndwhepksefeenhyhpmednaeaeaeaeaepypypypyfmfgasinldndbmbpcthtsdjpbbbtfenrrehekecthyltdnmhjybkdwbeldeynrgeadaeaeaeaepypypypyaockhtonbraeaeaeaedmaeddlkblknctldbdbbbtldfechnkenbwtggpgemlcxteaemkpkbeaeaeaeaedmaeddaehlhrhdmeonphdthmfemdzmsdnlcekggeflaefpaeaeaeaeaeaeaeaeaeatcptnspvtrsahsehtbksevttp
 ```
 
 </details>
@@ -567,13 +559,13 @@ The received PSBT should be decoded by the offline signer to know each input and
 
 ## II - 2. Ethereum transactions
 
-[[EIP-4527]](https://eips.ethereum.org/EIPS/eip-4527) proposes the specific UR types `eth-sign-request` and `eth-signature` for signing Ethereum transactions and in the same way transactions on every EVM blockchains. In this document, we present their integration into the common UR types `crypto-sign-request` and `crypto-signature`.
+[[EIP-4527]](https://eips.ethereum.org/EIPS/eip-4527) proposes the specific UR types `eth-sign-request` and `eth-signature` for signing Ethereum transactions and in the same way transactions on every EVM blockchains. In this document, we present their integration into the common UR types `sign-request` and `sign-response`.
 
 ### Integration with the generic UR types registry
 
 - **Ethereum sign request**
 
-An Ethereum transaction is uniquely identified thanks to the information shared in `crypto-coin-identity` UR type, i.e. secp256k1 as elliptic curve, 60 as coin type and chain ID as subtype to identify the EVM chain (e.g. 1 for Ethereum).
+An Ethereum transaction is uniquely identified thanks to the information shared in `coin-identity` UR type, i.e. secp256k1 as elliptic curve, 60 as coin type and chain ID as subtype to identify the EVM chain (e.g. 1 for Ethereum).
 
 Several fields are required for requesting the signature of an Ethereum transaction:
 
@@ -587,19 +579,19 @@ Additionally, the following fields are recommended to be supplied by the watch-o
 - Unique request identifier
 - Origin of the sign request
 
-The following table indicates the corresponding fields between the UR types `eth-sign-request` and `crypto-sign-request`.
+The following table indicates the corresponding fields between the UR types `eth-sign-request` and `sign-request`.
 
-| crypto-sign-request fields <br> Associated number corresponds to the order in UR type | Corresponding eth-sign-request fields <br> Associated number corresponds to the order in UR type |
+| sign-request fields <br> Associated number corresponds to the order in UR type | Corresponding eth-sign-request fields <br> Associated number corresponds to the order in UR type |
 | --- | --- |
 | 1. request-id (optional) | 1. request-id (optional) |
 | 2. coin-id specifying the chain ID for EVM blockchains | 4. chain-id  |
 | 3. derivation-path | 5. derivation-path |
 | 4. sign-data | 2. sign-data |
 | 5. origin (optional) | 7. origin |
-| 6.1. eth-meta.data-type | 3. data-type |
-| 6.2. eth-meta.address (optional) | 6. address (optional, completing the provided derivation path for account identification) |
+| 6. tx-type | 3. data-type |
+| 7. address (optional) | 6. address (optional, completing the provided derivation path for account identification) |
 
-`crypto-sign-request` UR type provides the exact same information as `eth-sign-request`, with the advantage of `crypto-sign-request` to be blockchain-agnostic.
+`sign-request` UR type provides the exact same information as `eth-sign-request`, with the advantage of `sign-request` to be blockchain-agnostic.
 
 - **Ethereum signature**
 
@@ -607,19 +599,19 @@ An Ethereum sign request results in a signed transaction after user verification
 
 The required fields for an Ethereum signature are the signature itself and potentially the request identifier to identify uniquely the response. Additionally, a description can be provided to specify the device name for example.
 
-The following table indicates the corresponding fields between the UR types `eth-signature` and `crypto-signature`.
+The following table indicates the corresponding fields between the UR types `eth-signature` and `sign-response`.
 
-| crypto-signature fields <br> Associated number corresponds to the order in UR type | Corresponding eth-signature fields <br> Associated number corresponds to the order in UR type |
+| sign-response fields <br> Associated number corresponds to the order in UR type | Corresponding eth-signature fields <br> Associated number corresponds to the order in UR type |
 | --- | --- |
 | 1. request-id (optional) | 1. request-id (optional) |
 | 2. signature | 2. signature |
 | 3. origin (optional) | 3. origin (optional) |
 
-`crypto-signature` and `eth-signature` provides identical information, with the advantage of `crypto-signature` to be blockchain-agnostic.
+`sign-response` and `eth-signature` provides identical information, with the advantage of `sign-response` to be blockchain-agnostic.
 
 ### Use case
 
-The watch-only wallet generates a QR code containing the `crypto-sign-request` UR type with the following information:
+The watch-only wallet generates a QR code containing the `sign-request` UR type with the following information:
 
 1. (Recommended) Request ID, an universally unique identifier (UUID) of the transaction
 2. Ethereum coin identity with the chain ID to specify the EVM chain
@@ -629,7 +621,7 @@ The watch-only wallet generates a QR code containing the `crypto-sign-request` U
 6. Data type (legacy RLP encoding, typed data, raw bytes or typed transaction)
 7. (Optional) Sender address for verification, redundant however with derivation path where the public key can already be included
 
-The offline signer decodes the transaction depending on the data type and responds to the request with the signature once the transaction has been verified and approved by the user. The offline signer generates a QR code containing the `crypto-signature` UR type with the following information:
+The offline signer decodes the transaction depending on the data type and responds to the request with the signature once the transaction has been verified and approved by the user. The offline signer generates a QR code containing the `sign-response` UR type with the following information:
 
 1. (Mandatory if provided in the request) Request ID indicating the UUID of the transaction
 2. Signature 
@@ -648,7 +640,7 @@ An example illustrates how the signing protocol works on EVM blockchains:
 ```
 {
 1: 37(h'9b1deb4d3b7d4bad9bdd2b0d7b3dcb6d'), ; request-id
-2: 1401( ; #6.1401(crypto-coin-identity)
+2: 41401( ; #6.41401(coin-identity)
     {1: 8, ; secp256k1 curve
      2: 60, ; Ethereum BIP44
      3: 137 ; Polygon chain ID
@@ -657,23 +649,21 @@ An example illustrates how the signing protocol works on EVM blockchains:
           2: 934670036}), ; master fingerprint
 4: h'f849808609184e72a00082271094000000000000000000000000000000000000000080a47f7465737432000000000000000000000000000000000000000000000000000000600057808080', ; sign-data
 5: "NGRAVE LIQUID", ; wallet name
-6: 1420( ; #6.1420(eth-meta)
-    {1: 1, ; data-type = RLP transaction
-     2: h'1efecb61a2f80aa34d3b9218b564a64d05946290' ; address
-    })
+7: 1, ; RLP transaction
+8: h'1efecb61a2f80aa34d3b9218b564a64d05946290' ; address
 }
 ```
  
 - CBOR encoding
     
 ```
-A6                                      # map(6)
+A7                                      # map(7)
    01                                   # unsigned(1)
    D8 25                                # tag(37)
       50                                # bytes(16)
          9B1DEB4D3B7D4BAD9BDD2B0D7B3DCB6D 
    02                                   # unsigned(2)
-   D9 0579                              # tag(1401)
+   D9 A1B9                              # tag(41401)
       A3                                # map(3)
          01                             # unsigned(1)
          08                             # unsigned(8)
@@ -704,20 +694,17 @@ A6                                      # map(6)
    05                                   # unsigned(5)
    6D                                   # text(13)
       4E4752415645204C4951554944        # "NGRAVE LIQUID"
-   06                                   # unsigned(6)
-   D9 058C                              # tag(1420)
-      A2                                # map(2)
-         01                             # unsigned(1)
-         01                             # unsigned(1)
-         02                             # unsigned(2)
-         54                             # bytes(20)
-            1EFECB61A2F80AA34D3B9218B564A64D05946290 
+   07                                   # unsigned(7)
+   01                                   # unsigned(1)
+   08                                   # unsigned(8)
+   54                                   # bytes(20)
+      1EFECB61A2F80AA34D3B9218B564A64D05946290 
 ```
 
 - UR encoding 
 
 ```
-ur:crypto-sign-request/headlkhttgglgenktepyeosyheglmekncyenptlecyaolebedwhgadbraoetpsatetfdatlegtckhdadfeetkkpketpspkaepkaepraepraofwnehnntlgasbksyphsoecfdbtettncbgwaefeinclfkaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeechdeycebmcwcelpaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaebdaeadecececbecytnspvtrsahsehtspsoutzmsorebdlebefhhdadadaozogwpnlebehdphbphgtepyfdethnbshetebefkbkfd
+ur:sign-request/headlkhttgglgenktepyeosyheglmekncyenptlecyaolehljnhgadbraoetpsatetfdatlegtckhdadfeetkkpketpspkaepkaepraepraofwnehnntlgasbksyphsoecfdbtettncbgwaefeinclfkaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeechdeycebmcwcelpaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaebdaeadecececbecytnspvtrsahsehtspsoutzmsorebkadbrzogwpnlebehdphbphgtepyfdethnbshetebefkbkfd
 ```
 
 </details>
@@ -755,7 +742,7 @@ A3                                      # map(3)
 - UR encoding 
 
 ```
-ur:crypto-signature/hgadlkhttgglgenktepyeosyheglmekncyenptlecyaobkrslgonhejtlebnjegljpclutfetgzocwcwrnspbdrkfeadbkhdleaopekgchgtddmlgwbngpgwnscyqzmwbdlycfaehdbtcwnepeeyeobsgwbnmhgwlehrglpnfdpemhpsdtatcptnspvtrsahsehtbksevttp
+ur:sign-response/hgadlkhttgglgenktepyeosyheglmekncyenptlecyaobkrslgonhejtlebnjegljpclutfetgzocwcwrnspbdrkfeadbkhdleaopekgchgtddmlgwbngpgwnscyqzmwbdlycfaehdbtcwnepeeyeobsgwbnmhgwlehrglpnfdpemhpsdtatcptnspvtrsahsehtbksevttp
 ```
 
 </details>
@@ -782,13 +769,13 @@ In case of more complex transactions, the offline signer should be able to recog
 
 ## II - 3. Solana transactions
 
-Keystone has proposed and implemented the specific UR types `sol-sign-request` and `sol-signature` for signing Solana transactions in [[solana-qr-data-protocol]](https://github.com/KeystoneHQ/Keystone-developer-hub/blob/main/research/solana-qr-data-protocol.md#sending-the-unsigned-data-from-wallet-only-wallet-to-offline-signer). In this document, we present their integration into the common UR types `crypto-sign-request` and `crypto-signature`.
+Keystone has proposed and implemented the specific UR types `sol-sign-request` and `sol-signature` for signing Solana transactions in [[solana-qr-data-protocol]](https://github.com/KeystoneHQ/Keystone-developer-hub/blob/main/research/solana-qr-data-protocol.md#sending-the-unsigned-data-from-wallet-only-wallet-to-offline-signer). In this document, we present their integration into the common UR types `sign-request` and `sign-response`.
 
 ### Integration with the generic UR types registry
 
 - **Solana sign request**
 
-A Solana transaction is uniquely identified thanks to the information shared in `crypto-coin-identity` UR type, i.e. ed25519 as elliptic curve and 501 as coin type.
+A Solana transaction is uniquely identified thanks to the information shared in `coin-identity` UR type, i.e. ed25519 as elliptic curve and 501 as coin type.
 
 Several fields are required for requesting the signature of a Solana transaction:
 
@@ -801,9 +788,9 @@ Additionally, the following fields are recommended to be supplied by the watch-o
 - Type of data to sign, if not specified, transaction type is used by default
 - Origin of the sign request
 
-The following table indicates the corresponding fields between the UR types `sol-sign-request` and `crypto-sign-request`.
+The following table indicates the corresponding fields between the UR types `sol-sign-request` and `sign-request`.
 
-| crypto-sign-request fields <br> Associated number corresponds to the order in UR type | Corresponding sol-sign-request fields <br> Associated number corresponds to the order in UR type |
+| sign-request fields <br> Associated number corresponds to the order in UR type | Corresponding sol-sign-request fields <br> Associated number corresponds to the order in UR type |
 | --- | --- |
 | 1. request-id (optional) | 1. request-id (optional) |
 | 2. coin-id | No corresponding field, serves as identifier for SOL transactions |
@@ -813,7 +800,7 @@ The following table indicates the corresponding fields between the UR types `sol
 | 6.1. sol-meta.data-type (optional, transaction type by default) | 6. type (optional, transaction type by default) |
 | 6.2. sol-meta.address (optional) | 4. address (optional, completing the provided derivation path for account identification) |
 
-`crypto-sign-request` UR type provides the exact same information as `sol-sign-request` with the advantage of `crypto-sign-request` to be blockchain-agnostic.
+`sign-request` UR type provides the exact same information as `sol-sign-request` with the advantage of `sign-request` to be blockchain-agnostic.
 
 - **Solana signature**
 
@@ -821,19 +808,19 @@ A Solana sign request results in a signed transaction after user verification.
 
 The required fields for a Solana signature are the signature itself and potentially the request identifier to identify uniquely the response. 
 
-The following table indicates the corresponding fields between the UR types `sol-signature` and `crypto-signature`.
+The following table indicates the corresponding fields between the UR types `sol-signature` and `sign-response`.
 
-| crypto-signature fields <br> Associated number corresponds to the order in UR type | Corresponding sol-signature fields <br> Associated number corresponds to the order in UR type |
+| sign-response fields <br> Associated number corresponds to the order in UR type | Corresponding sol-signature fields <br> Associated number corresponds to the order in UR type |
 | --- | --- |
 | 1. request-id (optional) | 1. request-id (optional) |
 | 2. signature | 2. signature |
 | 3. origin (optional) | No corresponding field, provides an additional description |
 
-`crypto-signature` UR type provides the exact same information as `sol-signature` and has even the advantage to provide an additional optional field to describe the origin with the device name for example.
+`sign-response` UR type provides the exact same information as `sol-signature` and has even the advantage to provide an additional optional field to describe the origin with the device name for example.
 
 ### Use case
 
-The watch-only wallet generates a QR code containing the `crypto-sign-request` UR type with the following information:
+The watch-only wallet generates a QR code containing the `sign-request` UR type with the following information:
 
 1. (Recommended) Request ID, an universally unique identifier (UUID) of the transaction
 2. Solana coin identity
@@ -843,7 +830,7 @@ The watch-only wallet generates a QR code containing the `crypto-sign-request` U
 6. (Optional) Data type with either transaction or message type (if not specified, transaction type is defined by default)
 7. (Optional) Sender address for verification, redundant however with derivation path where the public key is already included
 
-The offline signer decodes the transaction depending on the data type and responds to the request with the signature once the transaction has been verified and approved by the user. The offline signer generates a QR code containing the `crypto-signature` UR type with the following information:
+The offline signer decodes the transaction depending on the data type and responds to the request with the signature once the transaction has been verified and approved by the user. The offline signer generates a QR code containing the `sign-response` UR type with the following information:
 
 1. (Mandatory if provided in the request) Request ID indicating the UUID of the transaction
 2. Signature 
@@ -862,7 +849,7 @@ An example illustrates how the signing protocol works on Solana blockchain:
 ```
 {
 1: 37(h'9b1deb4d3b7d4bad9bdd2b0d7b3dcb6d'), ; request-id
-2: 1401( ; #6.1401(crypto-coin-identity)
+2: 41401( ; #6.41401(coin-identity)
     {1: 6, ; ed25519 curve
      2: 501 ; Solana BIP44
     }),
@@ -870,23 +857,21 @@ An example illustrates how the signing protocol works on Solana blockchain:
           2: 934670036}), ; master fingerprint
 4: h'01000103c8d842a2f17fd7aab608ce2ea535a6e958dffa20caf669b347b911c4171965530f957620b228bae2b94c82ddd4c093983a67365555b737ec7ddc1117e61c72e0000000000000000000000000000000000000000000000000000000000000000010295cc2f1f39f3604718496ea00676d6a72ec66ad09d926e3ece34f565f18d201020200010c0200000000e1f50500000000', ; sign-data
 5: "NGRAVE LIQUID", ; wallet name
-6: 1421( ; #6.1421(sol-meta)
-    {1: 1, ; data-type = sign-type-transaction
-     2: "9FPebKDGZAdcpT7SpfB1UowuqobV8Zww9TwPDSyzXJMr" ; address
-    })
+7: 1, ; sign-type-transaction
+8: "9FPebKDGZAdcpT7SpfB1UowuqobV8Zww9TwPDSyzXJMr" ; address
 }
 ```
 
 - CBOR encoding 
     
 ```
-A6                                      # map(6)
+AA7                                      # map(7)
    01                                   # unsigned(1)
    D8 25                                # tag(37)
       50                                # bytes(16)
          9B1DEB4D3B7D4BAD9BDD2B0D7B3DCB6D 
    02                                   # unsigned(2)
-   D9 0579                              # tag(1401)
+   D9 A1B9                              # tag(41401)
       A2                                # map(2)
          01                             # unsigned(1)
          06                             # unsigned(6)
@@ -913,20 +898,17 @@ A6                                      # map(6)
    05                                   # unsigned(5)
    6D                                   # text(13)
       4E4752415645204C4951554944        # "NGRAVE LIQUID"
-   06                                   # unsigned(6)
-   D9 058D                              # tag(1421)
-      A2                                # map(2)
-         01                             # unsigned(1)
-         01                             # unsigned(1)
-         02                             # unsigned(2)
-         78 2C                          # text(44)
-            39465065624B44475A4164637054375370664231556F7775716F6256385A7777395477504453797A584A4D72 # "9FPebKDGZAdcpT7SpfB1UowuqobV8Zww9TwPDSyzXJMr"
+   07                                   # unsigned(7)
+   01                                   # unsigned(1)
+   08                                   # unsigned(8)
+   78 2C                                # text(44)
+      39465065624B44475A4164637054375370664231556F7775716F6256385A7777395477504453797A584A4D72 # "9FPebKDGZAdcpT7SpfB1UowuqobV8Zww9TwPDSyzXJMr"
 ```
 
 - UR encoding
 
 ```
-ur:crypto-sign-request/A601D825509B1DEB4D3B7D4BAD9BDD2B0D7B3DCB6D02D90579A20106021901F503D99D70A20188182CF51901F5F500F500F5021A37B5EED404589601000103C8D842A2F17FD7AAB608CE2EA535A6E958DFFA20CAF669B347B911C4171965530F957620B228BAE2B94C82DDD4C093983A67365555B737EC7DDC1117E61C72E0000000000000000000000000000000000000000000000000000000000000000010295CC2F1F39F3604718496EA00676D6A72EC66AD09D926E3ECE34F565F18D201020200010C0200000000E1F50500000000056D4E4752415645204C495155494406D9058DA2010102782C39465065624B44475A4164637054375370664231556F7775716F6256385A7777395477504453797A584A4D72
+ur:sign-request/headlkhttgglgenktepyeosyheglmekncyenptlecyaolehljnhdadbdaoftadpkatlegtckhdadfeetkkpkftadpkpkaepkaepkaofwnehnntlgasbkfeadaeadatlnlkrkhdoleylehthtbrltkehmmhhenebkmdpkhtltptcehespjncnleehftbmwfcbfmdththyimjemtjnspfemelgkeftgnptcdnszmzmhenendeomkcnehmhflcbmeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaecljebllyolpegmnsasctftfenraecdcychcbndbnhebtleiemnndmntpahbeetlkadaoaoaeadcfaoaeaeaeaemkpkbeaeaeaeaebecytnspvtrsahsehtspsoutzmsorebkadbrdnkkpnsdtgbmbksyrespbkrsbsbtckzonewfckbnrklnzmcddrdnctcdbkaholbkdrdrpnzodrtgrewfdwdtbksntecb
 ```
 
 </details>
@@ -964,7 +946,7 @@ A3                                      # map(3)
 - UR encoding 
 
 ```
-ur:crypto-signature/hgadlkhttgglgenktepyeosyheglmekncyenptlecyaobkrklgonhejtlebnjegljpclutfetgzocwcwrnspbdrkfeadbkhdleaopekgchgtddmlgwbngpgwnscyqzmwbdlycfaehdbtcwnepeeyeobsgwbnmhgwlehrglpnfdpemhpsatcptnspvtrsahsehtbksevttp
+ur:sign-response/hgadlkhttgglgenktepyeosyheglmekncyenptlecyaobkrklgonhejtlebnjegljpclutfetgzocwcwrnspbdrkfeadbkhdleaopekgchgtddmlgwbngpgwnscyqzmwbdlycfaehdbtcwnepeeyeobsgwbnmhgwlehrglpnfdpemhpsatcptnspvtrsahsehtbksevttp
 ```
 
 </details>
@@ -988,13 +970,13 @@ In case of more complex transactions, the offline signer should be able to recog
 
 ## II - 4. Tezos transactions
 
-[[TZIP-25]](https://gitlab.com/tezos/tzip/-/blob/master/proposals/tzip-25/tzip-25.md) proposes the specific UR types `xtz-sign-request` and `xtz-signature` for signing Tezos transactions. In this document, we present their integration into the common UR types `crypto-sign-request` and `crypto-signature`.
+[[TZIP-25]](https://gitlab.com/tezos/tzip/-/blob/master/proposals/tzip-25/tzip-25.md) proposes the specific UR types `xtz-sign-request` and `xtz-signature` for signing Tezos transactions. In this document, we present their integration into the common UR types `sign-request` and `sign-response`.
 
 ### Integration with the generic UR types registry
 
 - **Tezos sign request**
 
-A Tezos transaction is uniquely identified thanks to `crypto-coin-identity` UR type, indicating which elliptic curve should be used (either secp256k1, ed25519 or P256) for the coin type 1729.
+A Tezos transaction is uniquely identified thanks to `coin-identity` UR type, indicating which elliptic curve should be used (either secp256k1, ed25519 or P256) for the coin type 1729.
 
 Several fields are required for requesting the signature of a Tezos transaction:
 
@@ -1007,9 +989,9 @@ Additionally, the following fields are recommended to be supplied by the watch-o
 - Type of data to sign, if not specified, operation type is used by default
 - Origin of the sign request
 
-The following table indicates the corresponding fields between the UR types `xtz-sign-request` and `crypto-sign-request`.
+The following table indicates the corresponding fields between the UR types `xtz-sign-request` and `sign-request`.
 
-| crypto-sign-request fields <br> Associated number corresponds to the order in UR type | Corresponding xtz-sign-request fields <br> Associated number corresponds to the order in UR type |
+| sign-request fields <br> Associated number corresponds to the order in UR type | Corresponding xtz-sign-request fields <br> Associated number corresponds to the order in UR type |
 | --- | --- |
 | 1. request-id (optional) | 1. request-id (optional) |
 | 2. coin-id specifying the elliptic curve for XTZ | 5. key-type   |
@@ -1018,7 +1000,7 @@ The following table indicates the corresponding fields between the UR types `xtz
 | 5. origin (optional) | No corresponding field, provides an additional description |
 | 6.1. xtz-meta.data-type (optional) | 3. data-type |
 
-`crypto-sign-request` UR type provides the exact same information as `xtz-sign-request` and has even the advantage to provide an additional optional field with a text describing the origin (e.g. the wallet name).
+`sign-request` UR type provides the exact same information as `xtz-sign-request` and has even the advantage to provide an additional optional field with a text describing the origin (e.g. the wallet name).
 
 - **Tezos signature**
 
@@ -1026,21 +1008,21 @@ A Tezos sign request results in a signed transaction after user verification.
 
 The required fields for a Tezos signature are the signature itself and potentially the request identifier to identify uniquely the response. 
 
-The following table indicates the corresponding fields between the UR types `xtz-signature` and `crypto-signature`.
+The following table indicates the corresponding fields between the UR types `xtz-signature` and `sign-response`.
 
-| crypto-signature fields <br> Associated number corresponds to the order in UR type | Corresponding xtz-signature fields <br> Associated number corresponds to the order in UR type |
+| sign-response fields <br> Associated number corresponds to the order in UR type | Corresponding xtz-signature fields <br> Associated number corresponds to the order in UR type |
 | --- | --- |
 | 1. request-id (optional) | 1. request-id (optional) |
 | 2. signature | 2. signature |
 | 3. origin (optional) | No corresponding field, adds a description |
 
-`crypto-signature` UR type provides the exact same information as `xtz-signature`, except regarding the optional `payload` field available in `xtz-signature`. This field is however a redundant information since the signature can be identified using the `request-id` field.
+`sign-response` UR type provides the exact same information as `xtz-signature`, except regarding the optional `payload` field available in `xtz-signature`. This field is however a redundant information since the signature can be identified using the `request-id` field.
 
-Additionally, `crypto-signature` has the advantage to provide an additional optional field to describe the origin with the device name for example.
+Additionally, `sign-response` has the advantage to provide an additional optional field to describe the origin with the device name for example.
 
 ### Use case
 
-The watch-only wallet generates a QR code containing the `crypto-sign-request` UR type with the following information:
+The watch-only wallet generates a QR code containing the `sign-request` UR type with the following information:
 
 1. (Recommended) Request ID, an universally unique identifier (UUID) of the transaction
 2. Tezos coin identity with the specific elliptic curve
@@ -1068,7 +1050,7 @@ An example illustrates how the signing protocol works on Tezos blockchain:
 ```
 {
 1: 37(h'9b1deb4d3b7d4bad9bdd2b0d7b3dcb6d'), ; request-id
-2: 1401( ; #6.1401(crypto-coin-identity)
+2: 41401( ; #6.41401(coin-identity)
     {1: 6, ; ed25519 curve
      2: 1729 ; Tezos BIP44
     }),
@@ -1076,23 +1058,21 @@ An example illustrates how the signing protocol works on Tezos blockchain:
         5: 934670036}), ; master-fingerprint
 4: h'f849808609184e72a00082271094000000000000000000000000000000000000000080a47f7465737432000000000000000000000000000000000000000000000000000000600057808080', ; sign-data
 5: "NGRAVE LIQUID", ; wallet name
-6: 1422( ; #6.1422(xtz-meta)
-    {1: 1, ; operation data-type
-     2: "tz1gLTu4Yxj8tPAcriQVUdxv6BY9QyvzU1az" ; address
-    })
+6: 1, ; operation data-type
+7: "tz1gLTu4Yxj8tPAcriQVUdxv6BY9QyvzU1az" ; address
 }
 ```
 
 - CBOR encoding 
     
 ```
-A6                                      # map(6)
+A7                                      # map(7)
    01                                   # unsigned(1)
    D8 25                                # tag(37)
       50                                # bytes(16)
          9B1DEB4D3B7D4BAD9BDD2B0D7B3DCB6D 
    02                                   # unsigned(2)
-   D9 0579                              # tag(1401)
+   D9 A1B9                              # tag(41401)
       A2                                # map(2)
          01                             # unsigned(1)
          06                             # unsigned(6)
@@ -1122,18 +1102,15 @@ A6                                      # map(6)
    6D                                   # text(13)
       4E4752415645204C4951554944        # "NGRAVE LIQUID"
    06                                   # unsigned(6)
-   D9 058E                              # tag(1422)
-      A2                                # map(2)
-         01                             # unsigned(1)
-         01                             # unsigned(1)
-         02                             # unsigned(2)
-         78 24                          # text(36)
-            747A31674C54753459786A38745041637269515655647876364259395179767A5531617A # "tz1gLTu4Yxj8tPAcriQVUdxv6BY9QyvzU1az"
+   01                                   # unsigned(1)
+   07                                   # unsigned(7)
+   78 24                                # text(36)
+      747A31674C54753459786A38745041637269515655647876364259395179767A5531617A # "tz1gLTu4Yxj8tPAcriQVUdxv6BY9QyvzU1az"
 ```
 
 - UR encoding
 ```
-ur:crypto-sign-request/headlkhttgglgenktepyeosyheglmekncyenptlecyaolebedwhdadbdaoftbdleatlegtckhdadfeetkkpkftbdlepkaepkaepkaepkbefwnehnntlgasbksyphsoecfdbtettncbgwaefeinclfkaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeechdeycebmcwcelpaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaebdaeadecececbecytnspvtrsahsehtspsoutzmsorebdlebefthdadadaodnhecedtlncdspzodnmwbedncholcetgrsbtcbceutahzmbsdndtnsrkbepnutdwdtdtzmlnbedt
+ur:sign-request/headlkhttgglgenktepyeosyheglmekncyenptlecyaolehljnhdadbdaoftbdleatlegtckhdadfeetkkpkftbdlepkaepkaepkaepkbefwnehnntlgasbksyphsoecfdbtettncbgwaefeinclfkaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeechdeycebmcwcelpaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaebdaeadecececbecytnspvtrsahsehtspsoutzmsorebdadbkdnhecedtlncdspzodnmwbedncholcetgrsbtcbceutahzmbsdndtnsrkbepnutdwdtdtzmlnbedt
 ```
 
 </details>
@@ -1171,7 +1148,7 @@ A3                                      # map(3)
 - UR encoding
 
 ```
-ur:crypto-signature/hgadlkhttgglgenktepyeosyheglmekncyenptlecyaobkrkgmhkhentbbfwlolohemhgdhelnmtfdspdngdheimdtbnrnlklkhlhemwbkbrkehlrepknlenpseohejnfyhtspfteeheaseyashtatmnhyaslthrhlcwfgptpelthtbtatcptnspvtrsahsehtbksevttp
+ur:sign-response/hgadlkhttgglgenktepyeosyheglmekncyenptlecyaobkrkgmhkhentbbfwlolohemhgdhelnmtfdspdngdheimdtbnrnlklkhlhemwbkbrkehlrepknlenpseohejnfyhtspfteeheaseyashtatmnhyaslthrhlcwfgptpelthtbtatcptnspvtrsahsehtbksevttp
 ```
 
 </details>
@@ -1192,13 +1169,13 @@ Smart contracts decoding on Tezos are not addressed in this document.
 
 ## II - 5. Other blockchains transactions
 
-There are no existing signing protocol based on UR types for other blockchains (at the time of writing). This document introduces the signing of MultiversX and Stellar transactions as examples for the blockchain-agnostic `crypto-sign-request` and `crypto-signature` UR types introduced.
+There are no existing signing protocol based on UR types for other blockchains (at the time of writing). This document introduces the signing of MultiversX and Stellar transactions as examples for the blockchain-agnostic `sign-request` and `sign-response` UR types introduced.
 
 ### Integration with the generic UR types registry
 
 - **MultiversX and Stellar sign request**
 
-A MultiversX transaction is uniquely identified thanks to `crypto-coin-identity` UR type, i.e. ed25519 as elliptic curve and 508 as coin type. Identically, a Stellar transaction is identified with ed25519 as an elliptic curve and 148 as a coin type.
+A MultiversX transaction is uniquely identified thanks to `coin-identity` UR type, i.e. ed25519 as elliptic curve and 508 as coin type. Identically, a Stellar transaction is identified with ed25519 as an elliptic curve and 148 as a coin type.
 
 Several fields are required for requesting the signature of a MultiversX or Stellar transaction:
 
@@ -1210,7 +1187,7 @@ Additionally, the following fields are recommended to be supplied by the watch-o
 - Unique request identifier
 - Origin of the sign request
 
-The listed information for requesting a MultiversX or Stellar signature can be included in the `crypto-sign-request` UR type. 
+The listed information for requesting a MultiversX or Stellar signature can be included in the `sign-request` UR type. 
 
 - **MultiversX and Stellar signature**
 
@@ -1218,7 +1195,7 @@ A MultiversX or Stellar sign request results in a signed transaction after user 
 
 The required fields for a MultiversX or Stellar signature are the signature itself and potentially the request identifier to identify uniquely the response. Additionally, a description can be provided to specify the device name for example.
 
-This listed information for sending a MultiversX and Stellar signature can be included in `crypto-signature` UR type.
+This listed information for sending a MultiversX and Stellar signature can be included in `sign-response` UR type.
 
 ### Use case
 
@@ -1250,7 +1227,7 @@ An example illustrates how the signing protocol works on MultiversX blockchain:
 ```
 {
 1: 37(h'9b1deb4d3b7d4bad9bdd2b0d7b3dcb6d'), ; request-id
-2: 1401( ; #6.1401(crypto-coin-identity)
+2: 41401( ; #6.41401(coin-identity)
     {1: 6, ; ed25519 curve
      2: 501 ; MultiversX BIP44
     }),
@@ -1268,9 +1245,9 @@ A5                                      # map(5)
    01                                   # unsigned(1)
    D8 25                                # tag(37)
       50                                # bytes(16)
-         9B1DEB4D3B7D4BAD9BDD2B0D7B3DCB6D
+         9B1DEB4D3B7D4BAD9BDD2B0D7B3DCB6D 
    02                                   # unsigned(2)
-   D9 0579                              # tag(1401)
+   D9 A1B9                              # tag(41401)
       A2                                # map(2)
          01                             # unsigned(1)
          06                             # unsigned(6)
@@ -1295,7 +1272,7 @@ A5                                      # map(5)
          1A 37B5EED4                    # unsigned(934670036)
    04                                   # unsigned(4)
    58 4B                                # bytes(75)
-      F849808609184E72A00082271094000000000000000000000000000000000000000080A47F7465737432000000000000000000000000000000000000000000000000000000600057808080 
+      F849808609184E72A00082271094000000000000000000000000000000000000000080A47F7465737432000000000000000000000000000000000000000000000000000000600057808080
    05                                   # unsigned(5)
    6D                                   # text(13)
       4E4752415645204C4951554944        # "NGRAVE LIQUID"
@@ -1303,7 +1280,7 @@ A5                                      # map(5)
 
 - UR encoding 
 ```
-ur:crypto-sign-request/hmadlkhttgglgenktepyeosyheglmekncyenptlecyaolebedwhdadbdaoftadpkatlegtckhdadfeetkkpkftadpkpkaepkaepkadpkaofwnehnntlgasbksyphsoecfdbtettncbgwaefeinclfkaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeechdeycebmcwcelpaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaebdaeadecececbecytnspvtrsahsehtspsoutzmsore
+ur:sign-request/hmadlkhttgglgenktepyeosyheglmekncyenptlecyaolehljnhdadbdaoftadpkatlegtckhdadfeetkkpkftadpkpkaepkaepkadpkaofwnehnntlgasbksyphsoecfdbtettncbgwaefeinclfkaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeechdeycebmcwcelpaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaebdaeadecececbecytnspvtrsahsehtspsoutzmsore
 ```
 
 </details>
@@ -1341,7 +1318,7 @@ A3                                      # map(3)
 - UR encoding
 
 ```
-ur:crypto-signature/hgadlkhttgglgenktepyeosyheglmekncyenptlecyaobkrkgmhkhentbbfwlolohemhgdhelnmtfdspdngdheimdtbnrnlklkhlhemwbkbrkehlrepknlenpseohejnfyhtspfteeheaseyashtatmnhyaslthrhlcwfgptpelthtbtatcptnspvtrsahsehtbksevttp
+ur:sign-response/hgadlkhttgglgenktepyeosyheglmekncyenptlecyaobkrkgmhkhentbbfwlolohemhgdhelnmtfdspdngdheimdtbnrnlklkhlhemwbkbrkehlrepknlenpseohejnfyhtspfteeheaseyashtatmnhyaslthrhlcwfgptpelthtbtatcptnspvtrsahsehtbksevttp
 ```
 
 </details>
@@ -1357,7 +1334,7 @@ Another example illustrates how the signing protocol works on Stellar blockchain
 ```
 {
 1: 37(h'9b1deb4d3b7d4bad9bdd2b0d7b3dcb6d'), ; request-id
-2: 1401( ; #6.1401(crypto-coin-identity)
+2: 41401( ; #6.41401(coin-identity)
     {1: 6, ; ed25519 curve
      2: 148 ; Stellar BIP44
     }),
@@ -1375,9 +1352,9 @@ A5                                      # map(5)
    01                                   # unsigned(1)
    D8 25                                # tag(37)
       50                                # bytes(16)
-         9B1DEB4D3B7D4BAD9BDD2B0D7B3DCB6D 
+         9B1DEB4D3B7D4BAD9BDD2B0D7B3DCB6D # "\x9B\u001D\xEBM;}K\xAD\x9B\xDD+\r{=\xCBm"
    02                                   # unsigned(2)
-   D9 0579                              # tag(1401)
+   D9 A1B9                              # tag(41401)
       A2                                # map(2)
          01                             # unsigned(1)
          06                             # unsigned(6)
@@ -1411,7 +1388,7 @@ A5                                      # map(5)
 - UR encoding
 
 ```
-ur:crypto-sign-request/hmadlkhttgglgenktepyeosyheglmekncyenptlecyaolebedwhdadbdaoetfkatlegtckhdadfeetkkpketfkpkaepkaepkaopkbefwnehnntlgasbkgwaeaeaeaoaeaeaeaekgorcdbelyfdcyfelnierssycfmkvthtpttpzohekeglpsfeorlnknpslemtlecyaeaeaebsaecnhemkaeaeaeadaeaeaeadaeaeaeaeaeaeaebsaeaeaeaebsctfezmaeaeaeadaeaeaecfspbmcmcmcdhtadcdcbcmbshkaeaeaeadaeaeaeaeaeaeaeadaeaeaeaelpftcnneeedmbslpdrhlbkhebplkcxbkvtldgngmcblnmlbelpftnlpnbkdnlkjnaeaeaeaeaeaeaeaozobbmeaeaeaeaeaeaeaeaeaebdcytnspvtrsahsehtspsoutzmsore
+ur:sign-request/hmadlkhttgglgenktepyeosyheglmekncyenptlecyaolehljnhdadbdaoetfkatlegtckhdadfeetkkpketfkpkaepkaepkaopkbefwnehnntlgasbkgwaeaeaeaoaeaeaeaekgorcdbelyfdcyfelnierssycfmkvthtpttpzohekeglpsfeorlnknpslemtlecyaeaeaebsaecnhemkaeaeaeadaeaeaeadaeaeaeaeaeaeaebsaeaeaeaebsctfezmaeaeaeadaeaeaecfspbmcmcmcdhtadcdcbcmbshkaeaeaeadaeaeaeaeaeaeaeadaeaeaeaelpftcnneeedmbslpdrhlbkhebplkcxbkvtldgngmcblnmlbelpftnlpnbkdnlkjnaeaeaeaeaeaeaeaozobbmeaeaeaeaeaeaeaeaeaebdcytnspvtrsahsehtspsoutzmsore
 ```
 
 </details>
@@ -1449,7 +1426,7 @@ A3                                      # map(3)
 - UR encoding
 
 ```
-ur:crypto-signature/hgadlkhttgglgenktepyeosyheglmekncyenptlecyaobkrkgmhkhentbbfwlolohemhgdhelnmtfdspdngdheimdtbnrnlklkhlhemwbkbrkehlrepknlenpseohejnfyhtspfteeheaseyashtatmnhyaslthrhlcwfgptpelthtbtatcptnspvtrsahsehtbksevttp
+ur:sign-response/hgadlkhttgglgenktepyeosyheglmekncyenptlecyaobkrkgmhkhentbbfwlolohemhgdhelnmtfdspdngdheimdtbnrnlklkhlhemwbkbrkehlrepknlenpseohejnfyhtspfteeheaseyashtatmnhyaslthrhlcwfgptpelthtbtatcptnspvtrsahsehtbksevttp
 ```
 
 </details>

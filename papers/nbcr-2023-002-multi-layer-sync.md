@@ -7,7 +7,7 @@
 Authors: Mathieu Da Silva, Irfan Bilaloglu <br/>
 Date: April 19, 2023
 
-Revised: September 20, 2024
+Revised: October 04, 2024
 
 ---
 
@@ -89,7 +89,7 @@ The second layer is based on two UR types:
 1) `account` (#6.40311) proposed by BC in [[BCR-2023-019]](https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2023-019-account-descriptor.md) to share a list of output descriptors associated to an xpub key (mostly useful to sync with Bitcoin-only wallets). A previous version `crypto-account` (#6.311) defined in [[BCR-2020-015]](https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-015-account.md) is deprecated, but may still be supported for backwards compatibility.
 2) `multi-account` (#6.41103), replacing `crypto-multi-account` (#6.1103) introduced by Keystone in [[solana-qr-data-protocol]](https://github.com/KeystoneHQ/Keystone-developer-hub/blob/main/research/solana-qr-data-protocol.md#setup-watch-only-wallet-by-offline-signer) to share multiple public keys with the watch-only wallet (e.g. with coins based on ed25519 curves where each account contains a fully hardened derivation path). The version defined in [[solana-qr-data-protocol]](https://github.com/KeystoneHQ/Keystone-developer-hub/blob/main/research/solana-qr-data-protocol.md#setup-watch-only-wallet-by-offline-signer)  still uses deprecated BCR versions with `crypto-hdkey` (#6.303). We propose in this document the updated version, even if the legacy version may still be supported for backwards compatibility. 
 
-Finally we propose in this document a third layer based on the `crypto-portfolio` UR type extended the two other layers to add extra information: 1) by defining a coin identity to specify the elliptic curve and any subtype (e.g. chain ID for EVM chains), 2) by adding token IDs and 3) by sending device-related metadata in the sync payload.
+Finally we propose in this document a third layer based on the `portfolio` UR type extended the two other layers to add extra information: 1) by defining a coin identity to specify the elliptic curve and any subtype (e.g. chain ID for EVM chains), 2) by adding token IDs and 3) by sending device-related metadata in the sync payload.
 
 ## Sync UR types registry
 
@@ -107,11 +107,11 @@ Finally we propose in this document a third layer based on the `crypto-portfolio
 | (Deprecated) `crypto-account` | 311 | BlockchainCommons (BC) | Previous version of Import an account based on several output descriptors (Version 1) | [[BCR-2020-015]](https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-015-account.md)  |
 | `multi-account` | 41103 | Ngrave | Import multiple accounts in one animated QR | This document |
 | (Deprecated) `crypto-multi-account` | 1103 | Keystone | Previous version of Import multiple accounts in one animated QR | [[solana-qr-data-protocol]](https://github.com/KeystoneHQ/Keystone-developer-hub/blob/main/research/solana-qr-data-protocol.md#setup-watch-only-wallet-by-offline-signer) |
-| `crypto-coin-identity` | 1401 | Ngrave | Add additional information to a specific hdkey | [[NBCR-2023-001]](https://github.com/ngraveio/Research/blob/main/papers/nbcr-2023-001-coin-identity.md) |
-| `crypto-detailed-account` | 1402 | Ngrave | Import multiple accounts with and without output descriptors and specify optionally tokens to synchronize | This document |
-| `crypto-portfolio-coin` | 1403 | Ngrave | Associate several accounts to its coin identity  | This document |
-| `crypto-portfolio-metadata` | 1404 | Ngrave | Specify wallet metadata | This document |
-| `crypto-portfolio` | 1405 | Ngrave | Aggregate the portfolio information | This document |
+| `coin-identity` | 41401 | Ngrave | Add additional information to a specific hdkey | [[NBCR-2023-001]](https://github.com/ngraveio/Research/blob/main/papers/nbcr-2023-001-coin-identity.md) |
+| `detailed-account` | 41402 | Ngrave | Import multiple accounts with and without output descriptors and specify optionally tokens to synchronize | This document |
+| `portfolio-coin` | 41403 | Ngrave | Associate several accounts to its coin identity  | This document |
+| `portfolio-metadata` | 41404 | Ngrave | Specify wallet metadata | This document |
+| `portfolio` | 41405 | Ngrave | Aggregate the portfolio information | This document |
 
 The table contains deprecated BlockchainCommons UR types that may still be used by some wallets, and therefore should be supported along with the new versions for backward compatibility. In the following document, we will however describe the sync protocol using the latest versions proposed by BlockchainCommons. 
 
@@ -451,22 +451,22 @@ device = 3
 
 ### UR registry constituting the layer 3
 
-The third layer of the proposed sync protocol is based on `crypto-portfolio` UR type, aiming to synchronize the accounts related to multiple coins.
+The third layer of the proposed sync protocol is based on `portfolio` UR type, aiming to synchronize the accounts related to multiple coins.
 
-We break down its structure in Figure 5 based on newly defined UR types: `crypto-portfolio-coin`, `crypto-coin-identity`, `crypto-detailed-account` and `crypto-portfolio-metadata`. The CDDL for the new UR types are given hereafter.
+We break down its structure in Figure 5 based on newly defined UR types: `portfolio-coin`, `coin-identity`, `detailed-account` and `portfolio-metadata`. The CDDL for the new UR types are given hereafter.
 
 ```mermaid
 flowchart TB
 	%% crypto-sync breakdown
-	Sync[(crypto-portfolio)]
-	subgraph crypto-portfolio
+	Sync[(portfolio)]
+	subgraph portfolio
     direction TB
-	Sync --> Coins[[crypto-portfolio-coin]]
-	Sync -.-> Meta[(crypto-portfolio-metadata)]
+	Sync --> Coins[[portfolio-coin]]
+	Sync -.-> Meta[(portfolio-metadata)]
     end
 
-	%% crypto-portfolio-metadata breakdown
-	subgraph crypto-portfolio-metadata
+	%% portfolio-metadata breakdown
+	subgraph portfolio-metadata
     direction TB
 	Meta -...-> sync_id
 	Meta -...-> language
@@ -474,16 +474,16 @@ flowchart TB
 	Meta -...-> device
 	end
 
-	%% crypto-portfolio-coin breakdown
-	subgraph crypto-portfolio-coin
+	%% portfolio-coin breakdown
+	subgraph portfolio-coin
     direction TB
-	Coins --> ID[(crypto-coin-identity)]
+	Coins --> ID[(coin-identity)]
     Coins -.-> MF2[master-fingerprint]
-	Coins --> DetAcc[[crypto-detailed-account]]
+	Coins --> DetAcc[[detailed-account]]
     end
 
-    %% crypto-detailed-account breakdown
-    subgraph crypto-detailed-account
+    %% detailed-account breakdown
+    subgraph detailed-account
     direction TB
     DetAcc --> key{Account}
 	key --> HD[(hdkey)]
@@ -491,26 +491,26 @@ flowchart TB
 	DetAcc -.-> token-id
 	end
 
-	%% crypto-coin-identity breakdown
-	subgraph crypto-coin-identity
+	%% coin-identity breakdown
+	subgraph coin-identity
     direction TB
 	ID ---> elliptic_curve
 	ID ---> coin_type
 	ID -..-> Subtypes[(subtype)]
 	end
 ```
-Figure 5. Breakdown of crypto-portfolio forming the layer 3 of the sync protocol
+Figure 5. Breakdown of portfolio forming the layer 3 of the sync protocol
 
-- **CDDL for synchronizing several accounts with detailed information** `crypto-detailed-account`
+- **CDDL for synchronizing several accounts with detailed information** `detailed-account`
 
-In this document, we are defining the new `crypto-detailed-account` UR type, extending the scope of the previously defined `account` and `multi-account` UR types in [UR registry constituting the layer 2](nbcr-2023-002-multi-layer-sync.md#ur-registry-constituting-the-layer-2). The information contained in the layer 2 sync protocol can be easily converted to `crypto-detailed-account` type.
+In this document, we are defining the new `detailed-account` UR type, extending the scope of the previously defined `account` and `multi-account` UR types in [UR registry constituting the layer 2](nbcr-2023-002-multi-layer-sync.md#ur-registry-constituting-the-layer-2). The information contained in the layer 2 sync protocol can be easily converted to `detailed-account` type.
 
 This new type aims to incorporate in the same structure:
 
-- The accounts with and without scripts by selecting either `hdkey` or `output-descriptor`. When a `hdkey` is embedded inside `crypto-detailed-account`, the optional `coin-info` in `hdkey` should **not** be defined since `crypto-detailed-account` is used in combination with `crypto-coin-identity` used already as asset identifier. 
-- An optional list of tokens to synchronize them at the same time of the associated account. A token identifier is defined as a string or tagged with #6.263 to specify a [[hexString]](https://github.com/toravir/CBOR-Tag-Specs/blob/master/hexString.md).
+- The accounts with and without scripts by selecting either `hdkey` or `output-descriptor`. When a `hdkey` is embedded inside `detailed-account`, the optional `coin-info` in `hdkey` should **not** be defined since `detailed-account` is used in combination with `coin-identity` used already as asset identifier. 
+- An optional list of tokens to synchronize them at the same time of the associated account. A token identifier is defined either as a string or as bytes.
 
-The following specification of `crypto-detailed-account` is written in CDDL. When used embedded in another CBOR structure, this structure should be tagged #6.1402.
+The following specification of `detailed-account` is written in CDDL. When used embedded in another CBOR structure, this structure should be tagged #6.41402.
 
 ```
 account_exp = #6.40303(hdkey) / #6.40308(output-descriptor)
@@ -521,9 +521,6 @@ account_exp = #6.40303(hdkey) / #6.40308(output-descriptor)
 ; extended public keys.
 ; '#6.308(output-descriptor)' should be used to share an output descriptor, 
 ; e.g. for the different Bitcoin address formats (P2PKH, P2SH-P2WPKH, P2WPKH, P2TR).
-
-hex_string = #6.263(bstr) ; byte string is a hexadecimal string no need for decoding
-token-id = string / hex_string
 
 ; Optional 'token-ids' to indicate the synchronization of a list of tokens with
 ; the associated accounts
@@ -540,30 +537,30 @@ token-id = string / hex_string
 
 detailed-account = { 
   account: account_exp,
-  ? token-ids: [+ token-id] ; Specify multiple tokens associated to one account
+  ? token-ids: [+ string / bytes] ; Specify multiple tokens associated to one account
 }
 
 account = 1
 token-ids = 2
 ```
 
-- **CDDL for synchronizing accounts with their coin identity** `crypto-portfolio-coin`
+- **CDDL for synchronizing accounts with their coin identity** `portfolio-coin`
 
-In this document, we are defining the new `crypto-portfolio-coin` UR type associating the `crypto-coin-identity` defined in [[NBCR-2023-001]](https://github.com/ngraveio/Research/blob/main/papers/nbcr-2023-001-coin-identity.md) with their accounts. The accounts are preferably defined using a list of `crypto-detailed-account`. 
+In this document, we are defining the new `portfolio-coin` UR type associating the `coin-identity` defined in [[NBCR-2023-001]](https://github.com/ngraveio/Research/blob/main/papers/nbcr-2023-001-coin-identity.md) with their accounts. The accounts are preferably defined using a list of `detailed-account`. 
 
 To keep full compatibility with the layer 2, the accounts can also be specified using `account` and `crypto-multi-account` UR types. Using these UR types will however limit the information which can be synchronized.
 
-The following specification of `crypto-portfolio-coin` is written in CDDL. When used embedded in another CBOR structure, this structure should be tagged #6.1403.
+The following specification of `portfolio-coin` is written in CDDL. When used embedded in another CBOR structure, this structure should be tagged #6.41403.
 
 ```
 ; Associate a coin identity to its accounts
 
-detailed_accounts = [+ #6.1402(crypto-detailed-account)]
+detailed_accounts = [+ #6.41402(detailed-account)]
 
-; The accounts are listed using #6.1402(crypto-detailed-account) to share the maximum of information related to the accounts
+; The accounts are listed using #6.41402(detailed-account) to share the maximum of information related to the accounts
 
 coin = {
-  coin-id: #6.1401(crypto-coin-identity),
+  coin-id: #6.41401(coin-identity),
   accounts: accounts_exp,
   ? master-fingerprint: uint32 ; Master fingerprint (fingerprint for the master public key as per BIP32)
 }
@@ -574,13 +571,13 @@ coin-id = 1
 accounts = 2
 ```
 
-- **CDDL for syncing metadata** `crypto-portfolio-metadata`
+- **CDDL for syncing metadata** `portfolio-metadata`
 
-In this document, we are defining the new `crypto-portfolio-metadata` UR type to include device metadata related to the offline signer.
+In this document, we are defining the new `portfolio-metadata` UR type to include device metadata related to the offline signer.
 
 In many QR-based offline signer, the synchronization payload includes metadata information related to the device. We have created a general purpose UR type to include such information.
 
-When used embedded in another CBOR structure, this structure should be tagged #6.1404.
+When used embedded in another CBOR structure, this structure should be tagged #6.41404.
 
 ```
 metadata = {
@@ -603,18 +600,18 @@ language_code = string ; following [ISO 639-1] Code (e.g. "en" for English,
 
 The language is encoded with alpha-2 code to represent the names of the language following [[ISO 639-1]](https://www.iso.org/standard/22109.html).
 
-- **CDDL for syncing the general purpose payload** `crypto-portfolio`
+- **CDDL for syncing the general purpose payload** `portfolio`
 
-In this document, we are defining the new UR type `crypto-portfolio` to aggregate accounts, coin identity and metadata information together.
+In this document, we are defining the new UR type `portfolio` to aggregate accounts, coin identity and metadata information together.
 
-When used embedded in another CBOR structure, this structure should be tagged #6.1405.
+When used embedded in another CBOR structure, this structure should be tagged #6.41405.
 
 ```
 ; Top level multi coin sync payload
 
 sync = {
-		coins: [+ #6.1402(crypto-portfolio-coin)],           ; Multiple coins with their respective accounts and coin identities
-		? metadata: #6.1403(crypto-portfolio-metadata) ; Optional wallet metadata
+		coins: [+ #6.41403(portfolio-coin)],           ; Multiple coins with their respective accounts and coin identities
+		? metadata: #6.441404(portfolio-metadata) ; Optional wallet metadata
 }
 
 coins = 1
@@ -632,7 +629,7 @@ The online watch-only wallet has different needs regarding the information neede
    a. The accounts are defined with different output descriptors using `account` UR type (e.g. syncing Bitcoin accounts with BTC-only watch-only wallet).     
    b. The accounts of the same coin are defined by several public keys and different derivation paths using `crypto-multi-accounts` UR type (e.g. syncing Solana accounts with Solflare wallet as watch-only wallet). 
 
-3) Sync the accounts of multiple coins identified with their coin identity, along with optional tokens information and device-related metadata, using `crypto-portfolio` UR type (e.g. syncing any coin and token between NGRAVE ZERO offline signer and NGRAVE LIQUID watch-only wallet).
+3) Sync the accounts of multiple coins identified with their coin identity, along with optional tokens information and device-related metadata, using `portfolio` UR type (e.g. syncing any coin and token between NGRAVE ZERO offline signer and NGRAVE LIQUID watch-only wallet).
 
 ### 1) Sync a single coin based on a unique extended public key (Metamask case)
 
@@ -933,13 +930,13 @@ ur:crypto-multi-accounts/hgadfwnehnntlgaofelegtcdhdatbkhkaofmspcthepyjnrkdtmhasb
 
 ### 3) Sync multiple coins with their coin identifier (NGRAVE case)
 
-Compared to the first and second layers of the sync protocol, the third layer is made for every watch-only wallets aiming to support any coins, representing the generic case how NGRAVE ZERO offline signer and NGRAVE LIQUID app are functioning. The `crypto-portfolio` UR type includes multiple coins/blockchains based on different elliptic curves. 
+Compared to the first and second layers of the sync protocol, the third layer is made for every watch-only wallets aiming to support any coins, representing the generic case how NGRAVE ZERO offline signer and NGRAVE LIQUID app are functioning. The `portfolio` UR type includes multiple coins/blockchains based on different elliptic curves. 
 
-The accounts of each coin are described using a list of `crypto-detailed-account` indicating a public key or extended public key, a derivation path, a potential script type and a potential list of tokens associated to the account.
+The accounts of each coin are described using a list of `detailed-account` indicating a public key or extended public key, a derivation path, a potential script type and a potential list of tokens associated to the account.
 
-The accounts are always grouped under a coin identity with the `crypto-coin-identity` UR type.
+The accounts are always grouped under a coin identity with the `coin-identity` UR type.
 
-Additionally, the offline signer can send metadata in `crypto-portfolio-metadata` along with the coins and the accounts.
+Additionally, the offline signer can send metadata in `portfolio-metadata` along with the coins and the accounts.
 
 **Use case**
 
@@ -985,13 +982,13 @@ An example illustrates how the sync payload is formed using the third layer of c
 
 ```
 {
- 1: [ 1403( ; #6.1403(crypto-portfolio-coin)
-   {1: 1401( ; #6.1401(crypto-coin-identity)
+ 1: [ 41403( ; #6.41403(portfolio-coin)
+   {1: 41401( ; #6.41401(coin-identity)
         {1: 8, ; secp256k1 curve
          2: 60, ; Ethereum BIP44
          3: [ 1 ] ; Ethereum chain ID
         }),
-    2: [1402( ; #6.1402(crypto-detailed-account)
+    2: [41402( ; #6.41402(detailed-account)
         {1: 40303( ; #6.40303(hdkey)
            {3: h'032503D7DCA4FF0594F0404D56188542A18D8E0784443134C716178BC1819C3DD4', ; key-data
             4: h'719EA8CADCA1BBC71BF8511AC3A487286B4D34A860007B8FD498F2732EB89906', ; chain-code
@@ -1001,32 +998,32 @@ An example illustrates how the sync payload is formed using the third layer of c
         2: [ h'A0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48' ]  ; USDC ERC20 token on Ethereum 
        })]
    }),
-   1403( ; #6.1403(crypto-portfolio-coin) 
-   {1: 1401( ; #6.1401(crypto-coin-identity)
+   41403( ; #6.41403(portfolio-coin) 
+   {1: 41401( ; #6.41401(coin-identity)
         {1: 6, ; ed25519 curve
          2: 501 ; Solana BIP44
         }),
-    2: [1402( ; #6.1402(crypto-detailed-account)
+    2: [41402( ; #6.41402(detailed-account)
         {1: 40303(  ; #6.40303(hdkey)
            {3: h'02EAE4B876A8696134B868F88CC2F51F715F2DBEDB7446B8E6EDF3D4541C4EB67B', ; key-data
             6: 304({1: [44, true, 501, true, 0, true, 0, true]}) ; origin m/44’/501’/0’/0’
           }),
         2: [ "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v" ] ; USDC SPL token
        }),
-	   1402( ; #6.1402(crypto-detailed-account)
+	   41402( ; #6.41402(detailed-account)
         {1: 40303(  ; #6.40303(hdkey)
            {3: h'0260563EE80C26844621B06B74070BAF0E23FB76CE439D0237E87502EBBD3CA346', ; key-data
             6: 40304({1: [44, true, 501, true, 0, true, 1, true]}) ; origin m/44’/501’/0’/1’
           })
        })]
    }),
-   1403( ; #6.1403(crypto-portfolio-coin)
-   {1: 1401( ; #6.1401(crypto-coin-identity)
+   41403( ; #6.41403(portfolio-coin)
+   {1: 41401( ; #6.41401(coin-identity)
         {1: 8, ; secp256k1 curve
          2: 60, ; Ethereum BIP44
          3: [ 137 ] ; Polygon chain ID
         }),
-    2: [1402( ; #6.1402(crypto-detailed-account)
+    2: [41402( ; #6.41402(detailed-account)
         {1: 40303(  ; #6.40303(hdkey)
            {3: h'032503D7DCA4FF0594F0404D56188542A18D8E0784443134C716178BC1819C3DD4', ; key-data
             4: h'719EA8CADCA1BBC71BF8511AC3A487286B4D34A860007B8FD498F2732EB89906', ; chain-code
@@ -1036,37 +1033,35 @@ An example illustrates how the sync payload is formed using the third layer of c
         2: [ h'2791Bca1f2de4661ED88A30C99A7a9449Aa84174' ] ; USDC ERC20 token on Polygon 
        })]
    }),
-   1403( ; #6.1403(crypto-portfolio-coin)
-   {1: 1401( ; #6.1401(crypto-coin-identity)
+   41403( ; #6.41403(portfolio-coin)
+   {1: 41401( ; #6.41401(coin-identity)
         {1: 8, ; secp256k1 curve
          2: 0 ; Bitcoin BIP44
         }),
-    2: [1402( ; #6.1402(crypto-detailed-account)
+    2: [41402( ; #6.41402(detailed-account)
          {1: 40308({ ; output-descriptor
             1: "pkh(@0)", ; source (text descriptor)
             2: [ ; keys array
                40303({ ; hdkey
                   3: h'03EB3E2863911826374DE86C231A4B76F0B89DFA174AFB78D7F478199884D9DD32', ; key-data
                   4: h'6456A5DF2DB0F6D9AF72B2A1AF4B25F45200ED6FCC29C3440B311D4796B70B5B', ; chain-code
-                  6: 40304({1: [44, true, 0, true, 0, true]}), ; origin 44'/0'/0'
-                  8: 2583285239 ; parent fingerprint
+                  6: 40304({1: [44, true, 0, true, 0, true]}) ; origin 44'/0'/0'
             })]	 
 	     })}),
-         1402( ; #6.1402(crypto-detailed-account)
+         41402( ; #6.441402(detailed-account)
          {1: 40308({ ; output-descriptor
             1: "sh(wpkh(@0))", ; source (text descriptor)
             2: [ ; keys array
                40303({ ; hdkey
                   3: h'02C7E4823730F6EE2CF864E2C352060A88E60B51A84E89E4C8C75EC22590AD6B69', ; key-data
                   4: h'9D2F86043276F9251A4A4F577166A5ABEB16B6EC61E226B5B8FA11038BFDA42D', ; chain-code
-                  6: 40304({1: [49, true, 0, true, 1, true]}), ; origin 49'/0'/1'
-                  8: 2819587291 ; parent fingerprint
+                  6: 40304({1: [49, true, 0, true, 1, true]}) ; origin 49'/0'/1'
             })]  
           })}
 	   )]
     })
  ],
- 2: 1403( ; #6.1403(crypto-metadata)
+ 2: 41404( ; #6.41404(crypto-metadata)
    {1: 934670036, ; master-fingerprint
     2: "en", ; language
     3: "1.7-2.rc", ; version
@@ -1081,10 +1076,10 @@ An example illustrates how the sync payload is formed using the third layer of c
 A2                                      # map(2)
    01                                   # unsigned(1)
    84                                   # array(4)
-      D9 057B                           # tag(1403)
+      D9 A1BB                           # tag(41403)
          A2                             # map(2)
             01                          # unsigned(1)
-            D9 0579                     # tag(1401)
+            D9 A1B9                     # tag(41401)
                A3                       # map(3)
                   01                    # unsigned(1)
                   08                    # unsigned(8)
@@ -1095,7 +1090,7 @@ A2                                      # map(2)
                      01                 # unsigned(1)
             02                          # unsigned(2)
             81                          # array(1)
-               D9 057A                  # tag(1402)
+               D9 A1BA                  # tag(41402)
                   A2                    # map(2)
                      01                 # unsigned(1)
                      D9 9D6F            # tag(40303)
@@ -1132,10 +1127,10 @@ A2                                      # map(2)
                      81                 # array(1)
                         54              # bytes(20)
                            A0B86991C6218B36C1D19D4A2E9EB0CE3606EB48 
-      D9 057B                           # tag(1403)
+      D9 A1BB                           # tag(41403)
          A2                             # map(2)
             01                          # unsigned(1)
-            D9 0579                     # tag(1401)
+            D9 A1B9                     # tag(41401)
                A2                       # map(2)
                   01                    # unsigned(1)
                   06                    # unsigned(6)
@@ -1143,7 +1138,7 @@ A2                                      # map(2)
                   19 01F5               # unsigned(501)
             02                          # unsigned(2)
             82                          # array(2)
-               D9 057A                  # tag(1402)
+               D9 A1BA                  # tag(41402)
                   A2                    # map(2)
                      01                 # unsigned(1)
                      D9 9D6F            # tag(40303)
@@ -1168,7 +1163,7 @@ A2                                      # map(2)
                      81                 # array(1)
                         78 2C           # text(44)
                            45506A465764643541756671535371654D32714E31787A7962617043384734774547476B5A77795444743176 # "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
-               D9 057A                  # tag(1402)
+               D9 A1BA                  # tag(41402)
                   A1                    # map(1)
                      01                 # unsigned(1)
                      D9 9D6F            # tag(40303)
@@ -1189,10 +1184,10 @@ A2                                      # map(2)
                                     F5  # primitive(21)
                                     01  # unsigned(1)
                                     F5  # primitive(21)
-      D9 057B                           # tag(1403)
+      D9 A1BB                           # tag(41403)
          A2                             # map(2)
             01                          # unsigned(1)
-            D9 0579                     # tag(1401)
+            D9 A1B9                     # tag(41401)
                A3                       # map(3)
                   01                    # unsigned(1)
                   08                    # unsigned(8)
@@ -1203,7 +1198,7 @@ A2                                      # map(2)
                      18 89              # unsigned(137)
             02                          # unsigned(2)
             81                          # array(1)
-               D9 057A                  # tag(1402)
+               D9 A1BA                  # tag(41402)
                   A2                    # map(2)
                      01                 # unsigned(1)
                      D9 9D6F            # tag(40303)
@@ -1240,10 +1235,10 @@ A2                                      # map(2)
                      81                 # array(1)
                         54              # bytes(20)
                            2791BCA1F2DE4661ED88A30C99A7A9449AA84174 
-      D9 057B                           # tag(1403)
+      D9 A1BB                           # tag(41403)
          A2                             # map(2)
             01                          # unsigned(1)
-            D9 0579                     # tag(1401)
+            D9 A1B9                     # tag(41401)
                A2                       # map(2)
                   01                    # unsigned(1)
                   08                    # unsigned(8)
@@ -1251,7 +1246,7 @@ A2                                      # map(2)
                   00                    # unsigned(0)
             02                          # unsigned(2)
             82                          # array(2)
-               D9 057A                  # tag(1402)
+               D9 A1BA                  # tag(41402)
                   A1                    # map(1)
                      01                 # unsigned(1)
                      D9 9D74            # tag(40308)
@@ -1262,7 +1257,7 @@ A2                                      # map(2)
                            02           # unsigned(2)
                            81           # array(1)
                               D9 9D6F   # tag(40303)
-                                 A4     # map(4)
+                                 A3     # map(3)
                                     03  # unsigned(3)
                                     58 21 # bytes(33)
                                        03EB3E2863911826374DE86C231A4B76F0B89DFA174AFB78D7F478199884D9DD32 
@@ -1280,9 +1275,7 @@ A2                                      # map(2)
                                              F5 # primitive(21)
                                              00 # unsigned(0)
                                              F5 # primitive(21)
-                                    08  # unsigned(8)
-                                    1A 99F9CDF7 # unsigned(2583285239)
-               D9 057A                  # tag(1402)
+               D9 A1BA                  # tag(41402)
                   A1                    # map(1)
                      01                 # unsigned(1)
                      D9 9D74            # tag(40308)
@@ -1293,7 +1286,7 @@ A2                                      # map(2)
                            02           # unsigned(2)
                            81           # array(1)
                               D9 9D6F   # tag(40303)
-                                 A4     # map(4)
+                                 A3     # map(3)
                                     03  # unsigned(3)
                                     58 21 # bytes(33)
                                        02C7E4823730F6EE2CF864E2C352060A88E60B51A84E89E4C8C75EC22590AD6B69 
@@ -1311,10 +1304,8 @@ A2                                      # map(2)
                                              F5 # primitive(21)
                                              01 # unsigned(1)
                                              F5 # primitive(21)
-                                    08  # unsigned(8)
-                                    1A A80F7CDB # unsigned(2819587291)
    02                                   # unsigned(2)
-   D9 057B                              # tag(1403)
+   D9 A1BC                              # tag(41404)
       A4                                # map(4)
          01                             # unsigned(1)
          1A 37B5EED4                    # unsigned(934670036)
@@ -1332,7 +1323,7 @@ A2                                      # map(2)
 - UR encoding 
 
 ```
-ur:crypto-portfolio/hdadftlebeenhdadlebedwhgadbraoetpsatenadaoenlebedthdadlegtcdhdatbkhkathtatlemkhdpybefkonrkteahetfrrkhlfgftbkftrelnmwlfdmehfmleengdptlgasbkhtctgdhlltmkhljplffgphutfwldhdflimcptemwhlbdaeenfplggnorcwkeiagpbdbdlegtckhladfdetkkpketpspkaepkbklegtckhladftaeprfeaeadpraoenzogwiacefdlahkfmnslelngtsnkegdhdltnsbdnksplebeenhdadlebedwhdadbdaoftadpkaofelebedthdadlegtcdhdatbkhkaonrmeiadthlcebemwiactphfhlypkglctbekgkkmecesdiamhnspelgzofltnhtenbdleadlyhladfeetkkpkftadpkpkaepkaepkaoendnkksetgchsdadbsbsmhrsdnbnctwfwfctbmtelpcttnlndndtdwbkbeckrlolspmwdrsespspcpbkdrdwzorecelndtlebedthladlegtcdhdatbkhkaobdahqznlcfieftsdhkhdcpcebkbbhtcwhepedtltrlgtaonenldnaonkknpshgsdbdlegtckhladfeetkkpkftadpkpkaepkadpklebeenhdadlebedwhgadbraoetpsatenetfdaoenlebedthdadlegtcdhdatbkhkathtatlemkhdpybefkonrkteahetfrrkhlfgftbkftrelnmwlfdmehfmleengdptlgasbkhtctgdhlltmkhljplffgphutfwldhdflimcptemwhlbdaeenfplggnorcwkeiagpbdbdlegtckhladfdetkkpketpspkaepkbklegtckhladftaeprfeaeaopraoenzoinfdjthlormksdbensfehgcfgphehrregthlrscelebeenhdadlebedwhdadbraoaeaofelebedthladlegtcehdadcdckcpctimrklyjeaoenlegtcdhdatbkhkatnkqzimbtfdetienetenlcmhefwsydtoniagtpkehsnpednleprdnftgnftlemelpasbkhtbsahhmmdkghdptlehtcbhyhlhtsyhtprvtaenscdlejeldrebblngespfehebbbnbdlegtckhladfdetkkpkaepkaepkbrfwgppklkpslebedthladlegtcehdadcmcwctimdrckcpctimrklyjejeaoenlegtcdhdatbkhkaolfmefenelyptntkkphbsmtldvtbdbpfemhbbuthltnfdmelnlfbwlyhtfdhecpceasbkhtgtldfdaslpdtpkhtfwsntpadctbnhmhpnkdmhtndbemtiehniapkcnatfmpehdkgbdlegtckhladfdetlnpkaepkadpkbrfwhlcbeymeaolebeenhdadfwnehnntlgaobkbmctatctlnkenekglpkecbbtasbntnspvtrsahse
+ur:portfolio/hdadftlehljphdadlehljnhgadbraoetpsatenadaoenlehljehdadlegtcdhdatbkhkathtatlemkhdpybefkonrkteahetfrrkhlfgftbkftrelnmwlfdmehfmleengdptlgasbkhtctgdhlltmkhljplffgphutfwldhdflimcptemwhlbdaeenfplggnorcwkeiagpbdbdlegtckhladfdetkkpketpspkaepkbklegtckhladftaeprfeaeadpraoenzogwiacefdlahkfmnslelngtsnkegdhdltnsbdnksplehljphdadlehljnhdadbdaoftadpkaofelehljehdadlegtcdhdatbkhkaonrmeiadthlcebemwiactphfhlypkglctbekgkkmecesdiamhnspelgzofltnhtenbdleadlyhladfeetkkpkftadpkpkaepkaepkaoendnkksetgchsdadbsbsmhrsdnbnctwfwfctbmtelpcttnlndndtdwbkbeckrlolspmwdrsespspcpbkdrdwzorecelndtlehljehladlegtcdhdatbkhkaobdahqznlcfieftsdhkhdcpcebkbbhtcwhepedtltrlgtaonenldnaonkknpshgsdbdlegtckhladfeetkkpkftadpkpkaepkadpklehljphdadlehljnhgadbraoetpsatenetfdaoenlehljehdadlegtcdhdatbkhkathtatlemkhdpybefkonrkteahetfrrkhlfgftbkftrelnmwlfdmehfmleengdptlgasbkhtctgdhlltmkhljplffgphutfwldhdflimcptemwhlbdaeenfplggnorcwkeiagpbdbdlegtckhladfdetkkpketpspkaepkbklegtckhladftaeprfeaeaopraoenzoinfdjthlormksdbensfehgcfgphehrregthlrscelehljphdadlehljnhdadbraoaeaofelehljehladlegtcehdadcdckcpctimrklyjeaoenlegtcdhgatbkhkatnkqzimbtfdetienetenlcmhefwsydtoniagtpkehsnpednleprdnftgnftlemelpasbkhtbsahhmmdkghdptlehtcbhyhlhtsyhtprvtaenscdlejeldrebblngespfehebbbnbdlegtckhladfdetkkpkaepkaepklehljehladlegtcehdadcmcwctimdrckcpctimrklyjejeaoenlegtcdhgatbkhkaolfmefenelyptntkkphbsmtldvtbdbpfemhbbuthltnfdmelnlfbwlyhtfdhecpceasbkhtgtldfdaslpdtpkhtfwsntpadctbnhmhpnkdmhtndbemtiehniapkcnatfmpehdkgbdlegtckhladfdetlnpkaepkadpkaolehljthdadfwnehnntlgaobkbmctatctlnkenekglpkecbbtasbntnspvtrsahse
 ```
 
 </details>
@@ -1388,4 +1379,3 @@ The information shared with the watch-only wallet can be altered on the device r
 | [NBCR-2023-001] | https://github.com/ngraveio/Research/blob/main/papers/nbcr-2023-001-coin-identity.md |
 | [BIP32] | https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki |
 | [SLIP44]  | https://github.com/satoshilabs/slips/blob/master/slip-0044.md |
-| [hexString] | https://github.com/toravir/CBOR-Tag-Specs/blob/master/hexString.md |

@@ -6,11 +6,13 @@
 Authors: İrfan Bilaloğlu, Mathieu Da Silva, Maher Sallam<br/>
 Date: 18 September 2024<br/>
 
+Revised: October 04, 2024
+
 ---
 
 ### Introduction
 
-In this document, we are defining the new UR type `crypto-coin-identity` based on new types and COSE constants defined in [[RFC9053]](https://www.rfc-editor.org/rfc/rfc9053.html).
+In this document, we are defining the new UR type `coin-identity` based on new types and COSE constants defined in [[RFC9053]](https://www.rfc-editor.org/rfc/rfc9053.html).
 
 We propose to define a UR type standardizing the coin identification by aggregating the following information:
 
@@ -41,7 +43,7 @@ The required `type` field carries the coin type information as defined in [[SLIP
 
 ### CDDL
 
-The following specification of `crypto-coin-identity` is written in CDDL. When used embedded in another CBOR structure, this structure should be tagged #6.1401.
+The following specification of `coin-identity` is written in CDDL. When used embedded in another CBOR structure, this structure should be tagged #6.41401.
 
 ```
 ; Table should always be updated according to IANA registry 
@@ -105,7 +107,7 @@ A201080200
 * As a UR:
 
 ```
-ur:crypto-coin-identity/hdadbraoae
+ur:coin-identity/hdadbraoae
 ```
 
 ### Example/Test Vector 2: Solana (SOL)
@@ -139,7 +141,7 @@ A20106021901F5
 * As a UR:
 
 ```
-ur:crypto-coin-identity/hdadbdaoftadpk
+ur:coin-identity/hdadbdaoftadpk
 ```
 
 
@@ -178,7 +180,7 @@ A3010802183C03811889
 * As a UR:
 
 ```
-ur:crypto-coin-identity/hgadbraoetpsatenetfd
+ur:coin-identity/hgadbraoetpsatenetfd
 ```
 
 
