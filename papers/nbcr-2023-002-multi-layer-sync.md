@@ -457,7 +457,7 @@ We break down its structure in Figure 5 based on newly defined UR types: `portfo
 
 ```mermaid
 flowchart TB
-	%% crypto-sync breakdown
+	%% portfolio breakdown
 	Sync[(portfolio)]
 	subgraph portfolio
     direction TB
@@ -488,7 +488,7 @@ flowchart TB
     DetAcc --> key{Account}
 	key --> HD[(hdkey)]
 	key --> |If script type| Out[(output-descriptor)]
-	DetAcc -.-> token-id
+	DetAcc -.-> Token[[token-id]]
 	end
 
 	%% coin-identity breakdown
@@ -496,7 +496,7 @@ flowchart TB
     direction TB
 	ID ---> elliptic_curve
 	ID ---> coin_type
-	ID -..-> Subtypes[(subtype)]
+	ID -..-> Subtypes[[subtype]]
 	end
 ```
 Figure 5. Breakdown of portfolio forming the layer 3 of the sync protocol
@@ -611,7 +611,7 @@ When used embedded in another CBOR structure, this structure should be tagged #6
 
 sync = {
 		coins: [+ #6.41403(portfolio-coin)],           ; Multiple coins with their respective accounts and coin identities
-		? metadata: #6.441404(portfolio-metadata) ; Optional wallet metadata
+		? metadata: #6.41404(portfolio-metadata) ; Optional wallet metadata
 }
 
 coins = 1
