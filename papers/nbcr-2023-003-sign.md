@@ -503,7 +503,7 @@ A5                                      # map(5)
 - UR encoding 
 
 ```
-ur:sign-request/hmadlkhttgpyzoddnebwptsebbfpmkhtfljtknrnhnaolehljnhdadbraoaeatlegtckhdadfeetkkpkaepkaepkaepraepraofwnehnntlgasbkheckcwbkcepyadaegtaoaeaeaeaobknldthkhncyhtcfhekkftckcksecmmecdeyjehmlndndwhepksefeenhyhpmednaeaeaeaeaepypypypyfmfgasinldndbmbpcthtsdjpbbbtfenrrehekecthyltdnmhjybkdwbeldeynrgeadaeaeaeaepypypypyaockhtonbraeaeaeaedmaeddlkblknctldbdbbbtldfechnkenbwtggpgemlcxteaemkpkbeaeaeaeaedmaeddaehlhrhdmeonphdthmfemdzmsdnlcekggeflaefpaeaeaeaeaeaeaeaeaebecytnspvtrsahsehtspsoutzmsore
+ur:sign-request/onadtpdagdfrghbbemhyftfebdmyvydacerfdnfhreaotaoyrhoeadayaoaeaxtantjooeadlecsdwykaeykaeykaewkaewkaocyemrewytyaahdosjojkidjyzmadaenyaoaeaeaeaohdvsknclrejnpebncnrnmnjojofejzeojlkerdonspkpkkdkykfelokgprpyutkpaeaeaeaeaezmzmzmzmlslgaaditiwpihbkispkfgrkbdaslewdfycprtjsprsgksecdratkkhktikewdcaadaeaeaeaezmzmzmzmaojopkwtayaeaeaeaecmaebbtphhdnjstiambdassoloimwmlyhygdnlcatnbggtaevyykahaeaeaeaecmaebbaeplptoevwwtyakoonlourgofgvsjydpcaltaemyaeaeaeaeaeaeaeaeaeahjnglflgmfphffecxgsgagygogafyhebgfzdl
 ```
 
 </details>
@@ -541,7 +541,7 @@ A3                                      # map(3)
 - UR encoding 
 
 ```
-ur:sign-response/hgadlkhttgpyzoddnebwptsebbfpmkhtfljtknrnhnaobkheckcwbkcepyadaegtaoaeaeaeaobknldthkhncyhtcfhekkftckcksecmmecdeyjehmlndndwhepksefeenhyhpmednaeaeaeaeaepypypypyfmfgasinldndbmbpcthtsdjpbbbtfenrrehekecthyltdnmhjybkdwbeldeynrgeadaeaeaeaepypypypyaockhtonbraeaeaeaedmaeddlkblknctldbdbbbtldfechnkenbwtggpgemlcxteaemkpkbeaeaeaeaedmaeddaehlhrhdmeonphdthmfemdzmsdnlcekggeflaefpaeaeaeaeaeaeaeaeaeatcptnspvtrsahsehtbksevttp
+ur:sign-response/otadtpdagdfrghbbemhyftfebdmyvydacerfdnfhreaohdosjojkidjyzmadaenyaoaeaeaeaohdvsknclrejnpebncnrnmnjojofejzeojlkerdonspkpkkdkykfelokgprpyutkpaeaeaeaeaezmzmzmzmlslgaaditiwpihbkispkfgrkbdaslewdfycprtjsprsgksecdratkkhktikewdcaadaeaeaeaezmzmzmzmaojopkwtayaeaeaeaecmaebbtphhdnjstiambdassoloimwmlyhygdnlcatnbggtaevyykahaeaeaeaecmaebbaeplptoevwwtyakoonlourgofgvsjydpcaltaemyaeaeaeaeaeaeaeaeaeaxjeglflgmfphffecxhtfegmgwspghwtld
 ```
 
 </details>
@@ -706,7 +706,7 @@ A7                                      # map(7)
 - UR encoding 
 
 ```
-ur:sign-request/headlkhttgglgenktepyeosyheglmekncyenptlecyaolehljnhgadbraoetpsatetfdatlegtckhdadfeetkkpketpspkaepkaepraepraofwnehnntlgasbksyphsoecfdbtettncbgwaefeinclfkaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeechdeycebmcwcelpaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaebdaeadecececbecytnspvtrsahsehtspsoutzmsorebdadbkzogwpnlebehdphbphgtepyfdethnbshetebefkbkfd
+ur:sign-request/osadtpdagdndcawmgtfrkigrpmndutdnbtkgfssbjnaotaoyrhotadayaocsfnaxcsldaxtantjooeadlecsdwykcsfnykaeykaewkaewkaocyemrewytyaahdgryagalalnascsgljpnbaelfdibemwaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaelaoxlbjyihjkjyeyaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaehnaehglalalaahjnglflgmfphffecxgsgagygogafyamadatghckzesbhsoeyabkotgtfrmocsreieolgtahmwidmhwdjtrtgy
 ```
 
 </details>
@@ -744,7 +744,7 @@ A3                                      # map(3)
 - UR encoding 
 
 ```
-ur:sign-response/hgadlkhttgglgenktepyeosyheglmekncyenptlecyaobkrslgonhejtlebnjegljpclutfetgzocwcwrnspbdrkfeadbkhdleaopekgchgtddmlgwbngpgwnscyqzmwbdlycfaehdbtcwnepeeyeobsgwbnmhgwlehrglpnfdpemhpsdtatcptnspvtrsahsehtbksevttp
+ur:sign-response/otadtpdagdndcawmgtfrkigrpmndutdnbtkgfssbjnaohdfptywtosrftahprdctrkbegylogdghjkbafhflamfwlohghtpsseaozorsimnybbtnnbiynlckenbtfmeeamsabnaeoxasjkwswfkekiieckhpecckssptndzelnwfecylbwaxjeglflgmfphffecxhtfegmgwoxurfzby
 ```
 
 </details>
@@ -910,7 +910,7 @@ A7                                      # map(7)
 - UR encoding
 
 ```
-ur:sign-request/headlkhttgglgenktepyeosyheglmekncyenptlecyaolehljnhdadbdaoftadpkatlegtckhdadfeetkkpkftadpkpkaepkaepkaofwnehnntlgasbkfeadaeadatlnlkrkhdoleylehthtbrltkehmmhhenebkmdpkhtltptcehespjncnleehftbmwfcbfmdththyimjemtjnspfemelgkeftgnptcdnszmzmhenendeomkcnehmhflcbmeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaecljebllyolpegmnsasctftfenraecdcychcbndbnhebtleiemnndmntpahbeetlkadaoaoaeadcfaoaeaeaeaemkpkbeaeaeaeaebecytnspvtrsahsehtspsoutzmsorebdadbkdnkkpnsdtgbmbksyrespbkrsbsbtckzonewfckbnrklnzmcddrdnctcdbkaholbkdrdrpnzodrtgrewfdwdtbksntecb
+ur:sign-request/osadtpdagdndcawmgtfrkigrpmndutdnbtkgfssbjnaotaoyrhoeadamaocfadykaxtantjooeadlocsdwykcfadykykaeykaeykaocyemrewytyaahdmtadaeadaxsptpfwoewnlbtspkrpaytodmonecolwlhdurzscxsgyninqdflrhbysschcfihgubsmdkocxprderdvorhgslfuttyrtmumkftioengogorlemwpkiuobychvacejpvtaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaebedthhsawnwfneenaajslrmtwdaeiojnimjpwpiypmastadsvlwpvlgwhfhecstdadaoaoaeadbnaoaeaeaeaevyykahaeaeaeaeahjnglflgmfphffecxgsgagygogafyamadatksdwesfggdihidgrfyflhtfpieiajoghemgujoiyfwehgojlktkpjsjlidhfethtktktesghktgdfygukkknhdgegtjpcmztvlnt
 ```
 
 </details>
@@ -948,7 +948,7 @@ A3                                      # map(3)
 - UR encoding 
 
 ```
-ur:sign-response/hgadlkhttgglgenktepyeosyheglmekncyenptlecyaobkrklgonhejtlebnjegljpclutfetgzocwcwrnspbdrkfeadbkhdleaopekgchgtddmlgwbngpgwnscyqzmwbdlycfaehdbtcwnepeeyeobsgwbnmhgwlehrglpnfdpemhpsatcptnspvtrsahsehtbksevttp
+ur:sign-response/otadtpdagdndcawmgtfrkigrpmndutdnbtkgfssbjnaohdfztywtosrftahprdctrkbegylogdghjkbafhflamfwlohghtpsseaozorsimnybbtnnbiynlckenbtfmeeamsabnaeoxasjkwswfkekiieckhpecckssptndzelnwfecylaxjeglflgmfphffecxhtfegmgwknfsytca
 ```
 
 </details>
@@ -1113,7 +1113,7 @@ A7                                      # map(7)
 
 - UR encoding
 ```
-ur:sign-request/headlkhttgglgenktepyeosyheglmekncyenptlecyaolehljnhdadbdaoftbdleatlegtckhdadfeetkkpkftbdlepkaepkaepkaepkbefwnehnntlgasbksyphsoecfdbtettncbgwaefeinclfkaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeechdeycebmcwcelpaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaebdaeadecececbecytnspvtrsahsehtspsoutzmsorebdadbkdnhecedtlncdspzodnmwbedncholcetgrsbtcbceutahzmbsdndtnsrkbepnutdwdtdtzmlnbedt
+ur:sign-request/osadtpdagdndcawmgtfrkigrpmndutdnbtkgfssbjnaotaoyrhoeadamaocfamseaxtantjooeadlecsdwykcfamseykaeykaeykaeykahcyemrewytyaahdgryagalalnascsgljpnbaelfdibemwaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaelaoxlbjyihjkjyeyaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaehnaehglalalaahjnglflgmfphffecxgsgagygogafyamadatksdkjyknehiogsghkpeehkksimetjygdfpiajpingyhfgoiekskoenfwhkesgykkkokngoehhskngofewfbn
 ```
 
 </details>
@@ -1132,7 +1132,7 @@ ur:sign-request/headlkhttgglgenktepyeosyheglmekncyenptlecyaolehljnhdadbdaoftbdle
 }
 ```
 
-- CBOR encoding (see playground [here](https://cbor.me/))
+- CBOR encoding
     
 ```
 A3                                      # map(3)
@@ -1151,7 +1151,7 @@ A3                                      # map(3)
 - UR encoding
 
 ```
-ur:sign-response/hgadlkhttgglgenktepyeosyheglmekncyenptlecyaobkrkgmhkhentbbfwlolohemhgdhelnmtfdspdngdheimdtbnrnlklkhlhemwbkbrkehlrepknlenpseohejnfyhtspfteeheaseyashtatmnhyaslthrhlcwfgptpelthtbtatcptnspvtrsahsehtbksevttp
+ur:sign-response/otadtpdagdndcawmgtfrkigrpmndutdnbtkgfssbjnaohdfzneqzcnwybdcytetepmecnscpttvdmhfdksnscndebwiyfhtltpoycpeehdaydmpdfyykvskgylkiqdrhmspkgslrkbcnaakeaacxaxvlpraatoptplbacwynzcsgpeasaxjeglflgmfphffecxhtfegmgwlkdifdrn
 ```
 
 </details>
@@ -1283,7 +1283,7 @@ A5                                      # map(5)
 
 - UR encoding 
 ```
-ur:sign-request/hmadlkhttgglgenktepyeosyheglmekncyenptlecyaolehljnhdadbdaoftadpkatlegtckhdadfeetkkpkftadpkpkaepkaepkadpkaofwnehnntlgasbksyphsoecfdbtettncbgwaefeinclfkaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeechdeycebmcwcelpaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaebdaeadecececbecytnspvtrsahsehtspsoutzmsore
+ur:sign-request/onadtpdagdndcawmgtfrkigrpmndutdnbtkgfssbjnaotaoyrhoeadamaocfadykaxtantjooeadlecsdwykcfadztykaeykaeykadykaocyemrewytyaahdgryagalalnascsgljpnbaelfdibemwaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaelaoxlbjyihjkjyeyaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaehnaehglalalaahjnglflgmfphffecxgsgagygogafyinsrhftl
 ```
 
 </details>
@@ -1321,7 +1321,7 @@ A3                                      # map(3)
 - UR encoding
 
 ```
-ur:sign-response/hgadlkhttgglgenktepyeosyheglmekncyenptlecyaobkrkgmhkhentbbfwlolohemhgdhelnmtfdspdngdheimdtbnrnlklkhlhemwbkbrkehlrepknlenpseohejnfyhtspfteeheaseyashtatmnhyaslthrhlcwfgptpelthtbtatcptnspvtrsahsehtbksevttp
+ur:sign-response/otadtpdagdndcawmgtfrkigrpmndutdnbtkgfssbjnaohdfzneqzcnwybdcytetepmecnscpttvdmhfdksnscndebwiyfhtltpoycpeehdaydmpdfyykvskgylkiqdrhmspkgslrkbcnaakeaacxaxvlpraatoptplbacwynzcsgpeasaxjeglflgmfphffecxhtfegmgwlkdifdrn
 ```
 
 </details>
@@ -1391,7 +1391,7 @@ A5                                      # map(5)
 - UR encoding
 
 ```
-ur:sign-request/hmadlkhttgglgenktepyeosyheglmekncyenptlecyaolehljnhdadbdaoetfkatlegtckhdadfeetkkpketfkpkaepkaepkaopkbefwnehnntlgasbkgwaeaeaeaoaeaeaeaekgorcdbelyfdcyfelnierssycfmkvthtpttpzohekeglpsfeorlnknpslemtlecyaeaeaebsaecnhemkaeaeaeadaeaeaeadaeaeaeaeaeaeaebsaeaeaeaebsctfezmaeaeaeadaeaeaecfspbmcmcmcdhtadcdcbcmbshkaeaeaeadaeaeaeaeaeaeaeadaeaeaeaelpftcnneeedmbslpdrhlbkhebplkcxbkvtldgngmcblnmlbelpftnlpnbkdnlkjnaeaeaeaeaeaeaeaozobbmeaeaeaeaeaeaeaeaeaebecytnspvtrsahsehtspsoutzmsore
+ur:sign-request/onadtpdagdndcawmgtfrkigrpmndutdnbtkgfssbjnaotaoyrhoeadamaocsmwaxtantjooeadlecsdwykcsmwykaeykaeykaoykahcyemrewytyaahdnbaeaeaeaoaeaeaeaedpwzjlhesamejnlfehdsfpgrbnuegmcxftgwghcpdmctfnlfwzspdnylssvotsjnaeaeaeieaebyqduoaeaeaeadaeaeaeadaeaeaeaeaeaeaeieaeaeaeaeiejtmtgoaeaeaeadaeaeaebnfdihjzjzjlcxhgjljpjzieclaeaeaeadaeaeaeaeaeaeaeadaeaeaeaeeycfbyemkbcmietbktpdhtqdbksnbgidgmdlmknebsehtnhseycfvsesidkssnrhaeaeaeaeaeaeaeaoghbdveaeaeaeaeaeaeaeaeaeahjnglflgmfphffecxgsgagygogafymhbkzspr
 ```
 
 </details>
@@ -1429,7 +1429,7 @@ A3                                      # map(3)
 - UR encoding
 
 ```
-ur:sign-response/hgadlkhttgglgenktepyeosyheglmekncyenptlecyaobkrkgmhkhentbbfwlolohemhgdhelnmtfdspdngdheimdtbnrnlklkhlhemwbkbrkehlrepknlenpseohejnfyhtspfteeheaseyashtatmnhyaslthrhlcwfgptpelthtbtatcptnspvtrsahsehtbksevttp
+ur:sign-response/otadtpdagdndcawmgtfrkigrpmndutdnbtkgfssbjnaohdfzneqzcnwybdcytetepmecnscpttvdmhfdksnscndebwiyfhtltpoycpeehdaydmpdfyykvskgylkiqdrhmspkgslrkbcnaakeaacxaxvlpraatoptplbacwynzcsgpeasaxjeglflgmfphffecxhtfegmgwlkdifdrn
 ```
 
 </details>
