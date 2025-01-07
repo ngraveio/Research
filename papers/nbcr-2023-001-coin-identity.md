@@ -107,7 +107,7 @@ A201080200
 * As a UR:
 
 ```
-ur:coin-identity/hdadbraoae
+ur:coin-identity/oeadayaoaefdhhjlqz
 ```
 
 ### Example/Test Vector 2: Solana (SOL)
@@ -141,7 +141,7 @@ A20106021901F5
 * As a UR:
 
 ```
-ur:coin-identity/hdadbdaoftadpk
+ur:coin-identity/oeadamaocfadykiekohhny
 ```
 
 
@@ -180,7 +180,7 @@ A3010802183C03811889
 * As a UR:
 
 ```
-ur:coin-identity/hgadbraoetpsatenetfd
+ur:coin-identity/otadayaocsfnaxlycsldntlgjlmn
 ```
 
 
