@@ -645,7 +645,7 @@ An example illustrates how the signing protocol works on EVM blockchains:
 2: 41401( ; #6.41401(coin-identity)
     {1: 8, ; secp256k1 curve
      2: 60, ; Ethereum BIP44
-     3: 137 ; Polygon chain ID
+     3: [137] ; Polygon chain ID
     }),
 3: 40304({1: [44, true, 60, true, 0, true, 0, false, 0, false], ; #6.40304(keypath) m/44'/60'/0'/0/0
           2: 934670036}), ; master fingerprint
@@ -672,7 +672,8 @@ A7                                      # map(7)
          02                             # unsigned(2)
          18 3C                          # unsigned(60)
          03                             # unsigned(3)
-         18 89                          # unsigned(137)
+         81                             # array(1)
+            18 89                       # unsigned(137)
    03                                   # unsigned(3)
    D9 9D70                              # tag(40304)
       A2                                # map(2)
@@ -706,7 +707,7 @@ A7                                      # map(7)
 - UR encoding 
 
 ```
-ur:sign-request/osadtpdagdndcawmgtfrkigrpmndutdnbtkgfssbjnaotaoyrhotadayaocsfnaxcsldaxtantjooeadlecsdwykcsfnykaeykaewkaewkaocyemrewytyaahdgryagalalnascsgljpnbaelfdibemwaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaelaoxlbjyihjkjyeyaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaehnaehglalalaahjnglflgmfphffecxgsgagygogafyamadatghckzesbhsoeyabkotgtfrmocsreieolgtahmwidmhwdjtrtgy
+ur:sign-request/osadtpdagdndcawmgtfrkigrpmndutdnbtkgfssbjnaotaoyrhotadayaocsfnaxlycsldaxtantjooeadlecsdwykcsfnykaeykaewkaewkaocyemrewytyaahdgryagalalnascsgljpnbaelfdibemwaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaelaoxlbjyihjkjyeyaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaehnaehglalalaahjnglflgmfphffecxgsgagygogafyamadatghckzesbhsoeyabkotgtfrmocsreieolgtahmwidmhterpwnyn
 ```
 
 </details>
@@ -1058,7 +1059,7 @@ An example illustrates how the signing protocol works on Tezos blockchain:
      2: 1729 ; Tezos BIP44
     }),
 3: 40304({1: [44, true, 1729, true, 0, true, 0, true, 0, true], ; #6.40304(keypath) origin m/44’/1729’/0’/0’/0'
-        5: 934670036}), ; master-fingerprint
+        2: 934670036}), ; master-fingerprint
 4: h'f849808609184e72a00082271094000000000000000000000000000000000000000080a47f7465737432000000000000000000000000000000000000000000000000000000600057808080', ; sign-data
 5: "NGRAVE LIQUID", ; wallet name
 6: 1, ; operation data-type
@@ -1101,7 +1102,7 @@ A7                                      # map(7)
    04                                   # unsigned(4)
    58 4B                                # bytes(75)
       F849808609184E72A00082271094000000000000000000000000000000000000000080A47F7465737432000000000000000000000000000000000000000000000000000000600057808080 
-   05                                   # unsigned(5)
+   02                                   # unsigned(2)
    6D                                   # text(13)
       4E4752415645204C4951554944        # "NGRAVE LIQUID"
    06                                   # unsigned(6)
@@ -1113,7 +1114,7 @@ A7                                      # map(7)
 
 - UR encoding
 ```
-ur:sign-request/osadtpdagdndcawmgtfrkigrpmndutdnbtkgfssbjnaotaoyrhoeadamaocfamseaxtantjooeadlecsdwykcfamseykaeykaeykaeykahcyemrewytyaahdgryagalalnascsgljpnbaelfdibemwaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaelaoxlbjyihjkjyeyaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaehnaehglalalaahjnglflgmfphffecxgsgagygogafyamadatksdkjyknehiogsghkpeehkksimetjygdfpiajpingyhfgoiekskoenfwhkesgykkkokngoehhskngofewfbn
+ur:sign-request/osadtpdagdndcawmgtfrkigrpmndutdnbtkgfssbjnaotaoyrhoeadamaocfamseaxtantjooeadlecsdwykcfamseykaeykaeykaeykaocyemrewytyaahdgryagalalnascsgljpnbaelfdibemwaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaelaoxlbjyihjkjyeyaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaehnaehglalalaahjnglflgmfphffecxgsgagygogafyamadatksdkjyknehiogsghkpeehkksimetjygdfpiajpingyhfgoiekskoenfwhkesgykkkokngoehhsknmyfnwmfw
 ```
 
 </details>
@@ -1232,7 +1233,7 @@ An example illustrates how the signing protocol works on MultiversX blockchain:
 1: 37(h'9b1deb4d3b7d4bad9bdd2b0d7b3dcb6d'), ; request-id
 2: 41401( ; #6.41401(coin-identity)
     {1: 6, ; ed25519 curve
-     2: 501 ; MultiversX BIP44
+     2: 508 ; MultiversX BIP44
     }),
 3: 40304({1: [44, true, 508, true, 0, true, 0, true, 1, true], ; #6.40304(keypath) m/44’/501’/0’/0’/1'
           2: 934670036}), ; master-fingerprint
@@ -1255,7 +1256,7 @@ A5                                      # map(5)
          01                             # unsigned(1)
          06                             # unsigned(6)
          02                             # unsigned(2)
-         19 01F5                        # unsigned(501)
+         19 01FC                        # unsigned(508)
    03                                   # unsigned(3)
    D9 9D70                              # tag(40304)
       A2                                # map(2)
@@ -1283,7 +1284,7 @@ A5                                      # map(5)
 
 - UR encoding 
 ```
-ur:sign-request/onadtpdagdndcawmgtfrkigrpmndutdnbtkgfssbjnaotaoyrhoeadamaocfadykaxtantjooeadlecsdwykcfadztykaeykaeykadykaocyemrewytyaahdgryagalalnascsgljpnbaelfdibemwaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaelaoxlbjyihjkjyeyaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaehnaehglalalaahjnglflgmfphffecxgsgagygogafyinsrhftl
+ur:sign-request/onadtpdagdndcawmgtfrkigrpmndutdnbtkgfssbjnaotaoyrhoeadamaocfadztaxtantjooeadlecsdwykcfadztykaeykaeykadykaocyemrewytyaahdgryagalalnascsgljpnbaelfdibemwaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaelaoxlbjyihjkjyeyaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaehnaehglalalaahjnglflgmfphffecxgsgagygogafypynsuyny
 ```
 
 </details>
@@ -1342,7 +1343,7 @@ Another example illustrates how the signing protocol works on Stellar blockchain
      2: 148 ; Stellar BIP44
     }),
 3: 40304({1: [44, true, 148, true, 0, true, 0, true, 2, true], ; #6.40304(keypath) m/44’/148/0’/0’/2'
-        5: 934670036}), ; master-fingerprint
+        2: 934670036}), ; master-fingerprint
 4: h'00000002000000002df26f5fc2916d823126414b0cde52203a4f54222e1f3c82f2c82bf7c4e2d76d000000640011b3dc0000000100000001000000000000006400000000646e9655000000010000000c48656c6c6f20576f726c642100000001000000000000000100000000321911377e1664d677a85ab30acd1262522f989f0f31da613219e8396278cdb90000000000000002540be4000000000000000000', ; sign-data
 5: "NGRAVE LIQUID" ; wallet name
 }
@@ -1378,12 +1379,12 @@ A5                                      # map(5)
             F5                          # primitive(21)
             02                          # unsigned(2)
             F5                          # primitive(21)
-         05                             # unsigned(5)
+         02                             # unsigned(2)
          1A 37B5EED4                    # unsigned(934670036)
    04                                   # unsigned(4)
    58 A0                                # bytes(160)
-      00000002000000002DF26F5FC2916D823126414B0CDE52203A4F54222E1F3C82F2C82BF7C4E2D76D000000640011B3DC0000000100000001000000000000006400000000646E9655000000010000000C48656C6C6F20576F726C642100000001000000000000000100000000321911377E1664D677A85AB30ACD1262522F989F0F31DA613219E8396278CDB90000000000000002540BE4000000000000000000 
-   05                                   # unsigned(6)
+      00000002000000002DF26F5FC2916D823126414B0CDE52203A4F54222E1F3C82F2C82BF7C4E2D76D000000640011B3DC0000000100000001000000000000006400000000646E9655000000010000000C48656C6C6F20576F726C642100000001000000000000000100000000321911377E1664D677A85AB30ACD1262522F989F0F31DA613219E8396278CDB90000000000000002540BE4000000000000000000
+   05                                   # unsigned(5)
    6D                                   # text(13)
       4E4752415645204C4951554944        # "NGRAVE LIQUID"
 ```
@@ -1391,7 +1392,7 @@ A5                                      # map(5)
 - UR encoding
 
 ```
-ur:sign-request/onadtpdagdndcawmgtfrkigrpmndutdnbtkgfssbjnaotaoyrhoeadamaocsmwaxtantjooeadlecsdwykcsmwykaeykaeykaoykahcyemrewytyaahdnbaeaeaeaoaeaeaeaedpwzjlhesamejnlfehdsfpgrbnuegmcxftgwghcpdmctfnlfwzspdnylssvotsjnaeaeaeieaebyqduoaeaeaeadaeaeaeadaeaeaeaeaeaeaeieaeaeaeaeiejtmtgoaeaeaeadaeaeaebnfdihjzjzjlcxhgjljpjzieclaeaeaeadaeaeaeaeaeaeaeadaeaeaeaeeycfbyemkbcmietbktpdhtqdbksnbgidgmdlmknebsehtnhseycfvsesidkssnrhaeaeaeaeaeaeaeaoghbdveaeaeaeaeaeaeaeaeaeahjnglflgmfphffecxgsgagygogafymhbkzspr
+ur:sign-request/onadtpdagdndcawmgtfrkigrpmndutdnbtkgfssbjnaotaoyrhoeadamaocsmwaxtantjooeadlecsdwykcsmwykaeykaeykaoykaocyemrewytyaahdnbaeaeaeaoaeaeaeaedpwzjlhesamejnlfehdsfpgrbnuegmcxftgwghcpdmctfnlfwzspdnylssvotsjnaeaeaeieaebyqduoaeaeaeadaeaeaeadaeaeaeaeaeaeaeieaeaeaeaeiejtmtgoaeaeaeadaeaeaebnfdihjzjzjlcxhgjljpjzieclaeaeaeadaeaeaeaeaeaeaeadaeaeaeaeeycfbyemkbcmietbktpdhtqdbksnbgidgmdlmknebsehtnhseycfvsesidkssnrhaeaeaeaeaeaeaeaoghbdveaeaeaeaeaeaeaeaeaeahjnglflgmfphffecxgsgagygogafyeedshgwd
 ```
 
 </details>
