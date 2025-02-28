@@ -68,7 +68,7 @@ The following table provides several examples to identify a coin with only the r
 | Bitcoin (BTC) | uai://secp256k1.0 |
 | Ethereum (ETH) | uai://secp256k1.60.1 |
 | Polygon (POL) | uai://secp256k1.60.137 |
-| Solana (SOL) | uai://ed25519.508 |
+| Solana (SOL) | uai://ed25519.501 |
 | Tezos (XTZ) based on ed25519 | uai://ed25519.1729 |
 | Tezos (XTZ) based on secp256k1 | uai://secp256k1.1729 |
 | Neo | uai://p256.888 |
@@ -84,7 +84,7 @@ The following table provides additional examples to identify some specific asset
 | USDC on MultiversX | uai://ed25519.508:USDC-c76f1f |
 | [NFT](https://etherscan.io/nft/0x495f947276749ce646f68ac8c248420045cb7b5e/30215980622330187411918288900688501299580125367569939549692495859506871271425) on Ethereum | uai://secp256k1.60.1:0x495f947276749Ce646f68AC8c248420045cb7b5e.30215980622330187411918288900688501299580125367569939549692495859506871271425 |
 | USDC on Ethereum account 2 | uai://secp256k1.60.1:0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48/44h/60h/0h/0/0/1?master_fingerprint=934670036 |
-| Ethereum accounts 1 to 3 | uai://secp256k1.60.1/44h/60h/0h/0/0/[0-2]?master_fingerprint=934670036 |
+| Ethereum accounts 1 to 3 | uai://secp256k1.60.1/44h/60h/0h/0/0/[0,2]?master_fingerprint=934670036 |
 
 
 ### UAI format/UR types conversion
