@@ -569,6 +569,7 @@ coin = {
 
 coin-id = 1
 accounts = 2
+master-fingerprint = 3
 ```
 
 - **CDDL for syncing metadata** `portfolio-metadata`
