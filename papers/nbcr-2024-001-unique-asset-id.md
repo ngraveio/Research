@@ -6,7 +6,7 @@
 Authors: İrfan Bilaloğlu, Mathieu Da Silva, Maher Sallam<br/>
 Date: 18 September 2024<br/>
 
-Revised: October 04, 2024
+Revised: March 04, 2025
 
 ---
 
@@ -20,7 +20,7 @@ We propose a new URI format, named *Unique Asset ID (UAI)*, to standardize the a
 
 The UAI format is based on the following URL:
 
- **`uai://curve.type[.subtype1.subtype2]:tokenid[.subtype1.subtype2]/derivation_path?master_fingerprint=uint32`**
+ **`uai://curve.type[.subtype1.subtype2]@descriptor-function:tokenid[.subtype1.subtype2]/derivation_path?master_fingerprint=uint32`**
 
 This format uses the reverse DNS notation because it groups closely related coins when sorting them lexically.
 
@@ -49,6 +49,8 @@ An asset is identified by two ***required*** fields in the UAI format:
 In case additional information is required to identify the asset, the sub-type **`type[.subtype1.subtype2]`** fields must  be defined. For example, every EVM chain requires the additional chain ID as an identifier.
 
 Extra **optional** information can be provided in the UAI format in order to link an asset to a wallet:
+
+3. **`descriptor-function`** describes the output descriptor function associated to the coin identity, in order to provide all the information required to generate the addresses and to sign transactions. The output descriptors functions are listed in [[OD-IN-CORE]](https://github.com/bitcoin/bitcoin/blob/master/doc/descriptors.md).
 
 3. **`tokenid`** field carries the token information. For example, ERC20 tokens are identified through the token address and MultiversX tokens using their token identifier.   
 For ERC721 and ERC1155 tokens, the token identifier is the combination of a contract address and a token ID. In this case, the sub-type **`tokenid[.subtype1.subtype2]`** fields will be used to specify the token ID associated to the contract address. 
@@ -95,7 +97,9 @@ The UR types and the UAI format can easily be converted to each other:
 
 - `coin-identity` UR type defined in [[NBCR-2023-001]](https://github.com/ngraveio/Research/blob/main/papers/nbcr-2023-001-coin-identity.md) contains the same mandatory UAI fields, i.e. the curve, the type and the subtypes. 
 
-- `detailed-account` UR type defined in [[NBCR-2023-002]](https://github.com/ngraveio/Research/blob/main/papers/nbcr-2023-002-multi-layer-sync.md) contains the same optional UAI fields, i.e. the token ID and the derivation path.
+- `detailed-account` UR type defined in [[NBCR-2023-002]](https://github.com/ngraveio/Research/blob/main/papers/nbcr-2023-002-multi-layer-sync.md) contains the same optional UAI fields, i.e. the output descriptor function, the token ID and the derivation path.
+
+- `portfolio-coin` UR type defined in [[NBCR-2023-002]](https://github.com/ngraveio/Research/blob/main/papers/nbcr-2023-002-multi-layer-sync.md) contains the master fingerprint if specified.
 
 We provide an example how UR types and UAI format can be converted to each other:
 
@@ -109,9 +113,9 @@ uai://secp256k1.60.137:0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359/44h/60h/0h/1/0
 
 CBOR diagnostic notation          
       {                                   {
-         1: 8, ; curve-secp256k1            1: [40303({  ; #6.303(hdkey)
-         2: 60, ; Ethereum SLIP44                    6: 304({1: [44, true, 60, true, 0, true]}), ; origin m/44'/60'/0' 
-         3: [137] ; Polygon chain ID                 7: 304({1: [1, false, 0, false]}) ; children m/44'/60'/0'/1/0
+         1: 8, ; curve-secp256k1            1: [40303({  ; #6.40303(hdkey)
+         2: 60, ; Ethereum SLIP44                    6: 40304({1: [44, true, 60, true, 0, true]}), ; origin m/44'/60'/0' 
+         3: [137] ; Polygon chain ID                 7: 40304({1: [1, false, 0, false]}) ; children m/44'/60'/0'/1/0
       }                                             })],
                                             2: [ h'0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359' ]  ; USDC ERC20 token on Polygon 
                                            }
@@ -126,6 +130,32 @@ CBOR diagnostic notation
                                                 }
 ```
 
+- BTC Native Segwit account `84h/0h/0h/0/0`:
+
+```
+uai://secp256k1.0@wpkh/84h/0h/0h/0/0?master_fingerprint=2819587291
+     |__________||___________________|
+              |                  |
+      coin-identity              detailed-account
+
+CBOR diagnostic notation
+      {                                   {
+         1: 8, ; curve-secp256k1            1: 40308({1: "wpkh(@0)",  ; #6.40303(output-descriptor)
+         2: 0 ; Bitcoin SLIP44                        2: [40303({6: 40304({1: [84, true, 0, true, 0, true]}), ; origin m/84'/0'/0'
+                                                                 7: 40304({1: [0, false, 0, false]}) ; children m/84'/0'/0'/0/0
+      }                                                  })]
+                                           }
+
+    |______________________________________________________________|
+                                |
+                        portfolio-coin
+                        { 
+                            1: coin-identity
+                            2: detailed-account
+                            3: 2819587291 ; master-fingerprint
+                        }
+```
+
 
 ### References
 
@@ -135,3 +165,4 @@ CBOR diagnostic notation
 | [IANA COSE Elliptic Curves] | https://www.iana.org/assignments/cose/cose.xhtml#elliptic-curves|
 | [NBCR-2023-001] | https://github.com/ngraveio/Research/blob/main/papers/nbcr-2023-001-coin-identity.md |
 | [NBCR-2023-002] | https://github.com/ngraveio/Research/blob/main/papers/nbcr-2023-002-multi-layer-sync.md |
+| [OD-IN-CORE] | https://github.com/bitcoin/bitcoin/blob/master/doc/descriptors.md |

@@ -327,7 +327,7 @@ chain-code-bytes = bytes .size 32
 
 The second layer of the proposed sync protocol is based on `multi-account` and `account` UR types, wrapping as lists `hdkey` and `output-descriptor` respectively. 
 
-When using `multi-account`, this layer aims to synchronize several public keys for the same coin. While when using `account`, this layer aims to add script types for each synchronized public key.
+When using `multi-account`, this layer aims to synchronize several public keys for the same coin. While when using `account`, this layer aims to add output descriptors for each synchronized public key.
 
 The CDDL for version 1 `crypto-multi-account` differs from version 2 `multi-account` only in the UR types and CBOR tags it uses, respectively `#6.1103` for version 1 and `#6.41103` for version 2.
 
@@ -365,7 +365,9 @@ Figure 4. Breakdown of multi-account and account forming the layer 2 of the Sync
 
 - **CDDL for output descriptor** `output-descriptor`
 
-This UR type belongs to the initial registry proposed by BC in [[BCR-2023-010]](https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2023-010-output-descriptor.md) to describe the association of a standardized script types with a public key. You can refer to [[BCR-2020-010]](https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-010-output-desc.md) for the description of the previous version `crypto-output` not detailed in this document, but still supported for backward compatibility.
+This UR type belongs to the initial registry proposed by BC in [[BCR-2023-010]](https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2023-010-output-descriptor.md) to describe the association of a standardized output descriptor with a public key. You can refer to [[BCR-2020-010]](https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-010-output-desc.md) for the description of the previous version `crypto-output` not detailed in this document, but still supported for backward compatibility.
+
+The output descriptors functions are listed in [[OD-IN-CORE]](https://github.com/bitcoin/bitcoin/blob/master/doc/descriptors.md).
 
 When used embedded in another CBOR structure, this structure should be tagged #6.40308.
 
@@ -395,19 +397,7 @@ In the proposed sync protocol, the recommendation when using an output descripto
 
 - **CDDL for syncing several accounts with their output descriptors** `account`
 
-This UR type belongs to the initial registry proposed by BC in [[BCR-2023-019]](https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2023-019-account-descriptor.md) and is used to synchronize a number of accounts defined with their public keys and derivation paths along with their associated standardized script types.
-
-The following script types can be encoded within `account` UR type. We give the default derivation path for Bitcoin mainnet and account #0:
-
-| Script type | Default Derivation |
-| --- | --- |
-| P2PKH | m/44'/0'/0' |
-| P2SH-P2WPKH | m/49'/0'/0' |
-| P2WPKH | m/84'/0'/0' |
-| Multisig cosigner P2SH | m/45' |
-| Multisig cosigner P2SH-P2WSH | m/48'/0'/0'/1' |
-| Multisig cosigner P2WSH | m/48'/0'/0'/2' |
-| Single key P2TR | m/86'/0'/0' |
+This UR type belongs to the initial registry proposed by BC in [[BCR-2023-019]](https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2023-019-account-descriptor.md) and is used to synchronize a number of accounts defined with their public keys and derivation paths along with their associated standardized output descriptors.
 
 When used embedded in another CBOR structure, this structure should be tagged #6.40311.
 
@@ -420,7 +410,7 @@ tagged-account = #6.40311(account)
 
 account = {
     master-fingerprint: uint32, ; Master fingerprint (fingerprint for the master public key as per BIP32)
-    output-descriptors: [+ output-exp] ; Output descriptors for various script types for this account
+    output-descriptors: [+ output-exp] ; Output descriptors 
 }
 
 master-fingerprint = 1
@@ -487,7 +477,7 @@ flowchart TB
     direction TB
     DetAcc --> key{Account}
 	key --> HD[(hdkey)]
-	key --> |If script type| Out[(output-descriptor)]
+	key --> |If output descriptor| Out[(output-descriptor)]
 	DetAcc -.-> Token[[token-id]]
 	end
 
@@ -723,9 +713,9 @@ ur:crypto-hdkey/osadwkaxhdclaoaazsaxdtflhnbkplmwpdldursrcwhhmtpesblbkbcnoyldbygr
 
 ### 2.a) Sync a single coin along with output descriptors (Sparrow wallet case)
 
-In the first case of the second layer of the sync protocol, the watch-only wallet requires to receive output descriptors with the coin information. This case includes the coins as Bitcoin where a script type is specified in addition of an extended public key, both information are contained in `account` UR type.
+In the first case of the second layer of the sync protocol, the watch-only wallet requires to receive output descriptors with the coin information. This case includes the coins as Bitcoin where an output descriptor is specified in addition of an extended public key, both information are contained in `account` UR type.
 
-The first case of the second layer is privileged with a watch-only wallet synchronizing only coins based on script types, e.g. Sparrow wallet with Bitcoin accounts.
+The first case of the second layer is privileged with a watch-only wallet synchronizing only coins based on output descriptors, e.g. Sparrow wallet with Bitcoin accounts.
 
 **Use case**
 
@@ -733,13 +723,13 @@ The offline signer creates a sync payload containing the mandatory following fie
 
 - Master fingerprint
 - List of output descriptors
-    - Script type (e.g. multisig, taproot)
+    - Output descriptor (e.g. P2WPKH for Native Segwit, P2TR for Taproot, etc...)
     - Key data
     - Chain code
     - Origin derivation path containing the hardened derivation path of the xpub (e.g. `m/44’/0’/0’`)
     - Parent fingerprint
 
-The watch-only wallet reconstructs the xpub for each derivation path and script type and proposes to the user the derived accounts. 
+The watch-only wallet reconstructs the xpub for each derivation path and output descriptors.  
 
 An example for the layer 2.a can be found in [BCR-2023-019] for syncing BTC accounts.
 
@@ -933,7 +923,7 @@ ur:crypto-multi-accounts/otadcyemrewytyaolftantjloeaxhdclaomdfliscpfrrhfzbzecaai
 
 Compared to the first and second layers of the sync protocol, the third layer is made for every watch-only wallets aiming to support any coins, representing the generic case how NGRAVE ZERO offline signer and NGRAVE LIQUID app are functioning. The `portfolio` UR type includes multiple coins/blockchains based on different elliptic curves. 
 
-The accounts of each coin are described using a list of `detailed-account` indicating a public key or extended public key, a derivation path, a potential script type and a potential list of tokens associated to the account.
+The accounts of each coin are described using a list of `detailed-account` indicating a public key or extended public key, a derivation path, a potential output descriptor and a potential list of tokens associated to the account.
 
 The accounts are always grouped under a coin identity with the `coin-identity` UR type.
 
@@ -954,7 +944,7 @@ The watch-only wallet synchronize the following information by:
 - Getting the coin logo and price from the coin identity
 - Selecting the protocol to use from the coin identity
 - Discovering addresses from the supplied extended public key in accounts information
-- Setting script types from accounts information
+- Setting the output descriptor from accounts information
 - Generating addresses from the list of public keys in accounts information
 
 Additionally, the offline signer can add the optional fields in the sync payload:
@@ -1380,3 +1370,4 @@ The information shared with the watch-only wallet can be altered on the device r
 | [NBCR-2023-001] | https://github.com/ngraveio/Research/blob/main/papers/nbcr-2023-001-coin-identity.md |
 | [BIP32] | https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki |
 | [SLIP44]  | https://github.com/satoshilabs/slips/blob/master/slip-0044.md |
+| [OD-IN-CORE] | https://github.com/bitcoin/bitcoin/blob/master/doc/descriptors.md |
