@@ -68,7 +68,7 @@ The following table provides several examples to identify a coin with only the r
 | Bitcoin (BTC) | uai://secp256k1.0 |
 | Ethereum (ETH) | uai://secp256k1.60.1 |
 | Polygon (POL) | uai://secp256k1.60.137 |
-| Solana (SOL) | uai://ed25519.508 |
+| Solana (SOL) | uai://ed25519.501 |
 | Tezos (XTZ) based on ed25519 | uai://ed25519.1729 |
 | Tezos (XTZ) based on secp256k1 | uai://secp256k1.1729 |
 | Neo | uai://p256.888 |
@@ -84,7 +84,7 @@ The following table provides additional examples to identify some specific asset
 | USDC on MultiversX | uai://ed25519.508:USDC-c76f1f |
 | [NFT](https://etherscan.io/nft/0x495f947276749ce646f68ac8c248420045cb7b5e/30215980622330187411918288900688501299580125367569939549692495859506871271425) on Ethereum | uai://secp256k1.60.1:0x495f947276749Ce646f68AC8c248420045cb7b5e.30215980622330187411918288900688501299580125367569939549692495859506871271425 |
 | USDC on Ethereum account 2 | uai://secp256k1.60.1:0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48/44h/60h/0h/0/0/1?master_fingerprint=934670036 |
-| Ethereum accounts 1 to 3 | uai://secp256k1.60.1/44h/60h/0h/0/0/[0-2]?master_fingerprint=934670036 |
+| Ethereum accounts 1 to 3 | uai://secp256k1.60.1/44h/60h/0h/0/0/[0,2]?master_fingerprint=934670036 |
 
 
 ### UAI format/UR types conversion
@@ -103,21 +103,27 @@ We provide an example how UR types and UAI format can be converted to each other
 
 ```
 uai://secp256k1.60.137:0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359/44h/60h/0h/1/0?master_fingerprint=2819587291
-     |_______________| |_____________________________________________________________________________________|
+     |_______________| |________________________________________________________|
               |                                     |
       coin-identity                       detailed-account
 
 CBOR diagnostic notation          
       {                                   {
-         1: 8, ; curve-secp256k1            1: [303({  ; #6.303(crypto-hdkey)
-         2: 60, ; Ethereum SLIP44                    3: h'032503D7DCA4FF0594F0404D56188542A18D8E0784443134C716178BC1819C3DD4', ; key-data  
-         3: [137] ; Polygon chain ID                 4: h'719EA8CADCA1BBC71BF8511AC3A487286B4D34A860007B8FD498F2732EB89906', ; chain-code
-      }                                              6: 304({1: [44, true, 60, true, 0, true]}), ; origin m/44'/60'/0'
-                                                     7: 304({1: [1, false, 0, false]}) ; children m/44'/60'/0'/1/0 
-                                                     8: 2819587291 ; parent fingerprint
-                                            })],
+         1: 8, ; curve-secp256k1            1: [40303({  ; #6.303(hdkey)
+         2: 60, ; Ethereum SLIP44                    6: 304({1: [44, true, 60, true, 0, true]}), ; origin m/44'/60'/0' 
+         3: [137] ; Polygon chain ID                 7: 304({1: [1, false, 0, false]}) ; children m/44'/60'/0'/1/0
+      }                                             })],
                                             2: [ h'0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359' ]  ; USDC ERC20 token on Polygon 
                                            }
+
+    |_________________________________________________________________________________________________________|
+                                                        |
+                                                portfolio-coin
+                                                { 
+                                                    1: coin-identity
+                                                    2: detailed-account
+                                                    3: 2819587291 ; master-fingerprint
+                                                }
 ```
 
 
