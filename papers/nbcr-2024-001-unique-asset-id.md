@@ -142,7 +142,7 @@ CBOR diagnostic notation
       {                                   {
          1: 8, ; curve-secp256k1            1: 40308({1: "wpkh(@0)",  ; #6.40303(output-descriptor)
          2: 0 ; Bitcoin SLIP44                        2: [40303({6: 40304({1: [84, true, 0, true, 0, true]}), ; origin m/84'/0'/0'
-                                                                 7: 40304({1: [0, false, 0, false]}) ; children m/44'/60'/0'/0/0
+                                                                 7: 40304({1: [0, false, 0, false]}) ; children m/84'/0'/0'/0/0
       }                                                  })]
                                            }
 
