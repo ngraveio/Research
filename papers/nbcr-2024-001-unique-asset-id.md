@@ -133,7 +133,7 @@ CBOR diagnostic notation
 - BTC Native Segwit account `84h/0h/0h/0/0`:
 
 ```
-uai://secp256k1.6@wpkh/84h/60h/0h/0/0?master_fingerprint=2819587291
+uai://secp256k1.0@wpkh/84h/0h/0h/0/0?master_fingerprint=2819587291
      |__________||___________________|
               |                  |
       coin-identity              detailed-account
