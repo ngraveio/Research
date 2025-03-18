@@ -45,7 +45,7 @@ When embedded in another UR type, `batch-sign-request` is tagged with #6.41413.
 ; request-id inside each #6.41411(sign-request) must be specified to identify each transaction in the batch
 
 batch-sign-request = {
-    batch-sign: [+ #6.41411(sign-request)]
+    sign-requests: [+ #6.41411(sign-request)]
 }
 
 batch-sign = 1
@@ -59,7 +59,7 @@ When embedded in another UR type, `batch-sign-response` is tagged with #6.41414.
 ; request-id inside each #6.41412(sign-response) must be specified to identify the corresponding signature in the batch
 
 batch-sign-response = {
-    batch-signature: [+ #6.41412(sign-response)]
+    sign-responses: [+ #6.41412(sign-response)]
 }
 
 batch-signature = 1
