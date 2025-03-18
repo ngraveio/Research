@@ -14,7 +14,7 @@ In the evolving landscape of cryptocurrency and blockchain technology, secure an
 
 This paper addresses this gap by introducing new UR types specifically designed for batch transaction signing through QR communication. By leveraging UR Types, we aim to facilitate seamless and standardized communication between airgapped wallets, ensuring usability and security of offline transaction signing processes.
 
-This paper will delve into the technical details, use cases, and security considerations of implementing batch transaction signing using UR Types. It will provide a comprehensive guide for developers and users alike, ensuring that the proposed methods can be integrated into existing systems with minimal effort. 
+This paper delves into the technical details, use cases, and security considerations of implementing batch transaction signing using UR Types. It provides a comprehensive guide for developers and users alike, ensuring that the proposed methods can be integrated into existing systems with minimal effort. 
 
 ---
 
