@@ -517,7 +517,8 @@ ur:sign-request/onadtpdagdfrghbbemhyftfebdmyvydacerfdnfhreaotaoyrhoeadayaoaeaxta
 ```
 {
 1: 37(h'3B5414375E3A450B8FE1251CBC2B3FB5'), ; request-id
-2: h'70736274ff01009a020000000258e87a21b56daf0c23be8e7070456c336f7cbaa5c8757924f545887bb2abdd750000000000ffffffff838d0427d0ec650a68aa46bb0b098aea4422c071b2ca78352a077959d07cea1d0100000000ffffffff0270aaf00800000000160014d85c2b71d0060b09c9886aeb815e50991dda124d00e1f5050000000016001400aea9a2e5f0f876a588df5546e8742d1d87008f000000000000000000', ; signature
+2: h'0200000001be7ae2cd723a2aea1db1ef208e7a1cc2e24cabe04b0662a37ae6d7e75e086519000000006b483045022100d2b7da967b6ca073595a0c00e4ab03e07c3e65a91fd92e0377b43a350d0afdf402200e87776838ca6f8753c947cd0dec77dd9a7a2ae3c50fd36aed2d887a522af65f012102c08b1d6b9534b9a8aa19b351fa9bdefc7d11ad1ed5ae02fb99736a51bc8b5475fdffffff02400d0300000000001976a914cd3dc3e2147620c8484ac6ba1ebdd53e9a23be7188ac905ef205000000001976a914036606840cc20ce9fddcbc384bc064f0e505afab88ac00000000
+', ; Signed PSBT
 3: "NGRAVE ZERO" ; device name
 }
 ```
@@ -531,8 +532,8 @@ A3                                      # map(3)
       50                                # bytes(16)
          3B5414375E3A450B8FE1251CBC2B3FB5 
    02                                   # unsigned(2)
-   58 A7                                # bytes(167)
-      70736274FF01009A020000000258E87A21B56DAF0C23BE8E7070456C336F7CBAA5C8757924F545887BB2ABDD750000000000FFFFFFFF838D0427D0EC650A68AA46BB0B098AEA4422C071B2CA78352A077959D07CEA1D0100000000FFFFFFFF0270AAF00800000000160014D85C2B71D0060B09C9886AEB815E50991DDA124D00E1F5050000000016001400AEA9A2E5F0F876A588DF5546E8742D1D87008F000000000000000000 
+   58 E2                                # bytes(226)
+      0200000001BE7AE2CD723A2AEA1DB1EF208E7A1CC2E24CABE04B0662A37AE6D7E75E086519000000006B483045022100D2B7DA967B6CA073595A0C00E4AB03E07C3E65A91FD92E0377B43A350D0AFDF402200E87776838CA6F8753C947CD0DEC77DD9A7A2AE3C50FD36AED2D887A522AF65F012102C08B1D6B9534B9A8AA19B351FA9BDEFC7D11AD1ED5AE02FB99736A51BC8B5475FDFFFFFF02400D0300000000001976A914CD3DC3E2147620C8484AC6BA1EBDD53E9A23BE7188AC905EF205000000001976A914036606840CC20CE9FDDCBC384BC064F0E505AFAB88AC00000000 
    03                                   # unsigned(3)
    6B                                   # text(11)
       4E4752415645205A45524F            # "NGRAVE ZERO"
@@ -541,7 +542,7 @@ A3                                      # map(3)
 - UR encoding 
 
 ```
-ur:sign-response/otadtpdagdfrghbbemhyftfebdmyvydacerfdnfhreaohdosjojkidjyzmadaenyaoaeaeaeaohdvsknclrejnpebncnrnmnjojofejzeojlkerdonspkpkkdkykfelokgprpyutkpaeaeaeaeaezmzmzmzmlslgaaditiwpihbkispkfgrkbdaslewdfycprtjsprsgksecdratkkhktikewdcaadaeaeaeaezmzmzmzmaojopkwtayaeaeaeaecmaebbtphhdnjstiambdassoloimwmlyhygdnlcatnbggtaevyykahaeaeaeaecmaebbaeplptoevwwtyakoonlourgofgvsjydpcaltaemyaeaeaeaeaeaeaeaeaeaxjeglflgmfphffecxhtfegmgwspghwtld
+ur:sign-response/otadtpdagdfrghbbemhyftfebdmyvydacerfdnfhreaohdvoaoaeaeaeadrnknvosnjpftdrwdcapawscxmnkncesavogspyvtgramidotknvatsvdhyayihcfaeaeaeaejefddyfeaoclaetdrltnmtkgjznbjkhkhtbnaevepyaxvtkefmihptcttadmaxktqzftecbtbkzcwkaocxbaltktisetsgjlltgusoflsnbtwpktutnykndrvlskbsteimwedplokngmdrynheadclaortlucajemdeerhpdpkcfqdgyzsndueztkibypmcktlplaozonljkimgyrflughkpzczmzmzmaofzbtaxaeaeaeaeaecfkoptbbsnfssrvobbkocxspfdgeswrdckrytlfmnycnrnjslopsmhhywzahaeaeaeaecfkoptbbaxiyamlrbnsabnwlzcuorfetgrrtiewtvwahpepylopsaeaeaeaeaxjeglflgmfphffecxhtfegmgwmntydtty
 ```
 
 </details>
