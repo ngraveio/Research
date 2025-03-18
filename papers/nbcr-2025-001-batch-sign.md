@@ -25,7 +25,7 @@ The batch signing process follows the described operations:
 1. The watch-only wallet creates the multiple transactions to sign and aggregate them into a batch.
 2. The watch-only wallet encodes the batch request using the UR type `batch-sign-request` defined in this document.
 3. The user scans the QR code containing the batch request with the offline signer.
-4. The users signs each transaction contained in the batch after reviewing thoroughly their content.
+4. The users signs each transaction contained in the batch after thoroughly reviewing their content.
 5. The offline signer prepares the batch response using the UR type `batch-sign-response` defined in this document.
 6. The user scans with the watch-only wallet the batch response. 
 7. The watch-only wallet broadcasts the transactions.
