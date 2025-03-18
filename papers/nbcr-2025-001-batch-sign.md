@@ -12,7 +12,7 @@ Date: March 17, 2025
 
 In the evolving landscape of cryptocurrency and blockchain technology, secure and efficient communication between offline signers and watch-only wallets remains a critical challenge. While existing protocols, as described in [[NBCR-2023-003]](https://github.com/ngraveio/Research/blob/main/papers/nbcr-2023-003-sign.md) have laid the groundwork for signing individual transactions using Uniform Resource Types (UR Types) communicated through QR codes, there is a notable gap in the standardization of batch transaction signing. When signing multiple transactions in a row, individually scanning each sign request with the offline signer and each signature with the watch-only wallet reduces the usability of QR communication, which can become a barrier to the adoption of airgapped wallets.
 
-This paper addresses this gap by introducing new UR types specifically designed for batch transaction signing through QR communication. By leveraging UR Types, we aim to facilitate seamless and standardized communication between airgapped wallets, ensuring usability and security of offline transaction signing processes
+This paper addresses this gap by introducing new UR types specifically designed for batch transaction signing through QR communication. By leveraging UR Types, we aim to facilitate seamless and standardized communication between airgapped wallets, ensuring usability and security of offline transaction signing processes.
 
 This paper will delve into the technical details, use cases, and security considerations of implementing batch transaction signing using UR Types. It will provide a comprehensive guide for developers and users alike, ensuring that the proposed methods can be integrated into existing systems with minimal effort. 
 
