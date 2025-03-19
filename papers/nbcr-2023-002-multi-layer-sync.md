@@ -527,7 +527,7 @@ account_exp = #6.40303(hdkey) / #6.40308(output-descriptor)
 
 detailed-account = { 
   account: account_exp,
-  ? token-ids: [+ string / bytes] ; Specify multiple tokens associated to one account
+  ? token-ids: [+ string] ; Specify multiple tokens associated to one account
 }
 
 account = 1
@@ -551,7 +551,7 @@ detailed_accounts = [+ #6.41402(detailed-account)]
 
 coin = {
   coin-id: #6.41401(coin-identity),
-  accounts: accounts_exp,
+  accounts: detailed_accounts,
   ? master-fingerprint: uint32 ; Master fingerprint (fingerprint for the master public key as per BIP32)
 }
 
@@ -986,7 +986,7 @@ An example illustrates how the sync payload is formed using the third layer of c
             6: 40304({1: [44, true, 60, true, 0, true]}), ; origin m/44'/60'/0'
             7: 40304({1: [0, false, [0, 1], false]}) ; children m/44'/60'/0'/0/0 and m/44'/60'/0'/0/1
           }),
-        2: [ h'A0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48' ]  ; USDC ERC20 token on Ethereum 
+        2: [ "A0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48" ]  ; USDC ERC20 token on Ethereum 
        })]
    }),
    41403( ; #6.41403(portfolio-coin) 
@@ -1021,7 +1021,7 @@ An example illustrates how the sync payload is formed using the third layer of c
             6: 40304({1: [44, true, 60, true, 0, true]}), ; origin m/44'/60'/0'
             7: 40304({1: [0, false, [0, 2], false]}) ; children m/44'/60'/0'/0/0, m/44'/60'/0'/0/1 and m/44'/60'/0'/0/2
           }),
-        2: [ h'2791Bca1f2de4661ED88A30C99A7a9449Aa84174' ] ; USDC ERC20 token on Polygon 
+        2: [ "2791Bca1f2de4661ED88A30C99A7a9449Aa84174" ] ; USDC ERC20 token on Polygon 
        })]
    }),
    41403( ; #6.41403(portfolio-coin)
@@ -1116,8 +1116,8 @@ A2                                      # map(2)
                                     F4  # primitive(20)
                      02                 # unsigned(2)
                      81                 # array(1)
-                        54              # bytes(20)
-                           A0B86991C6218B36C1D19D4A2E9EB0CE3606EB48 
+                        78 28           # text(40)
+                           41304238363939314336323138423336433144313944344132453945423043453336303645423438 # "A0B86991C6218B36C1D19D4A2E9EB0CE3606EB48"
       D9 A1BB                           # tag(41403)
          A2                             # map(2)
             01                          # unsigned(1)
@@ -1224,8 +1224,8 @@ A2                                      # map(2)
                                     F4  # primitive(20)
                      02                 # unsigned(2)
                      81                 # array(1)
-                        54              # bytes(20)
-                           2791BCA1F2DE4661ED88A30C99A7A9449AA84174 
+                        78 28           # text(40)
+                           32373931424341314632444534363631454438384133304339394137413934343941413834313734 # "2791BCA1F2DE4661ED88A30C99A7A9449AA84174"
       D9 A1BB                           # tag(41403)
          A2                             # map(2)
             01                          # unsigned(1)
@@ -1314,7 +1314,7 @@ A2                                      # map(2)
 - UR encoding 
 
 ```
-ur:portfolio/oeadlrtaoyrkoeadtaoyrhotadayaocsfnaxlyadaolytaoyrdoeadtantjloxaxhdclaxdaaxtsuooxzmahmwwtfzgthfcslpfwoylgmnatlrfyeheestcmchluselynsfstyaahdcxjsnnpdsguooyrkstcwyagycysroxltdejegteepdhnaekgmytymkwzjkdmronlamamtantjooyadlncsdwykcsfnykaeykattantjooyadlraewklfaeadwkaolyghnbroinmeswclluensettntgedmnnpftoenamwmfdtaoyrkoeadtaoyrhoeadamaocfadykaolftaoyrdoeadtantjloeaxhdclaowdverokopdinhseeroisyalksaykctjshedprnuyjyfgrovawewftyghceglrpkgamtaaddyoyadlocsdwykcfadykykaeykaeykaolyksdwfegdimfghgieieecfpkpiyjsgugujsihgteyjsglehksknkkidhsjofxetfleektfeflfljehtktkkghfyjyehkotaoyrdoyadtantjloeaxhdclaohnhffmvsbndslrfgclpfjejyatbdpebacnzokotofxntaoemvskpaowmryfnotfgamtantjooyadlocsdwykcfadykykaeykadyktaoyrkoeadtaoyrhotadayaocsfnaxlycsldaolytaoyrdoeadtantjloxaxhdclaxdaaxtsuooxzmahmwwtfzgthfcslpfwoylgmnatlrfyeheestcmchluselynsfstyaahdcxjsnnpdsguooyrkstcwyagycysroxltdejegteepdhnaekgmytymkwzjkdmronlamamtantjooyadlncsdwykcsfnykaeykattantjooyadlraewklfaeaowkaolyghdimerfoywzuefghswelootbnnlosptfynypdfpjytaoyrkoeadtaoyrhoeadayaoaeaolftaoyrdoyadtantjyoeadiojojeisdefzdydtaolytantjlotaxhdclaxwmfmdeiamecsdsemgtvsjzcncygrkowtrontzschgezokstswkkscfmklrtauteyaahdcxiehfonurdppfyntapejpproypegrdawkgmaewejlsfdtsrfybdehcaflmtrlbdhpamtantjooyadlncsdwykaeykaeyktaoyrdoyadtantjyoeadjzjkisdektjojeisdefzdydtdtaolytantjlotaxhdclaostvelfemdyynwydwyaievosrgmambklovabdgypdglldvespsthysadamhpmjeinaahdcxntdllnaaeykoytdacygegwhgjsiyonpywmcmrpwphsvodsrerozsbyaxluzcoxdpamtantjooyadlncsehykaeykadykaotaoyrfoxadcyemrewytyaoidihjtaxisehdmemdpeydmjpiaaaiyglflgmfphffejnrfpycm
+ur:portfolio/oeadlrtaoyrkoeadtaoyrhotadayaocsfnaxlyadaolytaoyrdoeadtantjloxaxhdclaxdaaxtsuooxzmahmwwtfzgthfcslpfwoylgmnatlrfyeheestcmchluselynsfstyaahdcxjsnnpdsguooyrkstcwyagycysroxltdejegteepdhnaekgmytymkwzjkdmronlamamtantjooyadlncsdwykcsfnykaeykattantjooyadlraewklfaeadwkaolyksdefpdyfwetenesesehfxeneyehetfweoenfxehfyehesfyeefpeyfeesfefwdyfxfeeoendyenfefweeettaoyrkoeadtaoyrhoeadamaocfadykaolftaoyrdoeadtantjloeaxhdclaowdverokopdinhseeroisyalksaykctjshedprnuyjyfgrovawewftyghceglrpkgamtaaddyoyadlocsdwykcfadykykaeykaeykaolyksdwfegdimfghgieieecfpkpiyjsgugujsihgteyjsglehksknkkidhsjofxetfleektfeflfljehtktkkghfyjyehkotaoyrdoyadtantjloeaxhdclaohnhffmvsbndslrfgclpfjejyatbdpebacnzokotofxntaoemvskpaowmryfnotfgamtantjooyadlocsdwykcfadykykaeykadyktaoyrkoeadtaoyrhotadayaocsfnaxlycsldaolytaoyrdoeadtantjloxaxhdclaxdaaxtsuooxzmahmwwtfzgthfcslpfwoylgmnatlrfyeheestcmchluselynsfstyaahdcxjsnnpdsguooyrkstcwyagycysroxltdejegteepdhnaekgmytymkwzjkdmronlamamtantjooyadlncsdwykcsfnykaeykattantjooyadlraewklfaeaowkaolyksdeeyemesehfwfxfpehfgeyfyfeeeenenehfefyetetfpeodyfxesesfpemfpeseeeeesfpfpeteeehemeetaoyrkoeadtaoyrhoeadayaoaeaolftaoyrdoyadtantjyoeadiojojeisdefzdydtaolytantjlotaxhdclaxwmfmdeiamecsdsemgtvsjzcncygrkowtrontzschgezokstswkkscfmklrtauteyaahdcxiehfonurdppfyntapejpproypegrdawkgmaewejlsfdtsrfybdehcaflmtrlbdhpamtantjooyadlncsdwykaeykaeyktaoyrdoyadtantjyoeadjzjkisdektjojeisdefzdydtdtaolytantjlotaxhdclaostvelfemdyynwydwyaievosrgmambklovabdgypdglldvespsthysadamhpmjeinaahdcxntdllnaaeykoytdacygegwhgjsiyonpywmcmrpwphsvodsrerozsbyaxluzcoxdpamtantjooyadlncsehykaeykadykaotaoyrfoxadcyemrewytyaoidihjtaxisehdmemdpeydmjpiaaaiyglflgmfphffebabapfsb
 ```
 
 </details>
