@@ -43,7 +43,7 @@ The following parameters are recommended for generating dynamic QR codes to ensu
 
 - The fragment size should not exceed **200 characters** per QR code.
 - The frame interval between successive QR codes should be defined at **150 ms**.
-- QR codes should use to **Medium (M)** error correction level.
+- QR codes should use **Medium (M)** error correction level.
 
 ## Limitation
 
