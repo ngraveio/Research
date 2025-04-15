@@ -601,24 +601,6 @@ The following table indicates the corresponding fields between the UR types `eth
 
 `sign-response` and `eth-signature` provides identical information, with the advantage of `sign-response` to be blockchain-agnostic.
 
-### Use case
-
-The watch-only wallet generates a QR code containing the `sign-request` UR type with the following information:
-
-1. (Recommended) Request ID, an universally unique identifier (UUID) of the transaction
-2. Ethereum coin identity with the chain ID to specify the EVM chain
-3. Derivation path of the key requested to sign the request along with the wallet master fingerprint
-4. Transaction to sign
-5. (Recommended) Origin to indicate the wallet name
-6. Data type (legacy RLP encoding, typed data, raw bytes or typed transaction)
-7. (Optional) Sender address for verification, redundant however with derivation path where the public key can already be included
-
-The offline signer decodes the transaction depending on the data type and responds to the request with the signature once the transaction has been verified and approved by the user. The offline signer generates a QR code containing the `sign-response` UR type with the following information:
-
-1. (Mandatory if provided in the request) Request ID indicating the UUID of the transaction
-2. Signature 
-3. (Recommended) Origin to indicate the name of the offline signer
-
 ### Example
 
 An example illustrates how the signing protocol works on EVM blockchains:
@@ -740,26 +722,6 @@ ur:sign-response/otadtpdagdndcawmgtfrkigrpmndutdnbtkgfssbjnaohdfptywtosrftahprdc
 
 </details>
 
-### Transaction verification guidance
-
-The watch-only wallet should indicate the transaction information when the signature request is generated. Once the request is received by the offline signer, the user should be able to verify the correspondence of the transaction content he is about to sign.
-
-The transaction needs to be decoded by the offline signer depending on the data type, e.g. RLP decoding for the first type. Once decoded, the following generic information can be displayed by the offline signer:
-
-- Chain ID
-- Receiver address
-- Max fee
-- Amount
-- Extra data information
-
-The EVM blockchain is identified using the chain ID and should be clearly notified to the user, as well as the specific coin used on the blockchain and associated to the amount and the max fee.
-
-In case of more complex transactions, the offline signer should be able to recognize the transaction and displays additional required information:
-
-1. Specific message: the message associated to the transaction should be decoded from the data to sign and displayed to the user.
-2. ERC20 token, ERC721 and ERC1155 NFT transfers: specific information are included in the data, such as contract address, receiver address, amount of token (see [[goethereumbook/transfer-tokens]](https://goethereumbook.org/en/transfer-tokens/)).
-3. Smart contracts: they are numerous and diverse and needs to implement Application Binary Interface [[ABI]](https://docs.soliditylang.org/en/develop/abi-spec.html) in order to decode the interface functions of the contract and to display the necessary information to the user. 
-
 ## II - 3. Solana transactions
 
 Keystone has proposed and implemented the specific UR types `sol-sign-request` and `sol-signature` for signing Solana transactions in [[solana-qr-data-protocol]](https://github.com/KeystoneHQ/Keystone-developer-hub/blob/main/research/solana-qr-data-protocol.md#sending-the-unsigned-data-from-wallet-only-wallet-to-offline-signer). In this document, we present their integration into the common UR types `sign-request` and `sign-response`.
@@ -810,24 +772,6 @@ The following table indicates the corresponding fields between the UR types `sol
 | 3. origin (optional) | No corresponding field, provides an additional description |
 
 `sign-response` UR type provides the exact same information as `sol-signature` and has even the advantage to provide an additional optional field to describe the origin with the device name for example.
-
-### Use case
-
-The watch-only wallet generates a QR code containing the `sign-request` UR type with the following information:
-
-1. (Recommended) Request ID, an universally unique identifier (UUID) of the transaction
-2. Solana coin identity
-3. Derivation path of the key requested to sign the request along with the wallet master fingerprint
-4. Transaction to sign
-5. (Recommended) Origin to indicate the wallet name
-6. (Optional) Data type with either transaction or message type (if not specified, transaction type is defined by default)
-7. (Optional) Sender address for verification, redundant however with derivation path where the public key is already included
-
-The offline signer decodes the transaction depending on the data type and responds to the request with the signature once the transaction has been verified and approved by the user. The offline signer generates a QR code containing the `sign-response` UR type with the following information:
-
-1. (Mandatory if provided in the request) Request ID indicating the UUID of the transaction
-2. Signature 
-3. (Recommended) Origin to indicate the name of the offline signer
 
 ### Example
 
@@ -944,23 +888,6 @@ ur:sign-response/otadtpdagdndcawmgtfrkigrpmndutdnbtkgfssbjnaohdfztywtosrftahprdc
 
 </details>
 
-### Transaction verification guidance
-
-The watch-only wallet should indicate the transaction information when the signature request is generated. Once the request is received by the offline signer, the user should be able to verify the correspondence of the transaction content he is about to sign.
-
-Solana transactions are based on instruction. The basic instruction to send SOL (see [[solanacookbook/basic-transactions]](https://solanacookbook.com/references/basic-transactions.html#how-to-send-sol)) should be decoded and displayed to the user with the necessary information:
-
-- Sender address
-- Receiver address
-- Amount
-- Fee
-- Program instructions
-
-In case of more complex transactions, the offline signer should be able to recognize the transaction and displays additional required information:
-
-1. SPL token transfers (including NFT transfer): specific information are included in the data, such as contract address, receiver address, amount of token or NFT.
-2. Smart contracts: as indicated, Solana transactions are based on instructions. Complex operations on the blockchain can contain multiple instructions that need to be decoded for user verification, as presented by Keystone in [[blinding-signing-on-solana]](https://github.com/KeystoneHQ/Keystone-developer-hub/blob/main/research/blinding-signing-on-solana.md).
-
 ## II - 4. Tezos transactions
 
 [[TZIP-25]](https://gitlab.com/tezos/tzip/-/blob/master/proposals/tzip-25/tzip-25.md) proposes the specific UR types `xtz-sign-request` and `xtz-signature` for signing Tezos transactions. In this document, we present their integration into the common UR types `sign-request` and `sign-response`.
@@ -1013,23 +940,6 @@ The following table indicates the corresponding fields between the UR types `xtz
 `sign-response` UR type provides the exact same information as `xtz-signature`, except regarding the optional `payload` field available in `xtz-signature`. This field is however a redundant information since the signature can be identified using the `request-id` field.
 
 Additionally, `sign-response` has the advantage to provide an additional optional field to describe the origin with the device name for example.
-
-### Use case
-
-The watch-only wallet generates a QR code containing the `sign-request` UR type with the following information:
-
-1. (Recommended) Request ID, an universally unique identifier (UUID) of the transaction
-2. Tezos coin identity with the specific elliptic curve
-3. Derivation path of the key requested to sign the request along with the wallet master fingerprint
-4. Transaction to sign
-5. (Recommended) Origin to indicate the wallet name
-6. (Optional) Data type (if not specified, operation type is defined by default)
-
-The offline signer responds to the request with the signature containing the following fields:
-
-1. (Recommended) Request ID indicating the UUID of the transaction
-2. Signature 
-3. (Recommended) Origin to indicate the name of the offline signer
 
 ### Example
 
@@ -1190,23 +1100,6 @@ A MultiversX or Stellar sign request results in a signed transaction after user 
 The required fields for a MultiversX or Stellar signature are the signature itself and potentially the request identifier to identify uniquely the response. Additionally, a description can be provided to specify the device name for example.
 
 This listed information for sending a MultiversX and Stellar signature can be included in `sign-response` UR type.
-
-### Use case
-
-The watch-only wallet creates a signature request containing the following fields:
-
-1. (Recommended) Request ID, an universally unique identifier (UUID) of the transaction
-2. MultiversX or Stellar coin identity
-3. Data to sign
-4. Derivation path of the key requested to sign the request along with the master fingerprint to identify the wallet
-5. Transaction to sign
-6. (Recommended) Origin to indicate the wallet name
-
-The offline signer responds to the request with the signature containing the following fields:
-
-1. (Mandatory if provided in the request) Request ID indicating the UUID of the transaction
-2. Signature 
-3. (Recommended) Origin to indicate the name of the offline signer
 
 ### Examples
 
@@ -1425,20 +1318,6 @@ ur:sign-response/otadtpdagdndcawmgtfrkigrpmndutdnbtkgfssbjnaohdfzneqzcnwybdcytet
 
 </details>
 
-### Transaction verification guidance
-
-The watch-only wallet should indicate the transaction information when the signature request is generated. Once the request is received by the offline signer, the user should be able to verify the correspondence of the transaction content he is about to sign.
-
-The transactions contain all the essential information for user verification:
-
-- Sender address
-- Receiver address
-- Amount
-- Fee
-- Additional data to sign
-
-More complex transactions include additional data fields that shall be decoded as well. For example, ESDT token transfer on MultiversX requires to decode in addition the token identifier and the value to transfer (see [[docs.multiversx/esdt-transfers]](https://docs.multiversx.com/tokens/esdt-tokens#transfers)). For ESDT NFT transfer, the collection identifier, the NFT nonce, the quantity and the destination address shall be decoded (see [[docs.multiversx/nft-transfers]](https://docs.multiversx.com/tokens/nft-tokens#transfers)). For smart contracts, the data field of the transaction contains diverse information that shall be decoded accordingly.
-
 ---
 
 # IV - Considerations
@@ -1463,9 +1342,14 @@ The existing QR protocol between the NGRAVE watch-only wallet, LIQUID, and the N
 
 ## Security consideration
 
-The protocol should ensure the “What You See Is What You Sign” property, i.e. the message content can not be changed during the signature process. The user needs to confirm the transaction details he is about to sign on the offline signer based on the transaction verification guidance presented for each blockchain. Any inconsistency with the transaction initiated on the watch-only wallet will alert the user on the potential malicious transaction. 
+The protocol must uphold the What You See Is What You Sign (WYSIWYS) principle: the content displayed for user confirmation on the offline signer must exactly match the data being signed. This ensures that no tampering or data alteration occurs during the signing process.
 
-The decoded transaction on the offline signer should be presented in a human-readable format, but in case of transaction impossible to decode (e.g. with smart contracts unknown to the device), the offline signer should warn the user and display the raw data.
+The user must explicitly review and approve the transaction details on the offline signer. These details must be derived and displayed according to blockchain-specific verification rules. Any discrepancy between the transaction shown on the offline signer and the one prepared by the watch-only wallet should trigger a warning, allowing the user to reject potentially malicious or altered requests.
+
+To support this:
+
+   - The offline signer must present decoded transaction data in a clear, human-readable format.
+   - If the transaction cannot be decoded (e.g., due to an unknown or unsupported type), the device must clearly alert the user with a warning, indicating that the transaction could not be safely verified.
 
 ---
 
@@ -1488,9 +1372,3 @@ The decoded transaction on the offline signer should be presented in a human-rea
 | [BCR-2020-007] | https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-007-hdkey.md |
 | [NBCR-2023-002] | https://github.com/ngraveio/Research/blob/main/papers/nbcr-2023-002-multi-layer-sync.md |
 | [NBCR-2023-001] | https://github.com/ngraveio/Research/blob/main/papers/nbcr-2023-001-coin-identity.md |
-| [goethereumbook/transfer-tokens] | https://goethereumbook.org/en/transfer-tokens/ |
-| [ABI]  | https://docs.soliditylang.org/en/develop/abi-spec.html |
-| [solanacookbook/basic-transactions] | https://solanacookbook.com/references/basic-transactions.html#how-to-send-sol |
-| [blinding-signing-on-solana] | https://github.com/KeystoneHQ/Keystone-developer-hub/blob/main/research/blinding-signing-on-solana.md |
-| [docs.multiversx/esdt-transfers] | https://docs.multiversx.com/tokens/esdt-tokens#transfers |
-| [docs.multiversx/nft-transfers] |  https://docs.multiversx.com/tokens/nft-tokens#transfers |
