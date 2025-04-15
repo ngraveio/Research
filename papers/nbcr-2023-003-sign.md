@@ -77,7 +77,8 @@ The following table listed the existing UR types depending on the blockchain and
 | Ethereum/EVM | eth-sign-request <br> Tag: 401 | eth-signature <br> Tag: 402 | Keystone | [[EIP-4527]](https://eips.ethereum.org/EIPS/eip-4527) | [[ur-registry-eth]](https://github.com/KeystoneHQ/keystone-airgaped-base/tree/master/packages/ur-registry-eth) |
 | Solana| sol-sign-request <br> Tag: 1101 | sol-signature <br> Tag: 1102 | Keystone | [[solana-qr-data-protocol]](https://github.com/KeystoneHQ/Keystone-developer-hub/blob/main/research/solana-qr-data-protocol.md#sending-the-unsigned-data-from-wallet-only-wallet-to-offline-signer)  | [[ur-registry-sol]](https://github.com/KeystoneHQ/keystone-airgaped-base/tree/master/packages/ur-registry-sol) |
 | Tezos | xtz-sign-request <br> Tag: 501 | xtz-signature <br> Tag: 502 | Airgap  | [[tzip-25]](https://gitlab.com/tezos/tzip/-/blob/master/proposals/tzip-25/tzip-25.md) | [[ur-registry-xtz]](https://socket.dev/npm/package/@airgap/ur-registry-xtz/overview/0.0.1-beta.0) |
-| Generic | sign-request <br> Tag: 41411 | sign-response <br> Tag: 41412 | Ngrave | This document | [[ur-registry]](https://github.com/ngraveio/ur-registry/tree/main) |
+| Cosmos | cosmos-sign-request <br> Tag: 4101 | cosmos-signature <br> Tag: 4102 | Keystone  | ? | [[ur-registry-cosmos]](https://github.com/KeystoneHQ/keystone-sdk-base/tree/master/packages/ur-registry-cosmos) |
+| **Generic** | **sign-request** <br> **Tag: 41411** | **sign-response** <br> **Tag: 41412** | **Ngrave** | **This document** | **[[ur-registry]](https://github.com/ngraveio/ur-registry/tree/main)** |
 
 The specification for each UR type contains CBOR structure, expressed thereafter in Concise Data Definition Language [[CDDL]](https://datatracker.ietf.org/doc/html/rfc8610).
 
@@ -290,27 +291,83 @@ signature = 2
 payload = 3
 ```
 
+### Cosmos UR types
+
+The Cosmos-specific UR types are based on the [[ur-registry-cosmos]](https://github.com/KeystoneHQ/keystone-sdk-base/tree/master/packages/ur-registry-cosmos) implementation. This implementation still relies on the deprecated `crypto-keypath` UR type (CBOR tag `#6.304`), which differs from the newer `keypath` type only by its CBOR tag and UR name.
+
+- **CDDL for Cosmos signature request** `cosmos-sign-request`
+
+UR Type Tag: `#6.4101`
+
+```
+; Metadata for the signing request for Cosmos chains.
+; 
+sign-data-type = {
+    type: int .default amino
+}
+
+amino = 1
+direct = 2
+textual = 3
+message = 4
+
+cosmos-sign-request = (
+    ?request-id: uuid,
+    sign-data: bytes,
+    ?data-type: sign-data-type,
+    derivation-paths: [#6.304(crypto-keypath)], 
+    ?addresses: [string],
+    ?origin: text  
+)
+request-id = 1
+sign-data = 2
+data-type = 3
+derivation-paths = 4
+addresses = 5
+origin = 6
+```
+
+- **CDDL for Cosmos signature response** `cosmos-signature`
+
+UR Type Tag: `#6.4102`
+
+```
+cosmos-signature  = (
+    request-id: uuid,
+    signature: bytes,
+    public-key: bytes
+)
+
+request-id = 1
+signature = 2
+public-key = 3
+```
+
 ## II - 2. Blockchain-agnostic UR types registry
 
-This document aims to propose common UR types for signing on every blockchain. 
+This section defines a set of common UR types intended to support signing workflows across multiple blockchains.
 
 - **CDDL for generic signature request** `sign-request`
 
-This UR type is tagged with #6.41411 and embeds:
+UR Type Tag: `#6.41411`
 
-- The `coin-identity` UR type tagged with #6.41401 and introduced in [[NBCR-2023-001]](https://github.com/ngraveio/Research/blob/main/papers/nbcr-2023-001-coin-identity.md). This UR type identifies the elliptic curve and the blockchain on which the sign request is initiated.
-- An optional UR type to specify metadata related to a specific coin.
+This UR type encapsulates a generic signing request and includes:
+- A `coin-identity`  UR type (`#6.41401`), as defined in [[NBCR-2023-001]](https://github.com/ngraveio/Research/blob/main/papers/nbcr-2023-001-coin-identity.md), which identifies the elliptic curve and the blockchain for which the signing operation is intended.
+- An optional derivation path and address, typically a single element. However, for certain blockchains like Cosmos, they may contain an array, allowing the signer to select an account interactively.
 
 ```
 sign-request = {
-    ?request-id: uuid,                        ; Identifier of the signing request
-    coin-id: #6.41401(coin-identity),         ; Provides information on the elliptic curve and the blockchain/coin
-    ?derivation-path: #6.40304(keypath),      ; Key path for signing this request
-    sign-data: bytes,                         ; Transaction to be decoded by the offline signer 
-    ?origin: text,                            ; Origin of this sign request, e.g. wallet name
-    ?tx-type: int .default 1                  ; Specify type of transaction required for some blockchains
-    ?address: string / bytes                  ; Specify sender address if not already specified in the sign-data and derivation-path
+    ?request-id: uuid,                                   ; Unique identifier for the signing request
+    coin-id: #6.41401(coin-identity),                    ; Defines elliptic curve and blockchain context
+    ?derivation-path: keypath-type / [2* keypath-type],  ; Key path(s) for signature derivation
+    sign-data: bytes,                                    ; Serialized transaction data
+    ?origin: text,                                       ; Origin of the request (e.g., wallet identifier)
+    ?tx-type: int .default 1,                            ; Blockchain-specific transaction type
+    ?address: address-type / [2* address-type]           ; Address(es)
 }
+
+keypath-type = #6.40304(keypath)
+address-type = string / bytes
 
 request-id = 1
 coin-id = 2
@@ -318,29 +375,28 @@ derivation-path = 3
 sign-data = 4
 origin = 5
 tx-type = 6
-address=7
+address = 7
 ```
 
-The type definition takes over the same enumeration from the existing UR types `sign-data-type` for Ethereum, `type` for Solana and `key-type` for Tezos.    
-In case of new blockchain integration to the sign protocol, we will need to create a new enumeration if there is more than one type of transaction on the new blockchain. 
+The `tx-type` field reuses enumerations from existing UR types such as `sign-data-type` (Ethereum), `type` (Solana), `key-type` (Tezos), and `data-type` (Cosmos).
+When integrating a new blockchain, a new enumeration should be defined if multiple transaction types are supported.
 
 - **CDDL for generic signature response** `sign-response`
 
-This UR type is tagged with #6.41412. 
+UR Type Tag: `#6.41412`
 
 ```
 sign-response = {
-  ?request-id: uuid,     ; Identifier of the signing request 
-  signature: bytes,      ; Signature result
-  ?origin: text,         ; The device info providing this signature
+    ?request-id: uuid,   ; Echoes the request-id if present in the corresponding sign-request
+    signature: bytes,    ; Resulting signature
+    ?origin: text,       ; Device or signer name
+    ?public-key: bytes   ; Public key associated to signer' private key
 }
-
-; request-id must be present in case of response to a sign-request where 
-; the request-id is specified
 
 request-id = 1
 signature = 2
 origin = 3
+public-key = 4
 ```
 
 ---
@@ -1057,19 +1113,201 @@ ur:sign-response/otadtpdagdndcawmgtfrkigrpmndutdnbtkgfssbjnaohdfzneqzcnwybdcytet
 
 </details>
 
+## II - 5. Cosmos transactions
 
-### Transaction verification guidance
+The [[ur-registry-cosmos]](https://github.com/KeystoneHQ/keystone-sdk-base/tree/master/packages/ur-registry-cosmos) defines the dedicated UR types `cosmos-sign-request` and `cosmos-signature` for handling Cosmos transaction signing. This section outlines their integration into the standardized blockchain-agnostic UR types `sign-request` and `sign-response`.
 
-The watch-only wallet should indicate the transaction information when the signature request is generated. Once the request is received by the offline signer, the user should be able to verify the correspondence of the transaction content he is about to sign.
+### Integration with the generic UR types registry
 
-The Tezos transactions contain all the essential information for user verification:
+- **Cosmos sign request**
 
-- Sender address
-- Receiver address
-- Amount
-- Fee
+A Cosmos transaction is identified using the coin-identity UR type, typically referencing secp256k1 with coin type 118 or other Cosmos-specific values (e.g., 529 for Secret Network).
 
-Smart contracts decoding on Tezos are not addressed in this document.
+Required fields for a Cosmos signing request include:
+
+- Unsigned transaction payload (`sign-data`)
+- A derivation path and/or address (either a single entry or an array for account selection scenarios)
+
+Recommended fields for better verification and traceability (especially from a watch-only wallet):
+
+- A request ID for correlating responses
+- The transaction type to specify the transaction format (defaults to Amino)
+- The origin to identify the wallet initiating the request
+
+The table below maps fields between `sign-request` and `cosmos-sign-request`:
+
+| sign-request fields <br> Associated number corresponds to the order in UR type | Corresponding cosmos-sign-request fields <br> Associated number corresponds to the order in UR type |
+| --- | --- |
+| 1. request-id (optional) | 1. request-id (optional) |
+| 2. coin-id | No direct equivalent (identifies Cosmos) |
+| 3. derivation-path | 4. derivation-paths |
+| 4. sign-data | 2. sign-data |
+| 5. origin (optional) | 6. origin |
+| 6. tx-type (optional) | 3. data-type |
+| 7. address (optional) | 5. addresses |
+
+The `sign-request` UR type fully encapsulates the same data as `cosmos-sign-request`, while maintaining a blockchain-agnostic structure.
+
+- **Cosmos signature**
+
+A successful Cosmos sign request results in a response containing:
+
+- The generated signature
+- The public key of the account used for signing
+- Optionally, the request-id to correlate with the original request
+
+Field mapping between `sign-response` and `cosmos-signature`:
+
+| sign-response fields <br> Associated number corresponds to the order in UR type | Corresponding cosmos-signature fields <br> Associated number corresponds to the order in UR type |
+| --- | --- |
+| 1. request-id (optional) | 1. request-id (optional) |
+| 2. signature | 2. signature |
+| 3. origin (optional) | Not present |
+| 4. public-key | 3. public-key |
+
+The `sign-response` UR type provides equivalent signing output as `cosmos-signature`, with the added benefit of the optional `origin` field to include signer metadata (e.g., device name).
+
+### Example
+
+An example illustrates how the signing protocol works on Cosmos blockchain:
+
+<details>
+
+<summary>Example Cosmos signature request</summary>
+
+- CBOR diagnosis format:
+    
+```
+{
+1: 37(h'9b1deb4d3b7d4bad9bdd2b0d7b3dcb6d'), ; request-id
+2: 41401( ; #6.41401(coin-identity)
+    {1: 8, ; secp256k1 curve
+     2: 118 ; Cosmos BIP44
+    }),
+3: [40304({1: [44, true, 118, true, 0, true, 0, false, 0, false], ; #6.40304(keypath) n°1 m/44’/118'/0’/0/0
+        2: 78230804}), ; master-fingerprint
+    40304({1: [44, true, 529, true, 0, true, 0, false, 0, false], ; #6.40304(keypath) n°2 m/44’/529'/0’/0/0
+        2: 78230805})], ; master-fingerprint
+4: h'8e53e7b10656816de70824e3016fc1a277e77825e12825dc4f239f418ab2e04e', ; sign-data
+5: "NGRAVE LIQUID", ; wallet name
+6: 1, ; Amino transaction
+7: ["cosmos13nmjt4hru5ag0c6q3msk0srs55qd3dtme8wgep", "secret1e63tmjmhsac8ja86gk8kh06uqxh2h9hwkcs5cs"] ; addresses
+}
+```
+
+- CBOR encoding 
+    
+```
+A7                                      # map(7)
+   01                                   # unsigned(1)
+   D8 25                                # tag(37)
+      50                                # bytes(16)
+         9B1DEB4D3B7D4BAD9BDD2B0D7B3DCB6D # "\x9B\u001D\xEBM;}K\xAD\x9B\xDD+\r{=\xCBm"
+   02                                   # unsigned(2)
+   D9 A1B9                              # tag(41401)
+      A2                                # map(2)
+         01                             # unsigned(1)
+         08                             # unsigned(8)
+         02                             # unsigned(2)
+         18 76                          # unsigned(118)
+   03                                   # unsigned(3)
+   82                                   # array(2)
+      D9 9D70                           # tag(40304)
+         A2                             # map(2)
+            01                          # unsigned(1)
+            8A                          # array(10)
+               18 2C                    # unsigned(44)
+               F5                       # primitive(21)
+               18 76                    # unsigned(118)
+               F5                       # primitive(21)
+               00                       # unsigned(0)
+               F5                       # primitive(21)
+               00                       # unsigned(0)
+               F4                       # primitive(20)
+               00                       # unsigned(0)
+               F4                       # primitive(20)
+            02                          # unsigned(2)
+            1A 04A9B514                 # unsigned(78230804)
+      D9 9D70                           # tag(40304)
+         A2                             # map(2)
+            01                          # unsigned(1)
+            8A                          # array(10)
+               18 2C                    # unsigned(44)
+               F5                       # primitive(21)
+               19 0211                  # unsigned(529)
+               F5                       # primitive(21)
+               00                       # unsigned(0)
+               F5                       # primitive(21)
+               00                       # unsigned(0)
+               F4                       # primitive(20)
+               00                       # unsigned(0)
+               F4                       # primitive(20)
+            02                          # unsigned(2)
+            1A 04A9B515                 # unsigned(78230805)
+   04                                   # unsigned(4)
+   58 20                                # bytes(32)
+      8E53E7B10656816DE70824E3016FC1A277E77825E12825DC4F239F418AB2E04E # "\x8ES\xE7\xB1\u0006V\x81m\xE7\b$\xE3\u0001o\xC1\xA2w\xE7x%\xE1(%\xDCO#\x9FA\x8A\xB2\xE0N"
+   05                                   # unsigned(5)
+   6D                                   # text(13)
+      4E4752415645204C4951554944        # "NGRAVE LIQUID"
+   06                                   # unsigned(6)
+   01                                   # unsigned(1)
+   07                                   # unsigned(7)
+   82                                   # array(2)
+      78 2D                             # text(45)
+         636F736D6F7331336E6D6A743468727535616730633671336D736B30737273353571643364746D653877676570 # "cosmos13nmjt4hru5ag0c6q3msk0srs55qd3dtme8wgep"
+      78 2D                             # text(45)
+         73656372657431653633746D6A6D68736163386A613836676B386B6830367571786832683968776B6373356373 # "secret1e63tmjmhsac8ja86gk8kh06uqxh2h9hwkcs5cs"
+```
+
+- UR encoding
+```
+ur:sign-request/osadtpdagdndcawmgtfrkigrpmndutdnbtkgfssbjnaotaoyrhoeadayaocskoaxlftantjooeadlecsdwykcskoykaeykaewkaewkaocyaaptrebbtantjooeadlecsdwykcfaobyykaeykaewkaewkaocyaaptrebzaahdcxmnguvdpaamhflyjnvdaydkvladjlseoektvdksdavydedauogwcnnefpleprvtglahjnglflgmfphffecxgsgagygogafyamadatlfksdpiajljkjnjljkeheojtjnimjyeeisjpkpechsiodyiaenjseojnjkjedyjkjpjkececjsieeoiejyjnihetktioihjoksdpjkihiajpihjyehiheneojyjnimjnisjkhsiaetimhseteniojeetjeisdyenkpjsksiseyisesisktjeiajkeciajkzeytjzjo
+```
+
+</details>
+
+<details>
+
+<summary>Example Cosmos signature response</summary>
+
+- CBOR diagnosis format:
+    
+```
+{
+1: 37(h'9b1deb4d3b7d4bad9bdd2b0d7b3dcb6d'), ; request-id
+2: h'47e7b510784406dfa14d9fd13c3834128b49c56ddfc28edb02c5047219779adeed12017e2f9f116e83762e86f805c7311ea88fb403ff21900e069142b1fb310e', ; signature
+3: "NGRAVE ZERO", ; device name
+4: h'8e53e7b10656816de70824e3016fc1a277e77825e12825dc4f239f418ab2e04e' ; public key
+}
+```
+
+- CBOR encoding
+    
+```
+A4                                      # map(4)
+   01                                   # unsigned(1)
+   D8 25                                # tag(37)
+      50                                # bytes(16)
+         9B1DEB4D3B7D4BAD9BDD2B0D7B3DCB6D # "\x9B\u001D\xEBM;}K\xAD\x9B\xDD+\r{=\xCBm"
+   02                                   # unsigned(2)
+   58 40                                # bytes(64)
+      47E7B510784406DFA14D9FD13C3834128B49C56DDFC28EDB02C5047219779ADEED12017E2F9F116E83762E86F805C7311EA88FB403FF21900E069142B1FB310E # "G\xE7\xB5\u0010xD\u0006ߡM\x9F\xD1<84\u0012\x8BI\xC5m\xDF\u008E\xDB\u0002\xC5\u0004r\u0019w\x9A\xDE\xED\u0012\u0001~/\x9F\u0011n\x83v.\x86\xF8\u0005\xC71\u001E\xA8\x8F\xB4\u0003\xFF!\x90\u000E\u0006\x91B\xB1\xFB1\u000E"
+   03                                   # unsigned(3)
+   6B                                   # text(11)
+      4E4752415645205A45524F            # "NGRAVE ZERO"
+   04                                   # unsigned(4)
+   58 20                                # bytes(32)
+      8E53E7B10656816DE70824E3016FC1A277E77825E12825DC4F239F418AB2E04E # "\x8ES\xE7\xB1\u0006V\x81m\xE7\b$\xE3\u0001o\xC1\xA2w\xE7x%\xE1(%\xDCO#\x9FA\x8A\xB2\xE0N"
+```
+
+- UR encoding
+
+```
+ur:sign-response/oxadtpdagdndcawmgtfrkigrpmndutdnbtkgfssbjnaohdfzflvdrebeksfyamuroygtnettfneteebglugaskjnursamnuyaoskaajpcfktnyuewebgadkbdlnebyjtlskodmlnyaahstehckpdmyqzaxzmclmhbaammefwpazoehbaaxjeglflgmfphffecxhtfegmgwaahdcxmnguvdpaamhflyjnvdaydkvladjlseoektvdksdavydedauogwcnnefpleprvtglctldimhe
+```
+
+</details>
 
 ## II - 5. Other blockchains transactions
 
@@ -1368,6 +1606,7 @@ To support this:
 | [ur-registry-eth] | https://github.com/KeystoneHQ/keystone-airgaped-base/tree/master/packages/ur-registry-eth |
 | [ur-registry-sol] | https://github.com/KeystoneHQ/keystone-airgaped-base/tree/master/packages/ur-registry-sol |
 | [ur-registry-xtz] | https://socket.dev/npm/package/@airgap/ur-registry-xtz/overview/0.0.1-beta.0 |
+| [ur-registry-cosmos] | https://github.com/KeystoneHQ/keystone-sdk-base/tree/master/packages/ur-registry-cosmos |
 | [ur-registry] | https://github.com/ngraveio/ur-registry/tree/main |
 | [BCR-2020-007] | https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-007-hdkey.md |
 | [NBCR-2023-002] | https://github.com/ngraveio/Research/blob/main/papers/nbcr-2023-002-multi-layer-sync.md |
