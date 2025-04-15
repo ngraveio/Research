@@ -95,17 +95,19 @@ The UR types for signing embed common tags, described in the following list:
 
 ### Bitcoin UR type
 
-For Bitcoin blockchain, the UR types are based on the Partially Signed Bitcoin Transaction (PSBT) format defined in [[BIP174]](https://github.com/bitcoin/bips/blob/master/bip-0174.mediawiki). 
+For the Bitcoin blockchain, UR types are limited to the Partially Signed Bitcoin Transaction (PSBT) format as defined in [[BIP-174]](https://github.com/bitcoin/bips/blob/master/bip-0174.mediawiki). 
 
 - **CDDL for BTC PSBT** `psbt`
 
-Both BTC sign request and signature embeds `psbt` UR type tagged with #6.40310 and belonging to the [[BCR-2020-006]](https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md). It contains a single, deterministic length byte string of variable length up to 2^32-1 bytes. Semantically, this byte string MUST be a valid Partially Signed Bitcoin Transaction encoded in the binary format specified by [[BIP174]](https://github.com/bitcoin/bips/blob/master/bip-0174.mediawiki).
+UR Type Tag: `#6.40310` (defined in [[BCR-2020-006]](https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md)). 
 
 ```
 crypto-psbt = bytes
 ```
 
-This UR type is used for both signing request and signature response.
+The `psbt` UR type is used identically in both signing requests and signature responses.
+
+The main limitation is the inability to support signing other types of data, such as message signing defined in [[BIP-322]](https://github.com/bitcoin/bips/blob/master/bip-0322.mediawiki). This limitation will be addressed by the proposed blockchain-agnostic sign-request UR type.
 
 ### Ethereum UR types
 
@@ -407,33 +409,42 @@ This Section gives more details on the use case for each blockchain, the signing
 
 ## III - 1. Bitcoin transactions
 
-Since Bitcoin transactions follow [[BIP174]](https://github.com/bitcoin/bips/blob/master/bip-0174.mediawiki) defining PSBT, the privileged UR type for signing is `psbt`. In this document, we present its integration into the common UR types `sign-request` and `sign-response`.
+Regular Bitcoin transactions follow the [[BIP-174]](https://github.com/bitcoin/bips/blob/master/bip-0174.mediawiki) standard for Partially Signed Bitcoin Transactions (PSBT). Accordingly, the primary UR type used for Bitcoin signing is `psbt`. This section describes how the `psbt` format is integrated into the generic `sign-request` and `sign-response` UR types. Additionally, using the generic UR types supports signing other transaction types on Bitcoin, such as message signing.
 
 ### Integration with the generic UR types registry
 
 - **Bitcoin sign request**
 
-A Bitcoin transaction is uniquely identified thanks to the information shared in `coin-identity` UR type, i.e. secp256k1 as elliptic curve and 0 as coin type. 
+A Bitcoin transaction is identified via the `coin-identity` UR type, where:
 
-The only other required field for requesting the signature of a Bitcoin transaction is the bytes composing the unsigned PSBT transaction, corresponding to the `sign-data` field of `sign-request` UR type.
+- The elliptic curve is secp256k1
+- The SLIP-44 coin type is 0
 
-The following table indicates the corresponding fields between the UR types `psbt` and `sign-request`.
+The required data for signing includes:
+- The sign data byte 
+- An optional tx-type indicating the nature of the Bitcoin operation
+
+Supported Bitcoin tx-type values (to be extended to new transaction types when needed):
+
+- `1`: PSBT (default if omitted)
+- `2`: ECDSA (raw hex message signing using account private key)
+- `3`: BIP-322 structured message signing
+
+Field mapping between `sign-request` and `psbt`:
 
 | sign-request fields <br> Associated number corresponds to the order in UR type | Corresponding crypto-psbt fields <br> Associated number corresponds to the order in UR type |
 | --- | --- |
-| 1. request-id (optional) | No corresponding field, adds verification step  |
-| 2. coin-id | No corresponding field, serves as identifier for BTC transactions |
-| 3. derivation-path (optional) | No corresponding field, recommended to identify the account(s) signing the psbt |
-| 4. sign-data | 1. bytes |
-| 5. origin (optional) | No corresponding field, provides an additional description |
-| 6. tx-type (optional) | No corresponding field, not required for BTC transaction |
-| 7. address (optional) | No corresponding field, not required for BTC transaction |
+| 1. request-id (optional) | — (Provides request correlation)  |
+| 2. coin-id | — (Identifies Bitcoin context) |
+| 3. derivation-path (optional) | — (Recommended for account origin) |
+| 4. sign-data | `bytes` (raw unsigned transaction) |
+| 5. origin (optional) | — (Describes the source wallet) |
+| 6. tx-type (optional) | — (Describes the type of transaction to be signed) |
 
-`sign-request` UR type has the advantage to provide additional fields compared to `psbt` when used as a signing request: 
-- an unique identifier for the request to link the generated signature to the sign request, 
-- the derivation path of the account required to sign (not mandatory but important to identify the account(s) signing the psbt), 
-- the master fingerprint to identify the wallet,
-- a text describing the origin (e.g. the wallet name). 
+Using sign-request instead of raw `psbt` extents signing to other transaction types than PSBT and it allows for richer metadata:
+- A request-id for signature correlation
+- Derivation path(s) and master fingerprint to identify the signing account(s)
+- A textual origin field to identify the wallet source
 
 - **Bitcoin signature**
 
@@ -445,37 +456,15 @@ The following table indicates the corresponding fields between the UR types `psb
 
 | sign-response fields <br> Associated number corresponds to the order in UR type | Corresponding crypto-psbt fields <br> Associated number corresponds to the order in UR type |
 | --- | --- |
-| 1. request-id | No corresponding field, adds verification step  |
-| 2. signature | 1. bytes |
-| 3. origin | No corresponding field, provides an additional description |
+| 1. request-id | — (Correlates with request) |
+| 2. signature | `bytes` (signed transaction) |
+| 3. origin | — (Identifies signer device) |
 
-`sign-response` UR type has the advantage to provide additional optional fields compared to `psbt` when used as a signature: 
-- an unique identifier to link the signature to the request
-- a text describing the origin (e.g. the device name). 
+Advantages of using `sign-response` over raw `psbt`:
+- Optional `request-id` for matching with sign-request
+- Optional `origin` to describe the signer (e.g., device or firmware version)
 
-### Use case
-
-A typical use case follows the following process between a watch-only wallet and an offline signer:
-
-- The watch-only wallet creates a PSBT following the Creator role in [[BIP174]](https://github.com/bitcoin/bips/blob/master/bip-0174.mediawiki):
-    1. The Creator creates an unsigned transaction and places it in the PSBT.
-    2. The Creator adds empty input and output fields.
-- The watch-only adds then information to the PSBT that it has access to, following the Updater role in [[BIP174]](https://github.com/bitcoin/bips/blob/master/bip-0174.mediawiki):
-    1. If the Updater has the UTXO for an input, it should add it to the PSBT. 
-    2. The Updater should also add redeemScripts, witnessScripts, and BIP 32 derivation paths to the input and output data if it knows them.
-- The watch-only wallet generates a QR code containing the `sign-request` UR type with the unsigned transaction and BTC as coin identity. Additionally, some recommended information is provided to the offline signer for verification purposes: request identifier, derivation path of the signer account, master fingerprint of the master public key and the watch-only wallet name.
-- The offline signer accepts the transmitted PSBT in `sign-request` UR type and provides the signature, following the Signer role in [[BIP174]](https://github.com/bitcoin/bips/blob/master/bip-0174.mediawiki):
-    1. The Signer must only use the UTXOs provided in the PSBT to produce signatures for inputs.
-    2. Before signing a non-witness input, the Signer must verify that the TXID of the non-witness UTXO matches the TXID specified in the unsigned transaction. 
-    3. Before signing a witness input, the Signer must verify that the witnessScript (if provided) matches the hash specified in the UTXO or the redeemScript, and the redeemScript (if provided) matches the hash in the UTXO. 
-    4. The Signer may choose to fail to sign a segwit input if a non-witness UTXO is not provided. 
-    5. The Signer should not need any additional data sources, as all necessary information is provided in the PSBT format. 
-    6. The Signer must only add data to a PSBT. Any signatures created by the Signer must be added as a "Partial Signature" key-value pair for the respective input it relates to. 
-    7. The Signer can additionally compute the addresses and values being sent, and the transaction fee, showing this data to the user as a confirmation of intent and the consequences of signing the PSBT.
-    8. Signers do not need to sign for all possible input types. For example, a signer may choose to only sign Segwit inputs.
-- The offline signer responds with `sign-response` containing the output signatures in the PSBT and if provided replied with the same identifier used for the request.
-
-### Example
+### Example 1 - PSBT
 
 An example illustrates how the signature request and response for Bitcoin PSBT are encoded.
 
@@ -592,18 +581,124 @@ ur:sign-response/otadtpdagdfrghbbemhyftfebdmyvydacerfdnfhreaohdvoaoaeaeaeadrnknv
 
 </details>
 
-### Transaction verification guidance
+### Example 2 - ECDSA signing
 
-Once the request is received by the offline signer, the user should be able to verify the transaction content including optional `description` text field. However, only the decoded PSBT can be considered authoritative. 
+An example illustrates how the signature request and response for Bitcoin ECDSA message signing are encoded.
 
-The received PSBT should be decoded by the offline signer to know each input and output contained in the transaction before signing. The following information should be displayed to the user:
+<details>
 
-- Types
-- BIP32 derivation paths
-- Input addresses
-- Output addresses
-- Fee
-- Amount
+<summary>Example BTC message signature request</summary>
+
+- Message to sign
+    
+```
+0x2fb2d3f6b0a0b914fb744be4a3a59e3f8f6398aa
+```
+
+- CBOR diagnosis format:
+    
+```
+{
+1: 37(h'3B5414375E3A450B8FE1251CBC2B3FB5'), ; request-id
+2: 41401( ; #6.41401(coin-identity)
+    {1: 8, ; secp256k1 curve
+     2: 0 ; Bitcoin BIP44
+    }),
+3: 40304({1: [84, true, 0, true, 0, true, 0, false, 0, false], ; #6.40304(keypath) m/84'/0'/0'/0/0
+          2: 934670036}), ; master fingerprint
+4: h'2fb2d3f6b0a0b914fb744be4a3a59e3f8f6398aa', ; sign-data
+5: "NGRAVE LIQUID", ; wallet name
+6: 2 ; ECDSA message signing
+}
+```
+
+- CBOR encoding 
+    
+```
+A6                                      # map(6)
+   01                                   # unsigned(1)
+   D8 25                                # tag(37)
+      50                                # bytes(16)
+         3B5414375E3A450B8FE1251CBC2B3FB5 # ";T\u00147^:E\v\x8F\xE1%\u001C\xBC+?\xB5"
+   02                                   # unsigned(2)
+   D9 A1B9                              # tag(41401)
+      A2                                # map(2)
+         01                             # unsigned(1)
+         08                             # unsigned(8)
+         02                             # unsigned(2)
+         00                             # unsigned(0)
+   03                                   # unsigned(3)
+   D9 9D70                              # tag(40304)
+      A2                                # map(2)
+         01                             # unsigned(1)
+         8A                             # array(10)
+            18 54                       # unsigned(84)
+            F5                          # primitive(21)
+            00                          # unsigned(0)
+            F5                          # primitive(21)
+            00                          # unsigned(0)
+            F5                          # primitive(21)
+            00                          # unsigned(0)
+            F4                          # primitive(20)
+            00                          # unsigned(0)
+            F4                          # primitive(20)
+         02                             # unsigned(2)
+         1A 37B5EED4                    # unsigned(934670036)
+   04                                   # unsigned(4)
+   54                                   # bytes(20)
+      2FB2D3F6B0A0B914FB744BE4A3A59E3F8F6398AA # "/\xB2\xD3\xF6\xB0\xA0\xB9\u0014\xFBtK䣥\x9E?\x8Fc\x98\xAA"
+   05                                   # unsigned(5)
+   6D                                   # text(13)
+      4E4752415645204C4951554944        # "NGRAVE LIQUID"
+   06                                   # unsigned(6)
+   02                                   # unsigned(2)
+```
+
+- UR encoding 
+
+```
+ur:sign-request/oladtpdagdfrghbbemhyftfebdmyvydacerfdnfhreaotaoyrhoeadayaoaeaxtantjooeadlecsghykaeykaeykaewkaewkaocyemrewytyaaghdlprteynpfnbrhbbzojygrveotonnnfhmyiamkpkahjnglflgmfphffecxgsgagygogafyamaojsaovove
+```
+
+</details>
+
+<details>
+
+<summary>Example BTC message signature response</summary>
+
+- CBOR diagnosis format:
+    
+```
+{
+1: 37(h'3B5414375E3A450B8FE1251CBC2B3FB5'), ; request-id
+2: h'3046022100e4e87c417196c6e5cd63f93e94929ccda6d04fc0a7446922baf3070e854ec4f4022100a1ecd098008329de9bc93fb2ded6aaceecc921f7183d6b3cfc673b3ef8af219e', ; Signed message
+3: "NGRAVE ZERO" ; device name
+}
+```
+
+- CBOR encoding 
+    
+```
+A3                                      # map(3)
+   01                                   # unsigned(1)
+   D8 25                                # tag(37)
+      50                                # bytes(16)
+         3B5414375E3A450B8FE1251CBC2B3FB5 # ";T\u00147^:E\v\x8F\xE1%\u001C\xBC+?\xB5"
+   02                                   # unsigned(2)
+   58 48                                # bytes(72)
+      3046022100E4E87C417196C6E5CD63F93E94929CCDA6D04FC0A7446922BAF3070E854EC4F4022100A1ECD098008329DE9BC93FB2DED6AACEECC921F7183D6B3CFC673B3EF8AF219E # "0F\u0002!\u0000\xE4\xE8|Aq\x96\xC6\xE5\xCDc\xF9>\x94\x92\x9Cͦ\xD0O\xC0\xA7Di\"\xBA\xF3\a\u000E\x85N\xC4\xF4\u0002!\u0000\xA1\xECИ\u0000\x83)ޛ\xC9?\xB2\xDE֪\xCE\xEC\xC9!\xF7\u0018=k<\xFCg;>\xF8\xAF!\x9E"
+   03                                   # unsigned(3)
+   6B                                   # text(11)
+      4E4752415645205A45524F            # "NGRAVE ZERO"
+```
+
+- UR encoding 
+
+```
+ur:sign-response/otadtpdagdfrghbbemhyftfebdmyvydacerfdnfhreaohdfddyfgaoclaevevskefpjsmtswvwsniaytfmmwmonssnoltigwrtosfyincprdwfatbalpglsswkaoclaeoywptimkaelsdtuendsofhpruetbpktowpsoclylcsfsjefnztiofrfmyapeclnnaxjeglflgmfphffecxhtfegmgwcahtstvy
+```
+
+</details>
 
 ## II - 2. Ethereum transactions
 
@@ -1600,7 +1695,8 @@ To support this:
 | [TZIP-25] | https://gitlab.com/tezos/tzip/-/blob/master/proposals/tzip-25/tzip-25.md |
 | [solana-qr-data-protocol] | https://github.com/KeystoneHQ/Keystone-developer-hub/blob/main/research/solana-qr-data-protocol.md#sending-the-unsigned-data-from-wallet-only-wallet-to-offline-signer |
 | [BCR-2020-006] | https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md |
-| [BIP174] | https://github.com/bitcoin/bips/blob/master/bip-0174.mediawiki |
+| [BIP-174] | https://github.com/bitcoin/bips/blob/master/bip-0174.mediawiki |
+| [BIP-322] | https://github.com/bitcoin/bips/blob/master/bip-0322.mediawiki |
 | [CBOR Tag] | https://www.iana.org/assignments/cbor-tags/cbor-tags.xhtml |
 | [keytool-cli] | https://github.com/BlockchainCommons/keytool-cli/tree/master |
 | [ur-registry-eth] | https://github.com/KeystoneHQ/keystone-airgaped-base/tree/master/packages/ur-registry-eth |
