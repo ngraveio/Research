@@ -6,7 +6,7 @@
 Authors: Mathieu Da Silva, Irfan Bilaloglu <br/>
 Date: April 26, 2023
 
-Revised: October 04, 2024
+Revised: April 14, 2025
 
 ---
 
@@ -39,26 +39,15 @@ The BlockchainCommons (BC) have published a series of data transmission protocol
 
 ## Technical specifications
 
-This document specifies the following limits on the QR code format in order to be able to scan with any devices without requiring the best quality camera.
+The following parameters are recommended for generating dynamic QR codes to ensure optimal readability and interoperability with a wide range of scanners:
 
-- The fragment size is fixed at **90 characters** per QR code.
-- The time-sequence of QR code is displayed at a fps of **8**.
-- The QR code correction level is set to **Medium**.
+- The fragment size should not exceed **200 characters** per QR code.
+- The frame interval between successive QR codes should be defined at **150 ms**.
+- QR codes should use to **Medium (M)** error correction level.
 
 ## Limitation
 
-Despite the generic purpose of this document to standardize a signing protocol via QR codes, the different blockchains are various and present each their own specificity. We are focusing the signing protocol to support the following blockchains:
-
-- Bitcoin and other PSBT-based blockchains
-- Ethereum and other EVM blockchains
-- Solana
-- Stellar
-- MultiversX
-- Tezos
-- Avalanche X-Chain
-- XRP Ledger
-
-Any new blockchain should be easily integrated thanks to the blockchain-agnostic communication protocol introduced in this document.
+New blockchains can be integrated seamlessly due to the blockchain-agnostic nature of the communication protocol defined in this document. However, blockchain-specific requirements—such as delegating account selection to the offline signer in the case of Cosmos—may necessitate adaptations to the QR protocol. Any such modifications must preserve backward compatibility with existing blockchain-agnostic UR types.
 
 This document focuses only on the signing process between the offline signer and the watch-only wallet. The sync communication protocol via QR codes is detailed in [[NBCR-2023-002]](https://github.com/ngraveio/Research/blob/main/papers/nbcr-2023-002-multi-layer-sync.md) specification.
 
