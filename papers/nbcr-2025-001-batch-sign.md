@@ -48,7 +48,7 @@ batch-sign-request = {
     sign-requests: [+ #6.41411(sign-request)]
 }
 
-batch-sign = 1
+sign-requests = 1
 ```
 
 - **CDDL for `batch-sign-response`**
@@ -62,7 +62,7 @@ batch-sign-response = {
     sign-responses: [+ #6.41412(sign-response)]
 }
 
-batch-signature = 1
+sign-responses = 1
 ```
 
 ## Use case and example

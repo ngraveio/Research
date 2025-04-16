@@ -38,26 +38,15 @@ The BlockchainCommons, referred to as BC, have published a series of data transm
 
 ## Technical specifications
 
-This document specifies the following limits on the QR code format in order to be able to scan with any devices without requiring the best quality camera.
+The following parameters are recommended for generating dynamic QR codes to ensure optimal readability and interoperability with a wide range of scanners:
 
-- The fragment size is fixed at **90 characters** per QR code.
-- The time-sequence of QR code is displayed at a fps of **8**.
-- The QR code correction level is set to **Medium**.
+- The fragment size should not exceed **200 characters** per QR code.
+- The frame interval between successive QR codes should be defined at **150 ms**.
+- QR codes should use **Medium (M)** error correction level.
 
 ## Limitation
 
-Despite the generic purpose of this document to standardize a syncing protocol via QR codes, the different blockchains are various and present each their own specificity. We are focusing the sync protocol to support the following blockchains:
-
-- Bitcoin and other PSBT-based blockchains
-- Ethereum and other EVM blockchains
-- Solana
-- Stellar
-- MultiversX
-- Tezos
-- Avalanche X-chain
-- XRP Ledger
-
-Any new blockchain should be easily integrated thanks to the blockchain-agnostic communication protocol introduced in this document.
+New blockchains can be integrated seamlessly due to the blockchain-agnostic nature of the communication protocol defined in this document. However, blockchain-specific requirements might necessitate adaptations to the QR protocol. Any such modifications must preserve backward compatibility with existing blockchain-agnostic UR types.
 
 This document focuses only on the synchronization process between the offline signer and the watch-only wallet. The signing protocol via QR codes is detailed in [[NBCR-2023-003]](https://github.com/ngraveio/Research/blob/main/papers/nbcr-2023-003-crypto-sign.md) specification.
 
