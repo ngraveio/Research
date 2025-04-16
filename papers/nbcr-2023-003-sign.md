@@ -359,14 +359,20 @@ This UR type encapsulates a generic signing request and includes:
 
 ```
 sign-request = {
-    ?request-id: uuid,                                   ; Unique identifier for the signing request
-    coin-id: #6.41401(coin-identity),                    ; Defines elliptic curve and blockchain context
-    ?derivation-path: keypath-type / [2* keypath-type],  ; Key path(s) for signature derivation
-    sign-data: bytes,                                    ; Serialized transaction data
-    ?origin: text,                                       ; Origin of the request (e.g., wallet identifier)
-    ?tx-type: int .default 1,                            ; Blockchain-specific transaction type
-    ?address: address-type / [2* address-type]           ; Address(es)
+    ?request-id: uuid,                            ; Unique identifier for the signing request
+    coin-id: #6.41401(coin-identity),             ; Defines elliptic curve and blockchain context
+    ?derivation-path: derivation-path-selection,  ; Key path(s) for signature derivation
+    sign-data: bytes,                             ; Serialized transaction data
+    ?origin: text,                                ; Origin of the request (e.g., wallet identifier)
+    ?tx-type: int .default 1,                     ; Blockchain-specific transaction type
+    ?address: address-selection                   ; Address(es) associated to the signer's account
 }
+
+; If both derivation paths and addresses are provided as arrays, they must contain the same number of elements.
+; When multiple elements are present, the offline signer must select one account for signing.
+
+derivation-path-selection = keypath-type / [2* keypath-type]
+address-selection = address-type / [2* address-type]
 
 keypath-type = #6.40304(keypath)
 address-type = string / bytes
@@ -392,7 +398,7 @@ sign-response = {
     ?request-id: uuid,   ; Echoes the request-id if present in the corresponding sign-request
     signature: bytes,    ; Resulting signature
     ?origin: text,       ; Device or signer name
-    ?public-key: bytes   ; Public key associated to signer' private key
+    ?public-key: bytes   ; Public key used to produce the signature (required only in multi-account selection)
 }
 
 request-id = 1
@@ -400,6 +406,8 @@ signature = 2
 origin = 3
 public-key = 4
 ```
+
+The public key field is only required when the corresponding `sign-request` contains an array of derivation paths and/or addresses. It serves to indicate which account (from the provided array) was selected by the signer for this signature.
 
 ---
 
@@ -441,7 +449,7 @@ Field mapping between `sign-request` and `psbt`:
 | 5. origin (optional) | — (Describes the source wallet) |
 | 6. tx-type (optional) | — (Describes the type of transaction to be signed) |
 
-Using sign-request instead of raw `psbt` extents signing to other transaction types than PSBT and it allows for richer metadata:
+Using sign-request instead of raw `psbt` extends signing to other transaction types than PSBT and it allows for richer metadata:
 - A request-id for signature correlation
 - Derivation path(s) and master fingerprint to identify the signing account(s)
 - A textual origin field to identify the wallet source
