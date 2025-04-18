@@ -365,7 +365,8 @@ sign-request = {
     sign-data: bytes,                             ; Serialized transaction data
     ?origin: text,                                ; Origin of the request (e.g., wallet identifier)
     ?tx-type: int .default 1,                     ; Blockchain-specific transaction type
-    ?address: address-selection                   ; Address(es) associated to the signer's account
+    ?address: address-selection                   ; Address(es) associated to the signer's account (must correspond to the derived address from the derivation path)
+    ?sign-intent: #6.41415(intent)                ; Metadata instructing signer to apply intent logic before signing
 }
 
 ; If both derivation paths and addresses are provided as arrays, they must contain the same number of elements.
@@ -384,10 +385,13 @@ sign-data = 4
 origin = 5
 tx-type = 6
 address = 7
+sign-intent = 8
 ```
 
 The `tx-type` field reuses enumerations from existing UR types such as `sign-data-type` (Ethereum), `type` (Solana), `key-type` (Tezos), and `data-type` (Cosmos).
 When integrating a new blockchain, a new enumeration should be defined if multiple transaction types are supported.
+
+Intents are formally specified in [[NBCR-2025-002]](https://github.com/ngraveio/Research/blob/main/papers/nbcr-2025-002-intent.md), illustrating the `substitute` intent through a concrete use case involving parameter substitution.
 
 - **CDDL for generic signature response** `sign-response`
 
