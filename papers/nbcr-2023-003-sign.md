@@ -68,6 +68,8 @@ The existing communication protocol for signing are based on UR types specific t
 
 This document proposes to standardize into one UR type `sign-request` for the signing request and another UR type `sign-response` for the signed message.
 
+[View the sign-request protocol graph](../images/sign-request.pdf) for a visual overview of `sign-request` and its associated standards.
+
 The following table listed the existing UR types depending on the blockchain and introduced the new UR types intended to be blockchain agnostic.
 
 | Blockchain | Sign request  | Signature  | Owner | Definition | Implementation |
