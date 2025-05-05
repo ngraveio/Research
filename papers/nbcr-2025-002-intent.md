@@ -18,7 +18,7 @@ This paper introduces the concept of **intents**—structured metadata embedded 
 
 # II - Intents
 
-A signing request using intents introduces a controlled interaction flow between the watch-only wallet and the offline signer, allowing the signer to dynamically modify specific parts of the transaction prior to signature. This enables flexible signing scenarios while preserving end-user verification and transaction integrity.
+A signing request using intents introduces a controlled interaction flow between the watch-only wallet and the offline signer, allowing the signer to dynamically modify specific parts of the transaction prior to signing. This enables flexible signing scenarios while preserving end-user verification and transaction integrity.
 
 The process follows these steps:
 
@@ -28,7 +28,7 @@ The process follows these steps:
 4. The offline signer parses the intent and interprets the requested operations to be performed on the payload.
 5. The offline signer applies the intent—e.g., replacing placeholder values with real data only available on the device (like a secure destination address).
 6. The user verifies the final transaction content after intent application. This step ensures What You See Is What You Sign (WYSIWYS) by confirming the exact data to be signed.
-7. Upon user confirmation, the offline signer signs the final transaction and encodes the signature into a sign-response UR type.
+7. Upon user confirmation, the offline signer signs the final transaction and encodes the signature into a `sign-response` UR type.
 8. The user wallet scans the `sign-response` using the watch-only wallet to validate the signature and to broadcast the transaction to the blockchain.
 
 ## Intent UR type registry
@@ -179,7 +179,7 @@ Future intent types may include, for example:
 - Explicit user confirmation: Enforce user approval for critical transaction fields (e.g., destination address, transfer amount), even if the data is already present in the payload.
 - Signer-side fee adjustment: Allow the offline signer to edit the transaction fee based on predefined rules.
 
-These examples are illustrative and not exhaustive. The intent mechanism is deliberately flexible, allowing the ecosystem to define additional use cases as needed—without altering the core signing protocol.
+These examples are illustrative and not exhaustive. The intent mechanism is deliberately flexible, allowing the ecosystem to define additional use cases as needed, without altering the core signing protocol.
 
 ## Security consideration
 
