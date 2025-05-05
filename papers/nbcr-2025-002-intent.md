@@ -88,19 +88,19 @@ This scenario involves a batch-sign-request (see [[NBCR-2025-001]](https://githu
 The fifth transaction (`MsgCreateBTCDelegation`) references values derived from the other transactions in the batch (e.g. signatures and PSBTs) and includes placeholders that must be dynamically replaced by the offline signer before the final signature.
 
 In this case, the watch-only wallet constructs the delegation transaction with placeholder strings (e.g., $BATCH.SIG(4), $BATCH.TX(1)) and includes an intent instructing the signer to:
-- Interpret `$BATCH.` as the placeholder prefix
-- Replace placeholders with corresponding batch elements based on type (`TX` or `SIG`) and index
+- Interpret `$BATCH.` as the placeholder prefix.
+- Replace placeholders with corresponding batch elements based on type (`TX` or `SIG`) and index, starting from 0.
 
 Each parameter is uniquely identifiable and unambiguous, directly referencing the structure and position of other batch entries.
 
 ```
 {
-    "btc_sig": "$BATCH.SIG(4)"
-    "staking_tx": "$BATCH.TX(1)",
-    "slashing_tx": "$BATCH.TX(2)",
-    "delegator_slashing_sig": "$BATCH.SIG(2)",
-    "unbonding_slashing_tx": "$BATCH.TX(3)",
-    "delegator_unbonding_slashing_sg": "$BATCH.SIG(3)"
+    "btc_sig": "$BATCH.SIG(3)"
+    "staking_tx": "$BATCH.TX(0)",
+    "slashing_tx": "$BATCH.TX(1)",
+    "delegator_slashing_sig": "$BATCH.SIG(1)",
+    "unbonding_slashing_tx": "$BATCH.TX(2)",
+    "delegator_unbonding_slashing_sg": "$BATCH.SIG(2)"
 }
 ```
 
@@ -115,12 +115,12 @@ This use case demonstrates how intents can orchestrate dynamic transaction compo
 ```
 {
     1: ["$BATCH.", 
-        [["TX(1)", 5],
+        [["TX(0)", 5],
+         ["TX(1)", 5],
          ["TX(2)", 5],
-         ["TX(3)", 5],
+         ["SIG(1)", 5],
          ["SIG(2)", 5],
-         ["SIG(3)", 5],
-         ["SIG(4)", 5]
+         ["SIG(3)", 5]
         ]
     ]
 }
@@ -137,6 +137,10 @@ A1                          # map(1)
       86                    # array(6)
          82                 # array(2)
             65              # text(5)
+               5458283029   # "TX(0)"
+            05              # unsigned(5)
+         82                 # array(2)
+            65              # text(5)
                5458283129   # "TX(1)"
             05              # unsigned(5)
          82                 # array(2)
@@ -144,8 +148,8 @@ A1                          # map(1)
                5458283229   # "TX(2)"
             05              # unsigned(5)
          82                 # array(2)
-            65              # text(5)
-               5458283329   # "TX(3)"
+            66              # text(6)
+               534947283129 # "SIG(1)"
             05              # unsigned(5)
          82                 # array(2)
             66              # text(6)
@@ -155,16 +159,12 @@ A1                          # map(1)
             66              # text(6)
                534947283329 # "SIG(3)"
             05              # unsigned(5)
-         82                 # array(2)
-            66              # text(6)
-               534947283429 # "SIG(4)"
-            05              # unsigned(5)
 ```
 
 - UR encoding
 
 ```
-oyadlfiodkfwfpghfxfddmlnlfihghhddeehdtahlfihghhddeeydtahlfihghhddeeodtahlfiygugafldeeydtahlfiygugafldeeodtahlfiygugafldeeedtahoshevtmd
+ur:intent/oyadlfiodkfwfpghfxfddmlnlfihghhddedydtahlfihghhddeehdtahlfihghhddeeydtahlfiygugafldeehdtahlfiygugafldeeydtahlfiygugafldeeodtahgswdfzhn
 ```
 
 ---
