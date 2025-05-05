@@ -42,7 +42,7 @@ UR Type Tag: `#6.41415`
 ```
 ; The encoding_type defines how the parameter value should be interpreted.
 ; This enumeration is extensible to support future encoding formats.
-encoding_type = int
+encoding_type = uint .size 2
 integer = 1
 hex = 2
 base32 = 3
@@ -68,7 +68,7 @@ substitute_fields = [
 ; The top-level intent structure is a tagged CBOR map.
 ; Additional intent types can be added in the future using new map keys.
 intent = (
-    substitute: substitute_fields
+    ?substitute: substitute_fields
 )
 
 substitute = 1
