@@ -60,10 +60,13 @@ parameter = [
 
 ; substitute_fields defines a prefix used to mark placeholders in the transaction,
 ; and the list of parameters that should replace these placeholders.
-substitute_fields = [
+substitute_fields = {
     placeholder_prefix: string,
     parameters: [parameter]
-]
+}
+
+placeholder_prefix = 1
+parameters = 2
 
 ; The top-level intent structure is a tagged CBOR map.
 ; Additional intent types can be added in the future using new map keys.
@@ -114,15 +117,17 @@ This use case demonstrates how intents can orchestrate dynamic transaction compo
 
 ```
 {
-    1: ["$BATCH.", 
-        [["TX(0)", 5],
-         ["TX(1)", 5],
-         ["TX(2)", 5],
-         ["SIG(1)", 5],
-         ["SIG(2)", 5],
-         ["SIG(3)", 5]
-        ]
+  1: {  ; substitute_fields
+    1: "$BATCH.",                     ; placeholder_prefix
+    2: [                              ; parameters
+      ["TX(0)", 5],
+      ["TX(1)", 5],
+      ["TX(2)", 5],
+      ["SIG(1)", 5],
+      ["SIG(2)", 5],
+      ["SIG(3)", 5]
     ]
+  }
 }
 ```
 
@@ -131,9 +136,11 @@ This use case demonstrates how intents can orchestrate dynamic transaction compo
 ```
 A1                          # map(1)
    01                       # unsigned(1)
-   82                       # array(2)
+   A2                       # map(2)
+      01                    # unsigned(1)
       67                    # text(7)
          2442415443482E     # "$BATCH."
+      02                    # unsigned(2)
       86                    # array(6)
          82                 # array(2)
             65              # text(5)
@@ -164,7 +171,7 @@ A1                          # map(1)
 - UR encoding
 
 ```
-ur:intent/oyadlfiodkfwfpghfxfddmlnlfihghhddedydtahlfihghhddeehdtahlfihghhddeeydtahlfiygugafldeehdtahlfiygugafldeeydtahlfiygugafldeeodtahgswdfzhn
+ur:intent/oyadoeadiodkfwfpghfxfddmaolnlfihghhddedydtahlfihghhddeehdtahlfihghhddeeydtahlfiygugafldeehdtahlfiygugafldeeydtahlfiygugafldeeodtahlftkaohk
 ```
 
 ---
