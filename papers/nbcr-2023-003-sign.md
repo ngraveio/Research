@@ -3,7 +3,7 @@
 ## NBCR-2023-003
 
 © 2023 NGRAVE
-Authors: Mathieu Da Silva, Irfan Bilaloglu <br/>
+Authors: Mathieu Da Silva, Irfan Bilaloglu, Maher Sallam <br/>
 Date: April 26, 2023
 
 Revised: April 14, 2025
@@ -107,7 +107,7 @@ crypto-psbt = bytes
 
 The `psbt` UR type is used identically in both signing requests and signature responses.
 
-The main limitation is the inability to support signing other types of data, such as message signing defined in [[BIP-322]](https://github.com/bitcoin/bips/blob/master/bip-0322.mediawiki). This limitation will be addressed by the proposed blockchain-agnostic sign-request UR type.
+The main limitation is the inability to support signing other types of data, such as message signing defined in [[BIP-322]](https://github.com/bitcoin/bips/blob/master/bip-0322.mediawiki). This limitation is addressed by the proposed blockchain-agnostic `sign-request` UR type, which supports BIP-322 message signing through the `tx-type` field (see Example 3 in Section III-1).
 
 ### Ethereum UR types
 
@@ -362,7 +362,7 @@ sign-request = {
     ?request-id: uuid,                            ; Unique identifier for the signing request
     coin-id: #6.41401(coin-identity),             ; Defines elliptic curve and blockchain context
     ?derivation-path: derivation-path-selection,  ; Key path(s) for signature derivation
-    sign-data: bytes,                             ; Serialized transaction data
+    sign-data: bytes,                             ; Serialized transaction data or message
     ?origin: text,                                ; Origin of the request (e.g., wallet identifier)
     ?tx-type: int .default 1,                     ; Blockchain-specific transaction type
     ?address: address-selection                   ; Address(es) associated to the signer's account (must correspond to the derived address from the derivation path)
@@ -438,9 +438,9 @@ The required data for signing includes:
 
 Supported Bitcoin tx-type values (to be extended to new transaction types when needed):
 
-- `1`: PSBT (default if omitted)
-- `2`: ECDSA (raw hex message signing using account private key)
-- `3`: BIP-322 structured message signing
+- `1`: PSBT (default if omitted) - Standard Bitcoin transaction following BIP-174
+- `2`: ECDSA (raw hex message signing using account private key) - Simple message signing using the private key directly
+- `3`: BIP-322 structured message signing - Generic signed message format as defined in BIP-322, supporting both legacy and full proof-of-funds verification
 
 Field mapping between `sign-request` and `psbt`:
 
@@ -711,6 +711,152 @@ ur:sign-response/otadtpdagdfrghbbemhyftfebdmyvydacerfdnfhreaohdfddyfgaoclaevevsk
 ```
 
 </details>
+
+### Example 3 - BIP-322 message signing
+
+An example illustrates how the signature request and response for Bitcoin BIP-322 message signing are encoded.
+
+BIP-322 provides a generic message signing format that can prove ownership of an address. The `sign-data` field contains the message to be signed, which will be wrapped in the BIP-322 structure by the offline signer.
+
+**Required fields:**
+- `coin-id`: Bitcoin identification (secp256k1, coin type 0)
+- `derivation-path`: The key path for the signing account
+- `sign-data`: The raw message bytes to be signed
+- `tx-type`: Must be set to `3` for BIP-322
+
+**Optional but recommended fields:**
+- `request-id`: Unique identifier for correlating the response
+- `origin`: Identifies the requesting wallet
+- `address`: The Bitcoin address to verify against the derived key (recommended for user confirmation)
+
+<details>
+
+<summary>Example BTC BIP-322 message signature request</summary>
+
+- Message to sign
+
+```
+"Hello World"
+```
+
+- CBOR diagnosis format:
+
+```
+{
+1: 37(h'3B5414375E3A450B8FE1251CBC2B3FB5'), ; request-id
+2: 41401( ; #6.41401(coin-identity)
+    {1: 8, ; secp256k1 curve
+     2: 0 ; Bitcoin BIP44
+    }),
+3: 40304({1: [84, true, 0, true, 0, true, 0, false, 0, false], ; #6.40304(keypath) m/84'/0'/0'/0/0
+          2: 934670036}), ; master fingerprint
+4: h'48656c6c6f20576f726c64', ; sign-data ("Hello World")
+5: "NGRAVE LIQUID", ; wallet name
+6: 3, ; BIP-322 message signing
+7: "bc1q9vza2e8x0pwmgvwz7r0t4xwjkj4e0ryvpq9qxj" ; address (optional, for verification)
+}
+```
+
+- CBOR encoding
+
+```
+A7                                      # map(7)
+   01                                   # unsigned(1)
+   D8 25                                # tag(37)
+      50                                # bytes(16)
+         3B5414375E3A450B8FE1251CBC2B3FB5 # ";T\u00147^:E\v\x8F\xE1%\u001C\xBC+?\xB5"
+   02                                   # unsigned(2)
+   D9 A1B9                              # tag(41401)
+      A2                                # map(2)
+         01                             # unsigned(1)
+         08                             # unsigned(8)
+         02                             # unsigned(2)
+         00                             # unsigned(0)
+   03                                   # unsigned(3)
+   D9 9D70                              # tag(40304)
+      A2                                # map(2)
+         01                             # unsigned(1)
+         8A                             # array(10)
+            18 54                       # unsigned(84)
+            F5                          # primitive(21)
+            00                          # unsigned(0)
+            F5                          # primitive(21)
+            00                          # unsigned(0)
+            F5                          # primitive(21)
+            00                          # unsigned(0)
+            F4                          # primitive(20)
+            00                          # unsigned(0)
+            F4                          # primitive(20)
+         02                             # unsigned(2)
+         1A 37B5EED4                    # unsigned(934670036)
+   04                                   # unsigned(4)
+   4B                                   # bytes(11)
+      48656C6C6F20576F726C64            # "Hello World"
+   05                                   # unsigned(5)
+   6D                                   # text(13)
+      4E4752415645204C4951554944        # "NGRAVE LIQUID"
+   06                                   # unsigned(6)
+   03                                   # unsigned(3)
+   07                                   # unsigned(7)
+   78 2A                                # text(42)
+      6263317139767A61326538783070776D6776777A377230743478776A6B6A34653072797670713971786A # "bc1q9vza2e8x0pwmgvwz7r0t4xwjkj4e0ryvpq9qxj"
+```
+
+- UR encoding
+
+```
+ur:sign-request/osadtpdagdfrghbbemhyftfebdmyvydacerfdnfhreaotaoyrhoeadayaoaeaxtantjooeadlecsghykaeykaeykaewkaewkaocyemrewytyaagrfdihjzjzjlcxhgjljpjzieahjnglflgmfphffecxgsgagygogafyamaxatksdridiaehjseskoknhseyihetksdyjoktjniokoktknemjpdyjyeeksktimjeimeeihdyjpkkkojojsesjsksimvssbqdrf
+```
+
+</details>
+
+<details>
+
+<summary>Example BTC BIP-322 message signature response</summary>
+
+The signature response contains the complete BIP-322 signature proof, which includes the witness data proving ownership of the address.
+
+- CBOR diagnosis format:
+
+```
+{
+1: 37(h'3B5414375E3A450B8FE1251CBC2B3FB5'), ; request-id
+2: h'416B6377524149675A526649593370372F446F5654747936595A6257533731626335566374397039466961383365526D7732514349434B2F454E4766774C747074466C754D4773324B73716F4E536B3839704F374632397A4A4C557839612F7341534543782F456741786C6B5170513968596A67477536454243504D5650775649564A714F345843734D76566948493D', ; "AkcwRAIgZRfIY3p7/DoVTty6YZbWS71bc5Vct9p9Fia83eRmw2QCICK/ENGfwLtptFluMGs2KsqoNSk89pO7F29zJLUx9a/sASECx/EgAxlkQpQ9hYjgGu6EBCPMVPwVIVJqO4XCsMvViHI=" in hex (from BIP-322 test vectors for message signing)
+3: "NGRAVE ZERO" ; device name
+}
+```
+
+- CBOR encoding
+
+```
+A3                                      # map(3)
+   01                                   # unsigned(1)
+   D8 25                                # tag(37)
+      50                                # bytes(16)
+         3B5414375E3A450B8FE1251CBC2B3FB5 # ";T\u00147^:E\v\x8F\xE1%\u001C\xBC+?\xB5"
+   02                                   # unsigned(2)
+   58 90                                # bytes(144)
+      416B6377524149675A526649593370372F446F5654747936595A6257533731626335566374397039466961383365526D7732514349434B2F454E4766774C747074466C754D4773324B73716F4E536B3839704F374632397A4A4C557839612F7341534543782F456741786C6B5170513968596A67477536454243504D5650775649564A714F345843734D76566948493D # "AkcwRAIgZRfIY3p7/DoVTty6YZbWS71bc5Vct9p9Fia83eRmw2QCICK/ENGfwLtptFluMGs2KsqoNSk89pO7F29zJLUx9a/sASECx/EgAxlkQpQ9hYjgGu6EBCPMVPwVIVJqO4XCsMvViHI="
+   03                                   # unsigned(3)
+   6B                                   # text(11)
+      4E4752415645205A45524F            # "NGRAVE ZERO"
+```
+
+- UR encoding
+
+```
+ur:sign-response/otadtpdagdfrghbbemhyftfebdmyvydacerfdnfhreaohdmhfpjeiaktgmfpgaiohtgmiygahkeojoemdlfyjlhfghjykkenhkhtidhgguemehidiaechfiajyesjoesfginhseteoihgmjnkteygyfxgafxgrdlfeglfliyktgsjyjojyfgjzkpgtfljkeygrjkjsjlglgujeetesjogwemfgeyeskngegsgokseshsdljkfpgufefxksdlfeiofpksjzjegyjogyesishkimioflkpenfefwfxgdgthfgdkthfgahfgejsgweehdfxjkgtkohfinfdgafsaxjeglflgmfphffecxhtfegmgwmkfespdy
+```
+
+</details>
+
+**Implementation notes for BIP-322:**
+
+- The offline signer must construct the BIP-322 proof structure according to the specification in [[BIP-322]](https://github.com/bitcoin/bips/blob/master/bip-0322.mediawiki)
+- For legacy P2PKH addresses, the signer should use the legacy format for backwards compatibility
+- For native SegWit and other address types, the full BIP-322 proof format should be used
+- The `address` field, when provided, should be verified against the derived public key to ensure the correct account is being used
+- The message in `sign-data` should be displayed to the user in its raw, human-readable form for verification before signing
 
 ## II - 2. Ethereum transactions
 
