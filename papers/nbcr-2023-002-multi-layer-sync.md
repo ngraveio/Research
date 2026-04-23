@@ -487,7 +487,7 @@ In this document, we are defining the new `detailed-account` UR type, extending 
 This new type aims to incorporate in the same structure:
 
 - The accounts with and without scripts by selecting either `hdkey` or `output-descriptor`. When a `hdkey` is embedded inside `detailed-account`, the optional `coin-info` in `hdkey` should **not** be defined since `detailed-account` is used in combination with `coin-identity` used already as asset identifier. 
-- An optional list of tokens to synchronize at the same time of the associated account. A token identifier is either a plain text string (`tstr`) or a hexadecimal byte string wrapped in IANA CBOR tag 263 ([`hex-string`](https://github.com/toravir/CBOR-Tag-Specs/blob/master/hexString.md)). The `hex-string` form roughly halves the on-wire size for canonically hex identifiers such as EVM contract addresses. Compound identifiers (e.g. ERC-721 / ERC-1155) follow the Unique Asset Identifier convention from [[NBCR-2024-001]](https://github.com/ngraveio/Research/blob/main/papers/nbcr-2024-001-unique-asset-id.md), using `tokenid[.subtype...]`.
+- An optional list of tokens to synchronize at the same time of the associated account. Each token identifier follows the Unique Asset Identifier convention from [[NBCR-2024-001]](https://github.com/ngraveio/Research/blob/main/papers/nbcr-2024-001-unique-asset-id.md). Scalar identifiers are encoded either as a plain text string (`tstr`) or as a hexadecimal byte string wrapped in IANA CBOR tag 263 ([`hex-string`](https://github.com/toravir/CBOR-Tag-Specs/blob/master/hexString.md)); the `hex-string` form roughly halves the on-wire size for canonically hex identifiers such as EVM contract addresses. Compound identifiers (e.g. ERC-721 / ERC-1155 contract + token id) have two interchangeable wire forms: a single `tstr` carrying the dot-separated text (e.g. `"0xabc.123"`), or an ordered array of typed components (e.g. `[hex-string, biguint]`). The array form is preferred for NFT-style identifiers because each component keeps its native CBOR type, reducing the on-wire size further compared to the textual encoding.
 
 The following specification of `detailed-account` is written in CDDL. When used embedded in another CBOR structure, this structure should be tagged #6.41402.
 
@@ -501,21 +501,41 @@ hex-string = #6.263(bstr)
 ; extended public keys.
 ; '#6.40308(output-descriptor)' should be used to share an output descriptor,
 ; e.g. for the different Bitcoin address formats (P2PKH, P2SH-P2WPKH, P2WPKH, P2TR).
-;
-; 'hex-string' (IANA CBOR tag 263) wraps bytes meant to be read as a hexadecimal
-; string; the tag preserves hex semantics for display and comparison, while
-; halving the on-wire size compared to the equivalent "0x..." text.
+
+; 'encoded-bytes' is the extension point for byte-string encodings that
+; preserve a semantic hint. Today it aliases 'hex-string' (IANA CBOR tag 263),
+; which halves the on-wire size for canonically hex identifiers such as EVM
+; contract addresses. Future specs MAY extend 'encoded-bytes' with base58,
+; base64, bech32 and similar tagged byte-strings once their CBOR tags are
+; registered with IANA.
+encoded-bytes = hex-string
+
+; 'token-component' is a single atomic component of a UAI-style identifier:
+; a plain text string, a tagged byte string, or an unsigned big integer.
+token-component = tstr / encoded-bytes / biguint
+
+; 'token-id' is either a scalar identifier or an ordered array of two to
+; four components for compound identifiers (e.g. ERC-721 / ERC-1155, where
+; the identifier is a contract address paired with a token id). The UAI
+; text form "a.b.c" and the array form [a, b, c] are semantically equivalent;
+; producers MAY emit either form and consumers MUST accept both. The upper
+; bound of four accommodates realistic UAI identifiers (typically 2-3
+; components) without permitting unbounded nesting.
+token-id = token-component / [2*4 token-component]
 
 ; Optional 'token-ids' to indicate the synchronization of a list of tokens with
 ; the associated accounts.
 ; 'token-id' encoding follows the Unique Asset Identifier (UAI) convention
-; defined in [NBCR-2024-001]. A token-id is either a scalar identifier or a
-; compound "parent.subtype[.subtype...]" form. Current encodings per blockchain:
+; defined in [NBCR-2024-001]. Current encodings per blockchain:
 ; - ERC20 tokens on EVM chains are identified by their contract addresses,
 ;   encoded as 'hex-string' (e.g. `0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48`).
-; - ERC721 / ERC1155 tokens are identified by contract address plus token id,
-;   encoded as tstr using the UAI "contract.tokenId" form (e.g.
+; - ERC721 / ERC1155 tokens are identified by contract address plus token id.
+;   The preferred wire form is the typed array `[hex-string, biguint]`; the
+;   equivalent tstr form is the dot-separated "contract.tokenId" string (e.g.
 ;   `0xfaafdc07907ff5120a76b34b731b278c38d6043c.508851954656174721695133294256171964208`).
+;   In CBOR diagnostic notation the array form reads:
+;     [263(h'FAAFDC07907FF5120A76B34B731B278C38D6043C'),
+;      508851954656174721695133294256171964208]
 ; - ESDT fungible tokens on MultiversX are identified by a ticker-hex
 ;   identifier, encoded as tstr (e.g. `USDC-c76f1f`).
 ; - SPL / Token-2022 on Solana are identified by their mint address,
@@ -523,7 +543,7 @@ hex-string = #6.263(bstr)
 
 detailed-account = {
   account: account_exp,
-  ? token-ids: [+ tstr / hex-string] ; Specify multiple tokens associated to one account
+  ? token-ids: [+ token-id] ; Specify multiple tokens associated to one account
 }
 
 account = 1
