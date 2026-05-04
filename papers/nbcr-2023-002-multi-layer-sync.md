@@ -7,7 +7,7 @@
 Authors: Mathieu Da Silva, Irfan Bilaloglu <br/>
 Date: April 19, 2023
 
-Revised: October 04, 2024
+Revised: April 23, 2026
 
 ---
 
@@ -487,36 +487,43 @@ In this document, we are defining the new `detailed-account` UR type, extending 
 This new type aims to incorporate in the same structure:
 
 - The accounts with and without scripts by selecting either `hdkey` or `output-descriptor`. When a `hdkey` is embedded inside `detailed-account`, the optional `coin-info` in `hdkey` should **not** be defined since `detailed-account` is used in combination with `coin-identity` used already as asset identifier. 
-- An optional list of tokens to synchronize them at the same time of the associated account. A token identifier is defined either as a string or as bytes.
+- An optional list of tokens to synchronize at the same time of the associated account. A token identifier is either a plain text string (`tstr`) or a hexadecimal byte string wrapped in IANA CBOR tag 263 ([`hex-string`](https://github.com/toravir/CBOR-Tag-Specs/blob/master/hexString.md)). The `hex-string` form roughly halves the on-wire size for canonically hex identifiers such as EVM contract addresses. Compound identifiers (e.g. ERC-721 / ERC-1155) follow the Unique Asset Identifier convention from [[NBCR-2024-001]](https://github.com/ngraveio/Research/blob/main/papers/nbcr-2024-001-unique-asset-id.md), using `tokenid[.subtype...]`.
 
 The following specification of `detailed-account` is written in CDDL. When used embedded in another CBOR structure, this structure should be tagged #6.41402.
 
 ```
 account_exp = #6.40303(hdkey) / #6.40308(output-descriptor)
+hex-string = #6.263(bstr)
 
-; Accounts are specified using either '#6.40303(hdkey)' or 
+; Accounts are specified using either '#6.40303(hdkey)' or
 ; '#6.40308(output-descriptor)'.
 ; By default, '#6.40303(hdkey)' should be used to share public keys and
 ; extended public keys.
-; '#6.308(output-descriptor)' should be used to share an output descriptor, 
+; '#6.40308(output-descriptor)' should be used to share an output descriptor,
 ; e.g. for the different Bitcoin address formats (P2PKH, P2SH-P2WPKH, P2WPKH, P2TR).
+;
+; 'hex-string' (IANA CBOR tag 263) wraps bytes meant to be read as a hexadecimal
+; string; the tag preserves hex semantics for display and comparison, while
+; halving the on-wire size compared to the equivalent "0x..." text.
 
 ; Optional 'token-ids' to indicate the synchronization of a list of tokens with
-; the associated accounts
-; 'token-id' is defined differently depending on the blockchain:
-; - ERC20 tokens on EVM chains are identified by their contract addresses 
-; (e.g. `0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48`)
-; - ERC1155 tokens are identifed with their contract addresses followed by their 
-; ID with ':' as separator (e.g. `0xfaafdc07907ff5120a76b34b731b278c38d6043c:
-; 508851954656174721695133294256171964208`)
-; - ESDT tokens on MultiversX are by their name followed by their ID with `-` as 
-; separator (e.g. `USDC-c76f1f`)
-; - SPL tokens on Solana are identified by their contract addresses
-; (e.g. `EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v`)
+; the associated accounts.
+; 'token-id' encoding follows the Unique Asset Identifier (UAI) convention
+; defined in [NBCR-2024-001]. A token-id is either a scalar identifier or a
+; compound "parent.subtype[.subtype...]" form. Current encodings per blockchain:
+; - ERC20 tokens on EVM chains are identified by their contract addresses,
+;   encoded as 'hex-string' (e.g. `0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48`).
+; - ERC721 / ERC1155 tokens are identified by contract address plus token id,
+;   encoded as tstr using the UAI "contract.tokenId" form (e.g.
+;   `0xfaafdc07907ff5120a76b34b731b278c38d6043c.508851954656174721695133294256171964208`).
+; - ESDT fungible tokens on MultiversX are identified by a ticker-hex
+;   identifier, encoded as tstr (e.g. `USDC-c76f1f`).
+; - SPL / Token-2022 on Solana are identified by their mint address,
+;   encoded as tstr (e.g. `EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v`).
 
-detailed-account = { 
+detailed-account = {
   account: account_exp,
-  ? token-ids: [+ string] ; Specify multiple tokens associated to one account
+  ? token-ids: [+ tstr / hex-string] ; Specify multiple tokens associated to one account
 }
 
 account = 1
@@ -1360,3 +1367,6 @@ The information shared with the watch-only wallet can be altered on the device r
 | [BIP32] | https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki |
 | [SLIP44]  | https://github.com/satoshilabs/slips/blob/master/slip-0044.md |
 | [OD-IN-CORE] | https://github.com/bitcoin/bitcoin/blob/master/doc/descriptors.md |
+| [NBCR-2024-001] | https://github.com/ngraveio/Research/blob/main/papers/nbcr-2024-001-unique-asset-id.md |
+| [hexString] | https://github.com/toravir/CBOR-Tag-Specs/blob/master/hexString.md |
+| [EIP-1155] | https://eips.ethereum.org/EIPS/eip-1155 |
