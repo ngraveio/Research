@@ -280,7 +280,7 @@ master-key = (
 ; then `parent-fingerprint` MUST be identical to `source-fingerprint` or may be omitted.
 derived-key = (
     ? is-private: bool .default false,     ; true if key is private, false if public
-    key-data: key-data-bytes,
+    key-data: key-data-bytes,              ; padded with 0x00 as the first byte if it's a ed25519 coin (to fill up the 33 bytes)
     ? chain-code: chain-code-bytes         ; omit if no further keys may be derived from this key
     ? use-info: tagged-coininfo, ; How the key is to be used
     ? origin: tagged-keypath,    ; How the key was derived
@@ -767,7 +767,7 @@ GovgcGs4SvM7SdkDHdh5Y7WTLfYa3NBt4dhSKfgkF3R4
 - Decoded from Base58 and compressed public key:
 
 ```
-02EAE4B876A8696134B868F88CC2F51F715F2DBEDB7446B8E6EDF3D4541C4EB67B
+00EAE4B876A8696134B868F88CC2F51F715F2DBEDB7446B8E6EDF3D4541C4EB67B
 ```
 
 - CBOR diagnosis format:
@@ -775,7 +775,7 @@ GovgcGs4SvM7SdkDHdh5Y7WTLfYa3NBt4dhSKfgkF3R4
 ```
 {1: 934670036, ; master-fingerprint
  2: [40303(  ; #6.40303(hdkey)
-  {3: h'02EAE4B876A8696134B868F88CC2F51F715F2DBEDB7446B8E6EDF3D4541C4EB67B', ; key-data
+  {3: h'00EAE4B876A8696134B868F88CC2F51F715F2DBEDB7446B8E6EDF3D4541C4EB67B', ; key-data
    6: 304({1: [44, true, 501, true, 0, true, 0, true]}) ; origin m/44’/501’/0’/0’
  })],
  3: "NGRAVE"
@@ -794,7 +794,7 @@ A3                                      # map(3)
          A2                             # map(2)
             03                          # unsigned(3)
             58 21                       # bytes(33)
-               02EAE4B876A8696134B868F88CC2F51F715F2DBEDB7446B8E6EDF3D4541C4EB67B 
+               00EAE4B876A8696134B868F88CC2F51F715F2DBEDB7446B8E6EDF3D4541C4EB67B 
             06                          # unsigned(6)
             D9 0130                     # tag(304)
                A1                       # map(1)
@@ -835,8 +835,8 @@ erd1gymuz6ukd2avrh6vhzf67ss75zlxrffzv648kw4fjwgq7ufevs8s463da3 ; m/44’/508’/
 - Decoded from Bech32 and compressed public key:
 
 ```
-02954768223BB94015350462BADA20DAEED7E25C4777F997B56C027746E4F8AC67 ; m/44’/508’/0’/0’/0’
-024137C16B966ABAC1DF4CB893AF421EA0BE61A52266AA7B3AA993900F7139640F ; m/44’/508’/0’/0’/1’
+00954768223BB94015350462BADA20DAEED7E25C4777F997B56C027746E4F8AC67 ; m/44’/508’/0’/0’/0’
+004137C16B966ABAC1DF4CB893AF421EA0BE61A52266AA7B3AA993900F7139640F ; m/44’/508’/0’/0’/1’
 ```
 
 - CBOR diagnosis format:
@@ -844,11 +844,11 @@ erd1gymuz6ukd2avrh6vhzf67ss75zlxrffzv648kw4fjwgq7ufevs8s463da3 ; m/44’/508’/
 ```
 {1: 934670036, ; master-fingerprint
  2: [40303(  ; #6.40303(hdkey)
-  {3: h'02954768223BB94015350462BADA20DAEED7E25C4777F997B56C027746E4F8AC67', ; key-data
+  {3: h'00954768223BB94015350462BADA20DAEED7E25C4777F997B56C027746E4F8AC67', ; key-data
    6: 304({1: [44, true, 508, true, 0, true, 0, true, 0, true]}) ; origin m/44’/501’/0’/0’/0'
  }),
  40303(  ; #6.40303(hdkey)
-  {3: h'024137C16B966ABAC1DF4CB893AF421EA0BE61A52266AA7B3AA993900F7139640F', ; key-data
+  {3: h'004137C16B966ABAC1DF4CB893AF421EA0BE61A52266AA7B3AA993900F7139640F', ; key-data
    6: 304({1: [44, true, 508, true, 0, true, 0, true, 1, true]}) ; origin m/44’/501’/0’/0’/1'
  })],
  3: "NGRAVE"
@@ -867,7 +867,7 @@ A3                                      # map(3)
          A2                             # map(2)
             03                          # unsigned(3)
             58 21                       # bytes(33)
-               02954768223BB94015350462BADA20DAEED7E25C4777F997B56C027746E4F8AC67 
+               00954768223BB94015350462BADA20DAEED7E25C4777F997B56C027746E4F8AC67 
             06                          # unsigned(6)
             D9 0130                     # tag(304)
                A1                       # map(1)
@@ -887,7 +887,7 @@ A3                                      # map(3)
          A2                             # map(2)
             03                          # unsigned(3)
             58 21                       # bytes(33)
-               024137C16B966ABAC1DF4CB893AF421EA0BE61A52266AA7B3AA993900F7139640F 
+               004137C16B966ABAC1DF4CB893AF421EA0BE61A52266AA7B3AA993900F7139640F 
             06                          # unsigned(6)
             D9 0130                     # tag(304)
                A1                       # map(1)
@@ -992,14 +992,14 @@ An example illustrates how the sync payload is formed using the third layer of c
         }),
     2: [41402( ; #6.41402(detailed-account)
         {1: 40303(  ; #6.40303(hdkey)
-           {3: h'02EAE4B876A8696134B868F88CC2F51F715F2DBEDB7446B8E6EDF3D4541C4EB67B', ; key-data
+           {3: h'00EAE4B876A8696134B868F88CC2F51F715F2DBEDB7446B8E6EDF3D4541C4EB67B', ; key-data
             6: 304({1: [44, true, 501, true, 0, true, 0, true]}) ; origin m/44’/501’/0’/0’
           }),
         2: [ "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v" ] ; USDC SPL token
        }),
 	   41402( ; #6.41402(detailed-account)
         {1: 40303(  ; #6.40303(hdkey)
-           {3: h'0260563EE80C26844621B06B74070BAF0E23FB76CE439D0237E87502EBBD3CA346', ; key-data
+           {3: h'0060563EE80C26844621B06B74070BAF0E23FB76CE439D0237E87502EBBD3CA346', ; key-data
             6: 40304({1: [44, true, 501, true, 0, true, 1, true]}) ; origin m/44’/501’/0’/1’
           })
        })]
@@ -1132,7 +1132,7 @@ A2                                      # map(2)
                         A2              # map(2)
                            03           # unsigned(3)
                            58 21        # bytes(33)
-                              02EAE4B876A8696134B868F88CC2F51F715F2DBEDB7446B8E6EDF3D4541C4EB67B 
+                              00EAE4B876A8696134B868F88CC2F51F715F2DBEDB7446B8E6EDF3D4541C4EB67B 
                            06           # unsigned(6)
                            D9 0130      # tag(304)
                               A1        # map(1)
@@ -1157,7 +1157,7 @@ A2                                      # map(2)
                         A2              # map(2)
                            03           # unsigned(3)
                            58 21        # bytes(33)
-                              0260563EE80C26844621B06B74070BAF0E23FB76CE439D0237E87502EBBD3CA346 
+                              0060563EE80C26844621B06B74070BAF0E23FB76CE439D0237E87502EBBD3CA346 
                            06           # unsigned(6)
                            D9 9D70      # tag(40304)
                               A1        # map(1)
