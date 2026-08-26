@@ -413,6 +413,8 @@ public-key = 4
 
 The public key field is only required when the corresponding `sign-request` contains an array of derivation paths and/or addresses. It serves to indicate which account (from the provided array) was selected by the signer for this signature.
 
+[View the sign-request protocol graph](../images/sign-request.pdf) for a visual overview of `sign-request` and its associated standards.
+
 ---
 
 # III - Use cases on several blockchains
